@@ -37,11 +37,15 @@ function BuyCart() {
         <div className="grid grid-cols-[repeat(auto-fill,minmax(245px,1fr))] gap-[20px]">
             {content.map((item, index) => (
                 <div key={index} className="bg-gradient px-[10px] pt-[10px] pb-[23px] rounded-[12px] buy_cart">
-                    <figure className="w-full h-[208px] flex items-center justify-center rounded-[6px] bg-white mb-[24px] overflow-hidden">
-                        <Image src={item.image} alt={item.title} className="w-full h-full object-contain" />
-                    </figure>
-                    <h3 className="text-[18px] leading-[18px] mb-[10px] font-semibold">{item.title}</h3>
-                    <span className="text-[15px] leading-[15px] block mb-[10px]">{item.description}</span>
+                    <Link href="/single-products">
+                        <figure className="w-full h-[208px] flex items-center justify-center rounded-[6px] bg-white mb-[24px] overflow-hidden cursor-pointer">
+                            <Image src={item.image} alt={item.title} className="w-full h-full object-contain" />
+                        </figure>
+                    </Link>
+                    <Link href="/single-products" className="block">
+                        <h3 className="text-[18px] leading-[18px] mb-[10px] font-semibold hover:text-accent cursor-pointer">{item.title}</h3>
+                        <span className="text-[15px] leading-[15px] block mb-[10px]">{item.description}</span>
+                    </Link>
                     <div className="font-black text-[22px] leading-[22px] mb-[28px]">{item.price}</div>
                     <div className="flex gap-[10px]">
                         <Link href="/checkout">
