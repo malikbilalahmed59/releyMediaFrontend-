@@ -6,18 +6,18 @@ import {Autoplay} from "swiper/modules";
 
 function ClientLogo() {
     const slides = [
-        { src: '/images/client_logo1.png', width: '200px' },
-        { src: '/images/client_logo2.png', width: '67px' },
-        { src: '/images/client_logo3.png', width: '128px' },
-        { src: '/images/client_logo4.jpg', width: '94px' },
-        { src: '/images/client_logo1.png', width: '200px' },
-        { src: '/images/client_logo2.png', width: '67px' },
-        { src: '/images/client_logo3.png', width: '128px' },
-        { src: '/images/client_logo4.jpg', width: '94px' },
-        { src: '/images/client_logo4.jpg', width: '94px' },
-        { src: '/images/client_logo4.jpg', width: '94px' },
-        { src: '/images/client_logo4.jpg', width: '94px' },
-        { src: '/images/client_logo4.jpg', width: '94px' },
+        { src: '/images/trusted-by/verizon-wireless.png', width: '150px', alt: 'Verizon Wireless' },
+        { src: '/images/trusted-by/toyota.jpg', width: '94px', alt: 'Toyota' },
+        { src: '/images/trusted-by/hp.png', width: '67px', alt: 'Hewlett-Packard' },
+        { src: '/images/trusted-by/microsoft.jpg', width: '150px', alt: 'Microsoft' },
+        { src: '/images/trusted-by/alcoa.png', width: '150px', alt: 'Alcoa' },
+        { src: '/images/trusted-by/ebay.png', width: '200px', alt: 'eBay' },
+        { src: '/images/trusted-by/best-buy.png', width: '150px', alt: 'Best Buy' },
+        { src: '/images/trusted-by/procter-gamble.png', width: '128px', alt: 'Procter & Gamble' },
+        { src: '/images/trusted-by/coca-cola.png', width: '150px', alt: 'Coca-Cola' },
+        { src: '/images/trusted-by/dell.png', width: '150px', alt: 'Dell' },
+        { src: '/images/trusted-by/kroger.png', width: '150px', alt: 'Kroger' },
+        { src: '/images/trusted-by/mcdonalds.png', width: '150px', alt: 'McDonalds' },
     ];
     return (
         <section className="sm:py-[36px] pb-[36px]">
@@ -63,7 +63,7 @@ function ClientLogo() {
                 >
                     {slides.map((slide, i) => (
                         <SwiperSlide key={i}>
-                            <img src={slide.src} alt={`Slide ${i + 1}`} className="mx-auto" style={{ width: slide.width }}/>
+                            <img src={slide.src} alt={slide.alt || `Client logo ${i + 1}`} className="mx-auto" style={{ width: slide.width }}/>
                         </SwiperSlide>
                     ))}
                 </Swiper>

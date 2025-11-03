@@ -37,7 +37,7 @@ function Checkout() {
                 <div className="wrapper 2xl:px-0 px-[15px]">
                     <ul className="flex gap-[5px] items-center ">
                         <li className="flex items-center gap-1">
-                            <Link href="" className="text-[16px] leading-[16px] font-semibold text-[#111111CC]  hover:text-accent">Home</Link> <span>-</span>
+                            <Link href="/" className="text-[16px] leading-[16px] font-semibold text-[#111111CC]  hover:text-accent">Home</Link> <span>-</span>
                         </li>
                         <li className="flex items-center gap-1 text-[#111111] font-black">Add to Cart</li>
                     </ul>
@@ -135,9 +135,11 @@ function Checkout() {
                                         <span className="sm:text-[16px] text-[14px]">${subtotal.toLocaleString()}</span>
                                     </div>
 
-                                    <Button variant="secondary" className="w-full h-auto bg-foreground font-bold  text-white py-[12px] sm:text-[16px] text-[14px] cursor-pointer">
-                                        Proceed to Checkout <ArrowRight />
-                                    </Button>
+                                    <Link href="/checkout">
+                                        <Button variant="secondary" className="w-full h-auto bg-foreground font-bold  text-white py-[12px] sm:text-[16px] text-[14px] cursor-pointer">
+                                            Proceed to Checkout <ArrowRight />
+                                        </Button>
+                                    </Link>
                                 </CardContent>
                             </Card>
                         </div>

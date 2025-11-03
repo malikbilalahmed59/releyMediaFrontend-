@@ -1,6 +1,8 @@
 import React from 'react';
 import Image from "next/image";
-import services_img1 from "../../../public/images/services_img1.jpg";
+import services_img1 from "../../../public/images/hero-section/services_img1.jpg";
+import group_people from "../../../public/images/hero-section/group people.jpg";
+import ecommerce_store from "../../../public/images/hero-section/ecorce store owner.jpg";
 
 function Services() {
     const content = [
@@ -10,12 +12,12 @@ function Services() {
             description: "Have a tight budget or deadline? Save time and let RELYmedia provide options to meet your exact needs.",
         },
         {
-            image: services_img1,
+            image: group_people,
             title: "Need creative marketing materials?",
             description: "From concept to delivery, our team designs engaging print and digital assets tailored for your brand.",
         },
         {
-            image: services_img1,
+            image: ecommerce_store,
             title: "Looking for reliable fulfillment?",
             description: "We handle storage, kitting, and shipping so you can focus on growing your business stress-free.",
         },

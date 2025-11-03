@@ -19,20 +19,20 @@ function ShopCategories() {
                 <h6 className="text-center  font-semibold pb-[16px] text-[20px] leading-[20px]">Product Category</h6>
                 <Separator className="mx-[10px" />
                 <div className="space-y-[13px] mt-[13px]">
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Apparel <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Pens & Writing <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Drinkware <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Bags <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Technology & Flash Drives <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Auto, Home & Tools <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Outdoor, Leisure & Toys <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Office & Awards <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Health & Safety <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Trade Shows & Events <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Stationary & Folders <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Clearance <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">24 Hour Rush <ArrowRight /></Link>
-                    <Link href="/single-products" className="flex items-center justify-between w-full hover:text-accent">Made in the USA <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Apparel <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Pens & Writing <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Drinkware <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Bags <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Technology & Flash Drives <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Auto, Home & Tools <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Outdoor, Leisure & Toys <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Office & Awards <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Health & Safety <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Trade Shows & Events <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Stationary & Folders <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Clearance <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">24 Hour Rush <ArrowRight /></Link>
+                    <Link href="/products" className="flex items-center justify-between w-full hover:text-accent">Made in the USA <ArrowRight /></Link>
                 </div>
             </PopoverContent>
         </Popover>

@@ -23,22 +23,22 @@ import categories_img16 from "../../../public/images/categories_img16.png";
 function ProductCategories() {
     // ✅ Centralized category data with correct links
     const categories = [
-        { name: "Apparel", img: categories_img1, link: "/single-products" },
-        { name: "Pens & Writing", img: categories_img2, link: "/single-products" },
-        { name: "Drinkware", img: categories_img3, link: "/single-products" },
-        { name: "Bags", img: categories_img4, link: "/single-products" },
-        { name: "Technology & Flash Drives", img: categories_img5, link: "/single-products" },
-        { name: "Auto, Home & Tools", img: categories_img6, link: "/single-products" },
-        { name: "Outdoor, Leisure & Toys", img: categories_img7, link: "/single-products" },
-        { name: "Office & Awards", img: categories_img8, link: "/single-products" },
-        { name: "Health & Safety", img: categories_img9, link: "/single-products" },
-        { name: "Trade Shows & Events", img: categories_img10, link: "/single-products" },
-        { name: "Stationery & Folders", img: categories_img11, link: "/single-products" },
-        { name: "Food, Candy & Water", img: categories_img12, link: "/single-products" },
-        { name: "Clearance", img: categories_img13, link: "/single-products" },
-        { name: "24 Hour Rush", img: categories_img14, link: "/single-products" },
-        { name: "Made in the USA", img: categories_img15, link: "/single-products" },
-        { name: "Eco Friendly & Sustainable", img: categories_img16, link: "/single-products" },
+        { name: "Apparel", img: categories_img1, link: "/products" },
+        { name: "Pens & Writing", img: categories_img2, link: "/products" },
+        { name: "Drinkware", img: categories_img3, link: "/products" },
+        { name: "Bags", img: categories_img4, link: "/products" },
+        { name: "Technology & Flash Drives", img: categories_img5, link: "/products" },
+        { name: "Auto, Home & Tools", img: categories_img6, link: "/products" },
+        { name: "Outdoor, Leisure & Toys", img: categories_img7, link: "/products" },
+        { name: "Office & Awards", img: categories_img8, link: "/products" },
+        { name: "Health & Safety", img: categories_img9, link: "/products" },
+        { name: "Trade Shows & Events", img: categories_img10, link: "/products" },
+        { name: "Stationery & Folders", img: categories_img11, link: "/products" },
+        { name: "Food, Candy & Water", img: categories_img12, link: "/products" },
+        { name: "Clearance", img: categories_img13, link: "/products" },
+        { name: "24 Hour Rush", img: categories_img14, link: "/products" },
+        { name: "Made in the USA", img: categories_img15, link: "/products" },
+        { name: "Eco Friendly & Sustainable", img: categories_img16, link: "/products" },
     ];
 
     return (

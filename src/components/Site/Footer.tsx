@@ -105,7 +105,7 @@ function Footer() {
                  justify-between">
                     {/* Logo + tagline + social */}
                     <div className="lg:col-auto col-span-full lg:text-left text-center lg:mb-0 mb-[20px]">
-                        <Link href="#" className="sm:mb-[20px] mb-[10px] inline-block">
+                        <Link href="/" className="sm:mb-[20px] mb-[10px] inline-block">
                             <figure>
                                 <Image src={footer_logo} alt="footer_logo" className="sm:w-auto w-[120px]"/>
                             </figure>

@@ -19,7 +19,7 @@ function Page() {
                             <li className="flex items-center gap-1 justify-center">
                                 <Link
                                 className="text-[16px] leading-[16px] font-semibold   hover:text-accent"
-                                href="">Home</Link> <span>-</span></li>
+                                href="/">Home</Link> <span>-</span></li>
                             <li className="flex items-center gap-1  font-black">Sign In</li>
                         </ul>
                         <h1 className="font-bold 2xl:text-[55px] 2xl:leading-[65px] xl:text-[48px] xl:leading-[54px] lg:text-[42px] sm:text-[36px] text-[30px] leading-[38px] sm:leading-[42px] lg:leading-[48px] mb-[11px]">Sign In to Your Account. </h1>

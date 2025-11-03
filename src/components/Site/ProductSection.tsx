@@ -37,7 +37,7 @@ export default function ProductSection() {
             <div className="wrapper 2xl:px-0 px-[15px]">
                 <ul className="flex gap-[5px] items-center mb-[11px]">
                     <li className="flex items-center gap-1">
-                        <Link href="" className="text-[16px] leading-[16px] font-semibold text-[#111111CC]  hover:text-accent">Home</Link> <span>-</span>
+                        <Link href="/" className="text-[16px] leading-[16px] font-semibold text-[#111111CC]  hover:text-accent">Home</Link> <span>-</span>
                     </li>
                     <li className="flex items-center gap-1 text-[#111111] font-black">Products</li>
                 </ul>
@@ -150,12 +150,16 @@ export default function ProductSection() {
 
 
                         <div className="flex gap-3 xl:mb-6 mb-4">
-                            <Button
-                                className="flex-1 bg-foreground md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer"
-                                variant="secondary">Add to Cart</Button>
-                            <Button variant="outline"
-                                    className="flex-1 md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer hover:text-white">Buy
-                                Now</Button>
+                            <Link href="/cart">
+                                <Button
+                                    className="flex-1 bg-foreground md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer"
+                                    variant="secondary">Add to Cart</Button>
+                            </Link>
+                            <Link href="/checkout">
+                                <Button variant="outline"
+                                        className="flex-1 md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer hover:text-white">Buy
+                                    Now</Button>
+                            </Link>
                         </div>
 
                         <div className="space-y-[25px]">

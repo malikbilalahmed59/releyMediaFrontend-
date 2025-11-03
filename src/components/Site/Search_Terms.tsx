@@ -14,14 +14,14 @@ function SearchTerms() {
     const data = {
         sectionTitle: "Popular Search Terms",
         items: [
-            {  img: categories_img9, title: "Health & Safety", link: "/single-products" },
-            {  img: categories_img3, title: "Drinkware", link: "/single-products" },
-            {  img: categories_img11, title: "Stationary & Folders", link: "/single-products" },
-            { img: categories_img12, title: "Food, Candy & Water", link: "/single-products" },
-            {  img: categories_img4, title: "Bags", link: "/single-products" },
-            {  img: categories_img7, title: "Outdoor, Leisure & Toys", link: "/single-products" },
-            {  img: categories_img15, title: "Made in the USA", link: "/single-products" },
-            { img: categories_img2, title: "Pens & Writing", link: "/single-products" },
+            {  img: categories_img9, title: "Health & Safety", link: "/products" },
+            {  img: categories_img3, title: "Drinkware", link: "/products" },
+            {  img: categories_img11, title: "Stationary & Folders", link: "/products" },
+            { img: categories_img12, title: "Food, Candy & Water", link: "/products" },
+            {  img: categories_img4, title: "Bags", link: "/products" },
+            {  img: categories_img7, title: "Outdoor, Leisure & Toys", link: "/products" },
+            {  img: categories_img15, title: "Made in the USA", link: "/products" },
+            { img: categories_img2, title: "Pens & Writing", link: "/products" },
         ],
     };
 

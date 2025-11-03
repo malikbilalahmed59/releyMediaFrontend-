@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,9 +20,11 @@ export default function CheckoutForm() {
             <div className="sm:pt-[40px] pt-[20px]">
                 <div className="wrapper  2xl:px-0 px-[15px]">
                     <ul className="flex gap-[5px] items-center ">
-                        <li className="flex items-center gap-1"><a
-                            className="text-[16px] leading-[16px] font-semibold text-[#111111CC]  hover:text-accent"
-                            href="">Home</a> <span>-</span></li>
+                        <li className="flex items-center gap-1">
+                            <Link
+                                className="text-[16px] leading-[16px] font-semibold text-[#111111CC]  hover:text-accent"
+                                href="/">Home</Link> <span>-</span>
+                        </li>
                         <li className="flex items-center gap-1 text-[#111111] font-black">Check out</li>
                     </ul>
                 </div>

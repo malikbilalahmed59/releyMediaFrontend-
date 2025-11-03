@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from "next/image";
+import Link from "next/link";
 import pen from "../../../public/images/pen.png";
 import { Button } from "@/components/ui/button";
 import { MoveRight, ShoppingCart } from "lucide-react";
@@ -43,15 +44,19 @@ function BuyCart() {
                     <span className="text-[15px] leading-[15px] block mb-[10px]">{item.description}</span>
                     <div className="font-black text-[22px] leading-[22px] mb-[28px]">{item.price}</div>
                     <div className="flex gap-[10px]">
-                        <Button className="sm:text-[16px] text-[14px] leading-[16px] font-bold cursor-pointer h-auto md:py-[17px] py-[10px] 2xl:!px-[61px] !px-[40px] rounded-[12px]">
-                            Buy Now <MoveRight size={24} />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="text-[16px] leading-[16px] font-bold cursor-pointer rounded-[12px] border-foreground md:h-[50px] h-[46px] w-[46px] md:w-[50px] bg-transparent hover:bg-transparent"
-                        >
-                            <ShoppingCart className="text-foreground" />
-                        </Button>
+                        <Link href="/checkout">
+                            <Button className="sm:text-[16px] text-[14px] leading-[16px] font-bold cursor-pointer h-auto md:py-[17px] py-[10px] 2xl:!px-[61px] !px-[40px] rounded-[12px]">
+                                Buy Now <MoveRight size={24} />
+                            </Button>
+                        </Link>
+                        <Link href="/cart">
+                            <Button
+                                variant="outline"
+                                className="text-[16px] leading-[16px] font-bold cursor-pointer rounded-[12px] border-foreground md:h-[50px] h-[46px] w-[46px] md:w-[50px] bg-transparent hover:bg-transparent"
+                            >
+                                <ShoppingCart className="text-foreground" />
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             ))}

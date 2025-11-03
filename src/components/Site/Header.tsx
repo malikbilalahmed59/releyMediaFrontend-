@@ -39,7 +39,7 @@ function Header() {
                 <div className="wrapper 2xl:px-0 px-[15px]">
                     <div className="flex justify-between sm:gap-0 gap-5">
                         <div className="flex items-end xl:gap-[35px] sm:gap-[20px] gap-[10px]">
-                            <Link href="">
+                            <Link href="/">
                                 <figure>
                                     <Image src={relymedia_logo} alt="relymedia_logo" width={163} height={50}/>
                                 </figure>
