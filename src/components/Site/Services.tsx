@@ -13,13 +13,13 @@ function Services() {
         },
         {
             image: group_people,
-            title: "Need creative marketing materials?",
-            description: "From concept to delivery, our team designs engaging print and digital assets tailored for your brand.",
+            title: "Missing artwork?",
+            description: "We have graphic designers on staff and provide free proofs on every order.",
         },
         {
             image: ecommerce_store,
-            title: "Looking for reliable fulfillment?",
-            description: "We handle storage, kitting, and shipping so you can focus on growing your business stress-free.",
+            title: "Need a sample?",
+            description: "Contact us today and get a free sample on any item.",
         },
     ];
 
