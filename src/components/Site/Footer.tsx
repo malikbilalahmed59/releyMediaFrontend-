@@ -132,14 +132,17 @@ function Footer() {
                                 {section.title}
                             </h5>
                             <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font">
-                                {section.links.map((link, i) => (
-                                    <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
-                                        <Link href={link.url} className="flex gap-[10px]">
-                                            {link.icon && <link.icon size={20} />}
-                                            {link.label}
-                                        </Link>
-                                    </li>
-                                ))}
+                                {section.links.map((link, i) => {
+                                    const Icon = 'icon' in link ? link.icon : null;
+                                    return (
+                                        <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
+                                            <Link href={link.url} className="flex gap-[10px]">
+                                                {Icon && <Icon size={20} />}
+                                                {link.label}
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </div>
                     ))}
