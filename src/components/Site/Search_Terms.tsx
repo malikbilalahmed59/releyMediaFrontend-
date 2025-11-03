@@ -1,20 +1,27 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import popular_img1 from "../../../public/images/popular_img1.png";
+import categories_img3 from "../../../public/images/categories_img3.png";
+import categories_img11 from "../../../public/images/categories_img11.png";
+import categories_img12 from "../../../public/images/categories_img12.png";
+import categories_img2 from "../../../public/images/categories_img2.png";
+import categories_img15 from "../../../public/images/categories_img15.png";
+import categories_img7 from "../../../public/images/categories_img7.png";
+import categories_img4 from "../../../public/images/categories_img4.png";
+import categories_img9 from "../../../public/images/categories_img9.png";
 
 function SearchTerms() {
     const data = {
         sectionTitle: "Popular Search Terms",
         items: [
-            {  img: popular_img1, title: "Health & Safety", link: "/search/health-safety" },
-            {  img: popular_img1, title: "Construction", link: "/search/construction" },
-            {  img: popular_img1, title: "Technology", link: "/search/technology" },
-            { img: popular_img1, title: "Education", link: "/search/education" },
-            {  img: popular_img1, title: "Finance", link: "/search/finance" },
-            {  img: popular_img1, title: "Hospitality", link: "/search/hospitality" },
-            {  img: popular_img1, title: "Engineering", link: "/search/engineering" },
-            { img: popular_img1, title: "Transportation", link: "/search/transportation" },
+            {  img: categories_img9, title: "Health & Safety", link: "/single-products" },
+            {  img: categories_img3, title: "Drinkware", link: "/single-products" },
+            {  img: categories_img11, title: "Stationary & Folders", link: "/single-products" },
+            { img: categories_img12, title: "Food, Candy & Water", link: "/single-products" },
+            {  img: categories_img4, title: "Bags", link: "/single-products" },
+            {  img: categories_img7, title: "Outdoor, Leisure & Toys", link: "/single-products" },
+            {  img: categories_img15, title: "Made in the USA", link: "/single-products" },
+            { img: categories_img2, title: "Pens & Writing", link: "/single-products" },
         ],
     };
 
@@ -29,8 +36,8 @@ function SearchTerms() {
                     {data.items.map((item, index) => (
                         <div key={index} className="text-center">
                             <Link href={item.link}>
-                                <figure className="bg-gradient h-[138px] md:p-0 p-[20px] xl:w-[138px] flex items-center justify-center rounded-[17px] mx-auto transition-transform hover:scale-105">
-                                    <Image src={item.img} alt={item.title} />
+                                <figure className="bg-gradient h-[138px] p-[20px] xl:w-[138px] flex items-center justify-center rounded-[17px] mx-auto transition-transform hover:scale-105">
+                                    <Image src={item.img} alt={item.title} className="w-full h-full object-contain"/>
                                 </figure>
                                 <span className="block font-semibold lg:text-[18px] text-[14px] leading-[18px] mt-[14px]">{item.title}</span>
                             </Link>

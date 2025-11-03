@@ -27,11 +27,17 @@ function CustomerFeedback() {
             title: "Procurement Manager, Nova Corp",
             rating: 4.5,
             text: "The sales staff had great suggestions and were very helpful in the process to, in the end, get exactly what was necessary for our use!",
-            image: "/images/mike-larson.png",
+            image: "/images/Jana.png",
         },
         {
             name: "Sarah",
             title: "Brand Strategist, BlueWave Marketing",
+            rating: 4.5,
+            text: "Everything went well as anticipated, and as planned. Service was superb & shipment was expedited in a speedy fashion! Thank you for your service!",
+            image: "/images/Sarah.png",
+        },
+        {
+            name: "Sarah",
             rating: 4.5,
             text: "Everything went well as anticipated, and as planned. Service was superb & shipment was expedited in a speedy fashion! Thank you for your service!",
             image: "/images/mike-larson.png",
@@ -41,14 +47,7 @@ function CustomerFeedback() {
             title: "Brand Strategist, BlueWave Marketing",
             rating: 4.5,
             text: "Everything went well as anticipated, and as planned. Service was superb & shipment was expedited in a speedy fashion! Thank you for your service!",
-            image: "/images/mike-larson.png",
-        },
-        {
-            name: "Sarah",
-            title: "Brand Strategist, BlueWave Marketing",
-            rating: 4.5,
-            text: "Everything went well as anticipated, and as planned. Service was superb & shipment was expedited in a speedy fashion! Thank you for your service!",
-            image: "/images/mike-larson.png",
+            image: "/images/Sarah.png",
         },
     ];
 

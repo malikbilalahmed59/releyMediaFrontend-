@@ -15,7 +15,7 @@ function MainBanner() {
     };
 
     return (
-        <section className="w-[calc(100%-40px)] bg-[url(/images/home_banner_img.png)] bg-no-repeat bg-fixed bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px]">
+        <section className="w-[calc(100%-40px)] bg-[url(/images/home_banner_img.png)] bg-no-repeat  bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px]">
             <div className="wrapper 2xl:px-0 px-[15px]">
                 <div className="grid lg:grid-cols-[55%_44.75%] gap-y-6 justify-between">
                     <div className="text-white">

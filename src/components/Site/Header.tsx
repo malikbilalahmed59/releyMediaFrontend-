@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
+import ShopCategories from "@/components/Site/ShopCategories";
 
 function Header() {
     return (
@@ -22,8 +23,8 @@ function Header() {
                 <div className="wrapper  2xl:px-0 px-[15px]">
                     <div className="flex lg:justify-between justify-center">
                         <ul className="flex xl:gap-[24px] gap-[10px] items-center">
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="" className="flex items-center "><Mail className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> sales@relymedia.com</Link></li>
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="" className="flex items-center "><Phone className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> 1-866-476-2095</Link></li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="" className="flex items-center"><Mail className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> sales@relymedia.com</Link></li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="" className="flex items-center"><Phone className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> 1-866-476-2095</Link></li>
                             <li className="xl:text-[15px] text-[13px] leading-[15px] md:inline-block hidden">Speak to a Representative Immediately — Current Status: <strong>No Wait!</strong></li>
                         </ul>
                         <ul className="lg:flex hidden xl:gap-[30px] gap-[10px] items-center ">
@@ -32,7 +33,6 @@ function Header() {
                             <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="">Clearance</Link></li>
                         </ul>
                     </div>
-
                 </div>
             </div>
             <header className="py-[16px]">
@@ -45,29 +45,30 @@ function Header() {
                                 </figure>
                             </Link>
                             <div>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" className="cursor-pointer xl:text-[16px] sm:text-[14px] text-[12px]  font-semibold h-auto xl:py-[11px] sm:py-[8px] py-[6px] xl:px-[28px] lg:px-[18px] px-[10px] hover:bg-transpaernt ">Shop All Categories   <ChevronDown /></Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="w-auto" align="start">
-                                        <DropdownMenuLabel className="text-center  font-semibold py-[10px]">Product Category</DropdownMenuLabel>
-                                        <DropdownMenuSeparator className="mx-[10px]"/>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Apparel <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Pens & Writing <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Drinkware <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Bags <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Technology & Flash Drives <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Auto, Home & Tools <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Outdoor, Leisure & Toys <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Office & Awards <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Health & Safety <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Trade Shows & Events <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Stationary & Folders <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Clearance <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">24 Hour Rush <ArrowRight /></Link></DropdownMenuItem>
-                                        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Made in the USA <ArrowRight /></Link></DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                {/*<DropdownMenu>*/}
+                                {/*    <DropdownMenuTrigger asChild>*/}
+                                {/*        <Button variant="outline" className="cursor-pointer xl:text-[16px] sm:text-[14px] text-[12px]  font-semibold h-auto xl:py-[11px] sm:py-[8px] py-[6px] xl:px-[28px] lg:px-[18px] px-[10px] hover:bg-transpaernt ">Shop All Categories   <ChevronDown /></Button>*/}
+                                {/*    </DropdownMenuTrigger>*/}
+                                {/*    <DropdownMenuContent className="w-auto" align="start">*/}
+                                {/*        <DropdownMenuLabel className="text-center  font-semibold py-[10px]">Product Category</DropdownMenuLabel>*/}
+                                {/*        <DropdownMenuSeparator className="mx-[10px]"/>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Apparel <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Pens & Writing <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Drinkware <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Bags <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Technology & Flash Drives <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Auto, Home & Tools <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Outdoor, Leisure & Toys <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Office & Awards <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Health & Safety <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Trade Shows & Events <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Stationary & Folders <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Clearance <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">24 Hour Rush <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*        <DropdownMenuItem><Link href="#" className="flex items-center justify-between w-full">Made in the USA <ArrowRight /></Link></DropdownMenuItem>*/}
+                                {/*    </DropdownMenuContent>*/}
+                                {/*</DropdownMenu>*/}
+                                <ShopCategories/>
                             </div>
                         </div>
                         <div className="flex items-center lg:gap-[12px] gap-[6px]">

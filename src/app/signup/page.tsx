@@ -11,7 +11,7 @@ function Page() {
     return (
         <>
             <Header/>
-            <section className="relative banner_layers w-[calc(100%-40px)] bg-no-repeat bg-fixed bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[82px] xl:py-[64px] py-[54px] bg-[url(/images/contact-banner.jpg)]">
+            <section className="relative banner_layers w-[calc(100%-40px)] bg-no-repeat  bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[82px] xl:py-[64px] py-[54px] bg-[url(/images/contact-banner.jpg)]">
                 <div className="wrapper relative z-10">
                     <div className="text-center text-white">
                         <ul className="flex gap-[5px] items-center justify-center xl:mb-[8px] sm:mb-[5px]">

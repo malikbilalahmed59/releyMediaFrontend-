@@ -21,7 +21,7 @@ function Products_Banner() {
 
     return (
         <section
-            className="w-[calc(100%-40px)] bg-no-repeat bg-fixed bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px]"
+            className="w-[calc(100%-40px)] bg-no-repeat bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px]"
             style={{ backgroundImage: `url(${bannerData.backgroundImage})` }}
         >
             <div className="wrapper 2xl:px-0 px-[15px]">
