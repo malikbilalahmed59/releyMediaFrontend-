@@ -97,7 +97,8 @@ export default function CheckoutForm() {
                                         <Label className="form-label">CVV</Label>
                                         <Input placeholder="768" className="form-input" />
                                     </div>
-                                    <Button variant="secondary" className="w-full h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] cursor-pointer bg-foreground text-white xl:mt-[16px] mt-[10px]">
+                                    <Button variant="secondary" className="w-full h-auto font-bold text-[16px] 2xl:py-[18px]
+                                     lg:py-[16px] py-[14px] cursor-pointer bg-foreground text-white xl:mt-[16px] mt-[10px]">
                                         Pay Now
                                     </Button>
                                 </CardContent>

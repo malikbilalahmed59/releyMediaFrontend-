@@ -78,7 +78,7 @@ function Header() {
                             </div>
                             <ul className="flex lg:gap-[12px] gap-[6px]">
                                 <li><Link href="" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px] relative"><ShoppingBasket /> <span className="absolute top-1/2 -translate-y-1/2 right-[10px] w-[12px] h-[12px] bg-[#987727] flex items-center justify-center rounded-full text-[8px] text-white">6</span></Link></li>
-                                <li><Link href="" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"><User /></Link></li>
+                                <li><Link href="profile" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"><User /></Link></li>
                             </ul>
                         </div>
                     </div>
