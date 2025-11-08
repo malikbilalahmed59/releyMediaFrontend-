@@ -73,7 +73,7 @@ function Header() {
                         </div>
                         <div className="flex items-center lg:gap-[12px] gap-[6px]">
                             <div className="md:flex hidden items-center xl:w-[506px] lg:w-[400px] w-[280px] relative">
-                                <Input type="text" placeholder="Search Products, e.g. stainless tubler" className="border border-[#DEDEDE] text-[16px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"/>
+                                <Input type="text" placeholder="Search Products, e.g. stainless tumbler" className="border border-[#DEDEDE] text-[16px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"/>
                                 <Button type="submit" variant="secondary" className="absolute right-0 rounded-none lg:h-[48px] h-[40px] rounded-tr-[10px] rounded-br-[10px] lg:w-[54px] w-[40px] cursor-pointer"><Search /></Button>
                             </div>
                             <ul className="flex lg:gap-[12px] gap-[6px]">
@@ -83,7 +83,7 @@ function Header() {
                         </div>
                     </div>
                     <div className="md:hidden flex items-center w-full mt-4 relative">
-                        <Input type="text" placeholder="Search Products, e.g. stainless tubler" className="border border-[#DEDEDE] sm:text-[16px] text-[14px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"/>
+                        <Input type="text" placeholder="Search Products, e.g. stainless tumbler" className="border border-[#DEDEDE] sm:text-[16px] text-[14px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"/>
                         <Button type="submit" variant="secondary" className="absolute right-0 rounded-none lg:h-[48px] h-[40px] rounded-tr-[10px] rounded-br-[10px] lg:w-[54px] w-[40px] cursor-pointer"><Search /></Button>
                     </div>
                 </div>

@@ -2,7 +2,7 @@ import React from 'react';
 import Image from "next/image";
 import services_img1 from "../../../public/images/hero-section/services_img1.jpg";
 import group_people from "../../../public/images/hero-section/group people.jpg";
-import ecommerce_store from "../../../public/images/hero-section/ecorce store owner.jpg";
+import ecommerce_store from "../../../public/images/hero-section/ecommerce store owner.jpg";
 
 function Services() {
     const content = [
