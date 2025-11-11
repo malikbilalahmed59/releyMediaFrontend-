@@ -402,8 +402,24 @@ export async function getProductDetail(productId: string): Promise<ProductDetail
       if (response.status === 404) {
         throw new Error(`Product not found: ${productId}`);
       }
-      const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(errorData.error || `API Error: ${response.status} ${response.statusText}`);
+      
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        const errorText = await response.text();
+        errorData = { error: response.statusText, details: errorText };
+      }
+      
+      const errorMessage = errorData.error || errorData.details || `API Error: ${response.status} ${response.statusText}`;
+      console.error('Product detail API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+        url
+      });
+      
+      throw new Error(errorMessage);
     }
     
     return await response.json();

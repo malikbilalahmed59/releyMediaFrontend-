@@ -47,12 +47,30 @@ function BuyCart({ products = [], totalCount = 0 }: BuyCartProps) {
     const content = products.map((product) => {
         const fullDescription = product.description || `${product.product_name} - Quality product for your needs`;
         const productImage = getProductImage(product);
+        
+        // Format price with null checks
+        let priceDisplay = 'Price on request';
+        const minPrice = product.min_price != null ? Number(product.min_price) : null;
+        const maxPrice = product.max_price != null ? Number(product.max_price) : null;
+        
+        if (minPrice != null && maxPrice != null && !isNaN(minPrice) && !isNaN(maxPrice)) {
+            if (maxPrice !== minPrice) {
+                priceDisplay = `$${minPrice.toFixed(2)} - $${maxPrice.toFixed(2)}`;
+            } else {
+                priceDisplay = `$${minPrice.toFixed(2)}`;
+            }
+        } else if (minPrice != null && !isNaN(minPrice)) {
+            priceDisplay = `$${minPrice.toFixed(2)}+`;
+        } else if (maxPrice != null && !isNaN(maxPrice)) {
+            priceDisplay = `Up to $${maxPrice.toFixed(2)}`;
+        }
+        
         return {
             id: product.id,
             product_id: product.product_id,
             title: product.product_name,
             description: truncateDescription(fullDescription, 100),
-            price: `$${product.min_price.toFixed(2)}${product.max_price !== product.min_price ? ` - $${product.max_price.toFixed(2)}` : ''}`,
+            price: priceDisplay,
             minPrice: product.min_price,
             maxPrice: product.max_price,
             image: productImage,

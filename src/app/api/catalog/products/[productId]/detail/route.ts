@@ -16,14 +16,27 @@ export async function GET(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       cache: 'no-store',
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
+      let errorText = '';
+      try {
+        errorText = await response.text();
+      } catch (e) {
+        errorText = response.statusText;
+      }
+      
+      console.error(`Backend API Error (${response.status}):`, errorText);
+      
       return NextResponse.json(
-        { error: `API Error: ${response.status} ${response.statusText}`, details: errorText },
+        { 
+          error: `API Error: ${response.status} ${response.statusText}`, 
+          details: errorText,
+          url: url 
+        },
         { status: response.status }
       );
     }
@@ -32,8 +45,15 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error proxying product detail request:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return NextResponse.json(
-      { error: 'Failed to fetch product details', details: error instanceof Error ? error.message : 'Unknown error' },
+      { 
+        error: 'Failed to fetch product details', 
+        details: errorMessage,
+        stack: errorStack
+      },
       { status: 500 }
     );
   }
