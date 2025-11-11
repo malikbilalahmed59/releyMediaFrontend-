@@ -285,7 +285,7 @@ export async function searchProducts(
  */
 export async function getProductsByCategory(
   categoryId: number,
-  params: Omit<SearchQueryParams, 'ordering'> & { subcategory_id?: number } = {}
+  params: SearchQueryParams & { subcategory_id?: number } = {}
 ): Promise<CategoryProductsResponse> {
   const queryString = buildQueryString(params);
   

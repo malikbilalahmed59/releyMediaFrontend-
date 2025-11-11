@@ -41,7 +41,7 @@ function CategoryProductsContent() {
                 
                 // Now fetch products for this category
                 const page = parseInt(searchParams.get('page') || '1');
-                const ordering = (searchParams.get('ordering') as any) || 'newest';
+                const ordering = (searchParams.get('ordering') as 'best_match' | 'newest' | 'most_popular' | 'price_low_high' | 'price_high_low') || 'newest';
                 const minPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
                 const maxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
                 const minQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
@@ -56,7 +56,7 @@ function CategoryProductsContent() {
                 
                 const results = await getProductsByCategory(foundCategory.id, {
                     page,
-                    ordering: ordering as any,
+                    ordering,
                     min_price: minPrice,
                     max_price: maxPrice,
                     min_quantity: minQuantity,
