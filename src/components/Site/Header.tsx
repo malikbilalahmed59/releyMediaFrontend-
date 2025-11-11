@@ -1,5 +1,7 @@
-import React from 'react';
+'use client';
+import React, { useState, FormEvent } from 'react';
 import Link from "next/link";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {Mail, Phone, Search, ShoppingBasket, User} from "lucide-react";
 import Image from "next/image";
 import relymedia_logo from "../../../public/images/relymedia-logo.svg";
@@ -17,20 +19,94 @@ import {Input} from "@/components/ui/input";
 import ShopCategories from "@/components/Site/ShopCategories";
 
 function Header() {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState('');
+    
+    // Check which filters are active
+    const isUsaMade = searchParams.get('usa_made') === 'true';
+    const isClearance = searchParams.get('closeout') === 'true';
+    const isRushService = searchParams.get('rush_service') === 'true';
+    const isProductsPage = pathname === '/products';
+
+    const handleSearch = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (searchQuery.trim()) {
+                router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+            }
+        }
+    };
     return (
         <>
             <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                 <div className="wrapper  2xl:px-0 px-[15px]">
                     <div className="flex lg:justify-between justify-center">
                         <ul className="flex xl:gap-[24px] gap-[10px] items-center">
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="" className="flex items-center"><Mail className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> sales@relymedia.com</Link></li>
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="" className="flex items-center"><Phone className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> 1-866-476-2095</Link></li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]">
+                                <Link href="mailto:sales@relymedia.com" className="flex items-center hover:text-accent transition-colors">
+                                    <Mail className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> sales@relymedia.com
+                                </Link>
+                            </li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]">
+                                <Link href="tel:1-866-476-2095" className="flex items-center hover:text-accent transition-colors">
+                                    <Phone className="text-accent xl:mr-[10px] mr-[5px]" size={18}/> 1-866-476-2095
+                                </Link>
+                            </li>
                             <li className="xl:text-[15px] text-[13px] leading-[15px] md:inline-block hidden">Speak to a Representative Immediately — Current Status: <strong>No Wait!</strong></li>
                         </ul>
                         <ul className="lg:flex hidden xl:gap-[30px] gap-[10px] items-center ">
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href=""><strong>24 </strong> Hour Rush</Link></li>
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="">Made in the USA</Link></li>
-                            <li className="xl:text-[15px] text-[13px] leading-[15px]"><Link href="">Clearance</Link></li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]">
+                                <Link 
+                                    href="/products?rush_service=true"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.push('/products?rush_service=true');
+                                    }}
+                                    className={isRushService ? 'font-bold text-accent' : ''}
+                                >
+                                    <strong>24 </strong> Hour Rush
+                                </Link>
+                            </li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]">
+                                <Link 
+                                    href="/products?usa_made=true"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.push('/products?usa_made=true');
+                                    }}
+                                    className={isUsaMade ? 'font-bold text-accent' : ''}
+                                >
+                                    Made in the USA
+                                </Link>
+                            </li>
+                            <li className="xl:text-[15px] text-[13px] leading-[15px]">
+                                <Link 
+                                    href="/products?closeout=true"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        router.push('/products?closeout=true');
+                                    }}
+                                    className={isClearance ? 'font-bold text-accent' : ''}
+                                >
+                                    Clearance
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -72,20 +148,48 @@ function Header() {
                             </div>
                         </div>
                         <div className="flex items-center lg:gap-[12px] gap-[6px]">
-                            <div className="md:flex hidden items-center xl:w-[506px] lg:w-[400px] w-[280px] relative">
-                                <Input type="text" placeholder="Search Products, e.g. stainless tumbler" className="border border-[#DEDEDE] text-[16px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"/>
-                                <Button type="submit" variant="secondary" className="absolute right-0 rounded-none lg:h-[48px] h-[40px] rounded-tr-[10px] rounded-br-[10px] lg:w-[54px] w-[40px] cursor-pointer"><Search /></Button>
-                            </div>
+                            <form onSubmit={handleSearch} className="md:flex hidden items-center xl:w-[506px] lg:w-[400px] w-[280px] relative">
+                                <Input 
+                                    type="text" 
+                                    placeholder="Search Products, e.g. stainless tumbler" 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    className="border border-[#DEDEDE] text-[16px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"
+                                />
+                                <Button 
+                                    type="submit" 
+                                    onClick={handleButtonClick}
+                                    variant="secondary" 
+                                    className="absolute right-0 rounded-none lg:h-[48px] h-[40px] rounded-tr-[10px] rounded-br-[10px] lg:w-[54px] w-[40px] cursor-pointer"
+                                >
+                                    <Search />
+                                </Button>
+                            </form>
                             <ul className="flex lg:gap-[12px] gap-[6px]">
                                 <li><Link href="" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px] relative"><ShoppingBasket /> <span className="absolute top-1/2 -translate-y-1/2 right-[10px] w-[12px] h-[12px] bg-[#987727] flex items-center justify-center rounded-full text-[8px] text-white">6</span></Link></li>
                                 <li><Link href="profile" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"><User /></Link></li>
                             </ul>
                         </div>
                     </div>
-                    <div className="md:hidden flex items-center w-full mt-4 relative">
-                        <Input type="text" placeholder="Search Products, e.g. stainless tumbler" className="border border-[#DEDEDE] sm:text-[16px] text-[14px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"/>
-                        <Button type="submit" variant="secondary" className="absolute right-0 rounded-none lg:h-[48px] h-[40px] rounded-tr-[10px] rounded-br-[10px] lg:w-[54px] w-[40px] cursor-pointer"><Search /></Button>
-                    </div>
+                    <form onSubmit={handleSearch} className="md:hidden flex items-center w-full mt-4 relative">
+                        <Input 
+                            type="text" 
+                            placeholder="Search Products, e.g. stainless tumbler" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="border border-[#DEDEDE] sm:text-[16px] text-[14px] leading-[16px] text-[#252525] placeholder:text-[#252525] rounded-[10px] lg:py-[15px] py-[11px] pl-[15px] pr-[45px] h-auto focus:outline-none focus-visible:shadow-none"
+                        />
+                        <Button 
+                            type="submit" 
+                            onClick={handleButtonClick}
+                            variant="secondary" 
+                            className="absolute right-0 rounded-none lg:h-[48px] h-[40px] rounded-tr-[10px] rounded-br-[10px] lg:w-[54px] w-[40px] cursor-pointer"
+                        >
+                            <Search />
+                        </Button>
+                    </form>
                 </div>
             </header>
         </>

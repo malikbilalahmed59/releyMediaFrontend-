@@ -1,6 +1,8 @@
+'use client';
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import footer_logo from "../../../public/images/footer_logo.svg";
 import {
     Facebook,
@@ -25,21 +27,21 @@ const footerData = {
         {
             title: "Corporate",
             links: [
-                { label: "About Us", url: "#" },
-                { label: "Contact Us", url: "#" },
-                { label: "Terms of Use", url: "#" },
-                { label: "Privacy Policy", url: "#" },
-                { label: "Sitemap", url: "#" },
+                { label: "About Us", url: "/about-us" },
+                { label: "Contact Us", url: "/contact-us" },
+                { label: "Terms of Use", url: "/terms-of-use" },
+                { label: "Privacy Policy", url: "/privacy-policy" },
+                { label: "Sitemap", url: "/site-map" },
             ],
         },
         {
             title: "Services",
             links: [
-                { label: "ASI Distributors & Other Resellers", url: "#" },
-                { label: "Custom Colors", url: "#" },
-                { label: "Custom Flash Drives", url: "#" },
-                { label: "Data Services", url: "#" },
-                { label: "Imprint Options", url: "#" },
+                { label: "ASI Distributors & Other Resellers", url: "/asi-distributors-resellers" },
+                { label: "Custom Colors", url: "/custom-colors" },
+                { label: "Custom Flash Drives", url: "/custom-flash-drives" },
+                { label: "Data Services", url: "/custom-data-services" },
+                { label: "Imprint Options", url: "/custom-imprint-options" },
             ],
         },
         {
@@ -97,6 +99,8 @@ const footerData = {
 };
 
 function Footer() {
+    const pathname = usePathname();
+    
     return (
         <footer className="bg-[url(/images/footer_bg.jpg)] bg-center bg-cover bg-no-repeat xl:pt-[68px] pt-[58px] relative black_layers">
             <div className="wrapper relative z-10 2xl:px-0 px-[15px]">
@@ -134,9 +138,17 @@ function Footer() {
                             <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font">
                                 {section.links.map((link, i) => {
                                     const Icon = 'icon' in link ? link.icon : null;
+                                    const isActive = pathname === link.url;
                                     return (
                                         <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
-                                            <Link href={link.url} className="flex gap-[10px]">
+                                            <Link 
+                                                href={link.url} 
+                                                className={`flex gap-[10px] transition-colors ${
+                                                    isActive 
+                                                        ? 'font-bold text-accent' 
+                                                        : 'hover:text-accent'
+                                                }`}
+                                            >
                                                 {Icon && <Icon size={20} />}
                                                 {link.label}
                                             </Link>

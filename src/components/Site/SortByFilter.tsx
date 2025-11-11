@@ -1,18 +1,58 @@
-import { useState } from "react"
+'use client';
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { ChevronDown } from "lucide-react"
 
+const orderingMap: Record<string, { label: string; value: string }> = {
+    best: { label: "Best Match", value: "best_match" },
+    newest: { label: "Newest", value: "newest" },
+    popular: { label: "Most Popular", value: "most_popular" },
+    priceLow: { label: "Price: Low to High", value: "price_low_high" },
+    priceHigh: { label: "Price: High to Low", value: "price_high_low" },
+};
+
+const reverseOrderingMap: Record<string, string> = {
+    best_match: "best",
+    newest: "newest",
+    popular: "popular",
+    most_popular: "popular",
+    price_low_high: "priceLow",
+    price_high_low: "priceHigh",
+};
+
 export default function SortByFilter() {
-    const [selected, setSelected] = useState("Best Match")
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const currentOrdering = searchParams.get('ordering') || 'best_match';
+    const currentId = reverseOrderingMap[currentOrdering] || 'best';
+    
+    const [open, setOpen] = useState(false);
+    const [selected, setSelected] = useState(orderingMap[currentId]?.label || "Best Match")
     const [options, setOptions] = useState([
-        { id: "best", label: "Best Match", checked: true },
-        { id: "newest", label: "Newest" },
-        { id: "popular", label: "Most Popular" },
-        { id: "priceLow", label: "Price: Low to High" },
-        { id: "priceHigh", label: "Price: High to Low" },
+        { id: "best", label: "Best Match", checked: currentId === "best" },
+        { id: "newest", label: "Newest", checked: currentId === "newest" },
+        { id: "popular", label: "Most Popular", checked: currentId === "popular" },
+        { id: "priceLow", label: "Price: Low to High", checked: currentId === "priceLow" },
+        { id: "priceHigh", label: "Price: High to Low", checked: currentId === "priceHigh" },
     ])
+
+    useEffect(() => {
+        const currentId = reverseOrderingMap[currentOrdering] || 'best';
+        const selectedOpt = orderingMap[currentId];
+        if (selectedOpt) {
+            setSelected(selectedOpt.label);
+            setOptions([
+                { id: "best", label: "Best Match", checked: currentId === "best" },
+                { id: "newest", label: "Newest", checked: currentId === "newest" },
+                { id: "popular", label: "Most Popular", checked: currentId === "popular" },
+                { id: "priceLow", label: "Price: Low to High", checked: currentId === "priceLow" },
+                { id: "priceHigh", label: "Price: High to Low", checked: currentId === "priceHigh" },
+            ]);
+        }
+    }, [currentOrdering]);
 
     const handleSelect = (id: string) => {
         const updated = options.map((opt) => ({
@@ -22,12 +62,21 @@ export default function SortByFilter() {
         setOptions(updated)
         const selectedOpt = updated.find((opt) => opt.checked)
         setSelected(selectedOpt?.label || "Sort")
+        
+        // Close the popover
+        setOpen(false);
+        
+        // Update URL with new ordering
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('ordering', orderingMap[id].value);
+        params.set('page', '1'); // Reset to first page
+        router.push(`/products?${params.toString()}`);
     }
 
     return (
         <div className="flex items-center gap-[11px] justify-end">
             <span className="font-semibold text-[14px]">Sort By:</span>
-            <Popover>
+            <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
