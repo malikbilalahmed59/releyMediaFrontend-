@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { Suspense } from 'react';
 import Header from "@/components/Site/Header";
 import Footer from "@/components/Site/Footer";
 import Client_Logo from "@/components/Site/Client_Logo";
@@ -7,7 +7,9 @@ import Link from "next/link";
 import ContactPageForm from "@/components/Site/ContactPageForm";
 import Signup_Form from "@/components/Site/Signup_Form";
 
-function Page() {
+export const dynamic = 'force-dynamic';
+
+function SignupContent() {
     return (
         <>
             <Header/>
@@ -33,6 +35,24 @@ function Page() {
             <Footer/>
         </>
 
+    );
+}
+
+function Page() {
+    return (
+        <Suspense fallback={
+            <>
+                <Header/>
+                <div className="py-[50px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading...</div>
+                    </div>
+                </div>
+                <Footer/>
+            </>
+        }>
+            <SignupContent />
+        </Suspense>
     );
 }
 

@@ -143,6 +143,8 @@ function ProductsContent() {
     );
 }
 
+export const dynamic = 'force-dynamic';
+
 function Page() {
     return (
         <Suspense fallback={

@@ -100,22 +100,6 @@ export interface CategoryProductsResponse extends SearchResponse {
   };
 }
 
-export interface PriceTier {
-  quantity_min: number;
-  quantity_max: number | null;
-  price: string;
-  discount_code: string;
-}
-
-export interface PriceGroup {
-  id: number;
-  group_name: string;
-  currency: string;
-  min_price: number;
-  max_price: number;
-  prices: PriceTier[];
-}
-
 export interface Color {
   id: number;
   color_name: string;
@@ -204,7 +188,7 @@ export interface RelevantProduct extends Product {
   // Already has all Product fields
 }
 
-export interface ProductDetail extends Product {
+export interface ProductDetail extends Omit<Product, 'ai_category' | 'ai_subcategory'> {
   description: string;
   distributor_only_info?: string;
   is_caution?: boolean | null;

@@ -139,10 +139,10 @@ function ProductCategories() {
                         <div className="col-span-full text-center py-8">Loading categories...</div>
                     ) : (
                         allCategories.map((category, index) => (
-                            <div key={category.id || category.name || index} className="text-center">
+                            <div key={'id' in category ? category.id : category.name || index} className="text-center">
                                 <Link 
                                     href={category.link}
-                                    onClick={(e) => handleCategoryClick(category.link, category.isFilter, category.filterType || '', e)}
+                                    onClick={(e) => handleCategoryClick(category.link, category.isFilter, ('filterType' in category ? category.filterType : '') || '', e)}
                                 >
                                     <figure
                                         className="bg-gray-100 p-[20px] xl:w-[138px] h-[138px] flex items-center justify-center

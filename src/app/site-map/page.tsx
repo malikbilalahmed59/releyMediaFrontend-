@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import Header from "@/components/Site/Header";
 import Footer from "@/components/Site/Footer";
@@ -7,7 +7,7 @@ import Client_Logo from "@/components/Site/Client_Logo";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import MainBanner from "@/components/Site/Main_Banner";
 
-function Page() {
+function SiteMapContent() {
     const sitemapLinks = [
         {
             title: "Main Pages",
@@ -79,6 +79,27 @@ function Page() {
             <Client_Logo />
             <Footer />
         </>
+    );
+}
+
+export const dynamic = 'force-dynamic';
+
+function Page() {
+    return (
+        <Suspense fallback={
+            <>
+                <Header />
+                <MainBanner />
+                <section className="py-[80px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading...</div>
+                    </div>
+                </section>
+                <Footer />
+            </>
+        }>
+            <SiteMapContent />
+        </Suspense>
     );
 }
 

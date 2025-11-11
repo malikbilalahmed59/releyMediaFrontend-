@@ -273,7 +273,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                     />
                     <Button 
                         variant="secondary" 
-                        onClick={applyFilters}
+                        onClick={() => applyFilters()}
                         className="rounded-[6px] cursor-pointer h-[31px]"
                     >
                         <Play className="h-4 w-4 text-white" />
@@ -302,7 +302,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                     />
                     <Button 
                         variant="secondary" 
-                        onClick={applyFilters}
+                        onClick={() => applyFilters()}
                         className="rounded-[6px] cursor-pointer h-[31px]"
                     >
                         <Play className="h-4 w-4 text-white" />
