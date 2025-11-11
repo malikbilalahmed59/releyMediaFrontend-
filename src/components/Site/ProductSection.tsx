@@ -26,6 +26,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     const [selectedBasePriceTier, setSelectedBasePriceTier] = useState<PriceTier | null>(null);
     const [selectedSetupCharges, setSelectedSetupCharges] = useState<PriceGroup[]>([]);
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
     const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
 
     if (!product) {
@@ -69,11 +70,13 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                     setSelectedPart(firstColor);
                 }
             }
-            // Select first price tier from base cost (first price group)
+            // Initialize quantity to minimum from first price tier
             if (product.price_groups && product.price_groups.length > 0) {
                 const basePriceGroup = product.price_groups[0];
                 if (basePriceGroup.prices && basePriceGroup.prices.length > 0) {
-                    setSelectedBasePriceTier(basePriceGroup.prices[0]);
+                    const firstTier = basePriceGroup.prices[0];
+                    setSelectedQuantity(firstTier.quantity_min || 1);
+                    setSelectedBasePriceTier(firstTier);
                 }
             }
         }
@@ -301,14 +304,59 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     // Discount percentage
     const DISCOUNT_PERCENTAGE = 20;
 
-    // Calculate total price (before discount)
+    // Find matching price tier based on quantity
+    const findMatchingPriceTier = (quantity: number): PriceTier | null => {
+        if (!basePriceGroup || !basePriceGroup.prices || basePriceGroup.prices.length === 0) {
+            return null;
+        }
+
+        // Sort tiers by quantity_min in ascending order to find the highest applicable tier
+        const sortedTiers = [...basePriceGroup.prices].sort((a, b) => a.quantity_min - b.quantity_min);
+
+        let matchingTier: PriceTier | null = null;
+
+        // Find the highest tier where quantity >= minQty
+        for (const tier of sortedTiers) {
+            const minQty = tier.quantity_min;
+            const maxQty = tier.quantity_max;
+
+            // Check if quantity qualifies for this tier
+            if (quantity >= minQty) {
+                // If tier has a max, check if quantity is within range
+                if (maxQty !== null && maxQty !== undefined) {
+                    if (quantity <= maxQty) {
+                        matchingTier = tier;
+                    }
+                } else {
+                    // No max means it's an open-ended tier (e.g., 20000+)
+                    matchingTier = tier;
+                }
+            }
+        }
+
+        // If no match found, use the lowest tier as fallback
+        return matchingTier || sortedTiers[0] || null;
+    };
+
+    // Update selected price tier when quantity changes
+    useMemo(() => {
+        if (basePriceGroup && basePriceGroup.prices && basePriceGroup.prices.length > 0) {
+            const matchingTier = findMatchingPriceTier(selectedQuantity);
+            if (matchingTier && matchingTier !== selectedBasePriceTier) {
+                setSelectedBasePriceTier(matchingTier);
+            }
+        }
+    }, [selectedQuantity, basePriceGroup, selectedBasePriceTier]);
+
+    // Calculate total price (before discount) - multiplied by quantity
     const calculateTotalPrice = (): number => {
         let total = 0;
         if (selectedBasePriceTier) {
-            total += parseFloat(selectedBasePriceTier.price);
+            total += parseFloat(selectedBasePriceTier.price) * selectedQuantity;
         }
         selectedSetupCharges.forEach(group => {
             if (group.prices && group.prices.length > 0) {
+                // Setup charges are typically one-time, not multiplied by quantity
                 total += parseFloat(group.prices[0].price);
             }
         });
@@ -429,6 +477,51 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                     ))}
                             </ul>
                         </div>
+                        )}
+
+                        {/* Product Description */}
+                        <div className="mt-6">
+                            <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Product Description</h3>
+                            <p className="sm:text-[16px] text-[14px] leading-[24px] whitespace-pre-line">
+                                {product.description || 'No description available.'}
+                            </p>
+                        </div>
+
+                        {/* Keywords */}
+                        {product.keywords && product.keywords.length > 0 && (
+                        <div className="mt-6">
+                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Keywords</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {product.keywords.map((keyword, index) => (
+                                            <span
+                                                key={index}
+                                                className="px-3 py-1 bg-gray-100 rounded-full text-[14px] text-foreground"
+                                            >
+                                                {keyword.keyword}
+                                            </span>
+                                        ))}
+                                    </div>
+                            </div>
+                        )}
+
+                        {/* Distributor Info */}
+                        {product.distributor_only_info && (
+                        <div className="mt-6">
+                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Additional Information</h3>
+                                    <p className="sm:text-[16px] text-[14px] leading-[24px]">
+                                        {product.distributor_only_info}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Caution */}
+                        {product.is_caution && product.caution_comment && (
+                            <div className="rounded-lg bg-yellow-50 border-l-4 border-yellow-400 px-4 py-3 mt-6">
+                                <h3 className="font-bold text-[18px] leading-[20px] mb-[5px] text-yellow-800">Caution</h3>
+                                <p className="sm:text-[16px] text-[14px] leading-[24px] text-yellow-700">
+                                    {product.caution_comment}
+                                </p>
+                            </div>
                         )}
                     </div>
 
@@ -615,59 +708,157 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         </div>
                         )}
 
-                        {/* Base Cost Pricing (First Price Group) */}
+                        {/* Quantity Selection */}
                         {basePriceGroup && basePricingOptions.length > 0 && (
                         <div className="xl:mb-6 mb-4">
                                 <label className="block font-semibold mb-[8px] text-[16px] mb-1">
-                                    Base Cost <span className="text-red-500">*</span>
+                                    Quantity <span className="text-red-500">*</span>
                                 </label>
                                 <p className="text-[14px] text-[#666] mb-2">
-                                    Select quantity for base product pricing
+                                    Select quantity (price tier will be automatically selected)
                                 </p>
                                 <div className="mb-2">
                                     <span className="bg-red-500 text-white px-2 py-1 rounded text-[12px] font-bold">
                                         {DISCOUNT_PERCENTAGE}% OFF Applied!
                                     </span>
                                 </div>
-                            <div className="flex gap-[12px] flex-wrap">
-                                    {basePricingOptions.map((tier, index) => {
-                                        const isSelected = selectedBasePriceTier === tier;
-                                        const originalPrice = parseFloat(tier.price);
-                                        const discountedPrice = originalPrice * (1 - DISCOUNT_PERCENTAGE / 100);
-                                        const minQty = tier.quantity_min;
-                                        const maxQty = tier.quantity_max;
-                                        const qtyText = maxQty ? `${minQty}-${maxQty}` : `${minQty}+`;
-                                        return (
-                                    <Button
-                                                key={index}
-                                                variant={isSelected ? 'default' : 'outline'}
-                                                onClick={() => setSelectedBasePriceTier(tier)}
-                                                className={`text-[14px] leading-[16px] rounded-lg cursor-pointer flex flex-col items-start justify-center py-3 px-4 min-h-[70px] transition-all duration-200 shadow-sm
-                                                    ${isSelected 
-                                                        ? 'border-2 border-accent bg-accent text-white hover:bg-accent/90 hover:shadow-md hover:scale-[1.02]' 
-                                                        : 'border border-gray-200 bg-white hover:bg-gray-50 hover:border-accent/50 hover:shadow-sm'}`}
-                                            >
-                                                <span className={`font-semibold text-[15px] mb-1 ${isSelected ? 'text-white' : 'text-foreground'}`}>{qtyText} EA</span>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className={`line-through text-[12px] ${isSelected ? 'text-white/60' : 'text-gray-400'}`}>${originalPrice.toFixed(2)}</span>
-                                                    <span className={`font-bold text-[14px] ${isSelected ? 'text-white' : 'text-accent'}`}>${discountedPrice.toFixed(2)}</span>
-                                                </div>
-                                    </Button>
-                                        );
-                                    })}
-                                </div>
-                                {selectedBasePriceTier && (
-                                    <div className="text-[14px] text-[#666] mt-2">
-                                        <p>
-                                            Base Cost: 
-                                            <span className="line-through text-gray-400 ml-1">${parseFloat(selectedBasePriceTier.price).toFixed(2)}</span>
-                                            <span className="font-semibold text-accent ml-2">
-                                                ${(parseFloat(selectedBasePriceTier.price) * (1 - DISCOUNT_PERCENTAGE / 100)).toFixed(2)}
-                                            </span>
-                                            <span className="text-accent ml-1">({DISCOUNT_PERCENTAGE}% off)</span>
-                                        </p>
+
+                                {/* Price Tiers Table */}
+                                {basePricingOptions.length > 0 && (
+                                    <div className="mb-4">
+                                        <h4 className="font-semibold text-[16px] mb-3">Price Tiers & Discount</h4>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+                                                <thead>
+                                                    <tr className="bg-accent text-white">
+                                                        <th className="border border-gray-300 px-4 py-3 text-left text-[14px] font-semibold">Quantity</th>
+                                                        <th className="border border-gray-300 px-4 py-3 text-left text-[14px] font-semibold">Original Price</th>
+                                                        <th className="border border-gray-300 px-4 py-3 text-left text-[14px] font-semibold">Discounted Price</th>
+                                                        <th className="border border-gray-300 px-4 py-3 text-left text-[14px] font-semibold">Discount</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {basePricingOptions
+                                                        .sort((a, b) => a.quantity_min - b.quantity_min)
+                                                        .map((tier, index) => {
+                                                            const minQty = tier.quantity_min;
+                                                            const maxQty = tier.quantity_max;
+                                                            const qtyText = maxQty 
+                                                                ? `${minQty.toLocaleString()}-${maxQty.toLocaleString()}` 
+                                                                : `${minQty.toLocaleString()}+`;
+                                                            const originalPrice = parseFloat(tier.price);
+                                                            const discountedPrice = originalPrice * (1 - DISCOUNT_PERCENTAGE / 100);
+                                                            const isActive = selectedBasePriceTier === tier;
+                                                            
+                                                            return (
+                                                                <tr 
+                                                                    key={index}
+                                                                    className={`${
+                                                                        isActive 
+                                                                            ? 'bg-accent/10 border-2 border-accent' 
+                                                                            : index % 2 === 0 
+                                                                                ? 'bg-white' 
+                                                                                : 'bg-gray-50'
+                                                                    } hover:bg-accent/5 transition-colors cursor-pointer`}
+                                                                    onClick={() => {
+                                                                        setSelectedBasePriceTier(tier);
+                                                                        setSelectedQuantity(minQty);
+                                                                    }}
+                                                                >
+                                                                    <td className="border border-gray-300 px-4 py-3 text-[14px] font-semibold">
+                                                                        {qtyText}
+                                                                    </td>
+                                                                    <td className="border border-gray-300 px-4 py-3 text-[14px]">
+                                                                        <span className="line-through text-gray-400">
+                                                                            ${originalPrice.toFixed(2)}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="border border-gray-300 px-4 py-3 text-[14px] font-bold text-accent">
+                                                                        ${discountedPrice.toFixed(2)}
+                                                                    </td>
+                                                                    <td className="border border-gray-300 px-4 py-3 text-[14px]">
+                                                                        <span className="bg-red-500 text-white px-2 py-1 rounded text-[12px] font-bold">
+                                                                            {DISCOUNT_PERCENTAGE}% OFF
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 )}
+
+                                {/* Quantity Input - Below Table */}
+                                {basePricingOptions.length > 0 && (() => {
+                                    const minQty = Math.min(...basePricingOptions.map(t => t.quantity_min));
+                                    const maxQty = Math.max(...basePricingOptions.map(t => t.quantity_max || t.quantity_min));
+                                    const inputMax = maxQty > 0 ? maxQty : 10000;
+                                    const inputMin = minQty > 0 ? minQty : 1;
+                                    
+                                    return (
+                                        <div className="mt-6">
+                                            <label className="block font-semibold mb-2 text-[14px]">Enter Quantity</label>
+                                            <div className="flex items-center gap-4 mb-4">
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="number"
+                                                        min={inputMin}
+                                                        max={inputMax}
+                                                        value={selectedQuantity}
+                                                        onChange={(e) => {
+                                                            const value = parseInt(e.target.value) || inputMin;
+                                                            setSelectedQuantity(Math.max(inputMin, Math.min(inputMax, value)));
+                                                        }}
+                                                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-[16px] font-semibold focus:outline-none focus:border-accent transition-colors"
+                                                    />
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setSelectedQuantity(Math.max(inputMin, selectedQuantity - 1));
+                                                        }}
+                                                        className="w-10 h-10 rounded-lg text-[18px] font-bold"
+                                                    >
+                                                        -
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                            setSelectedQuantity(Math.min(inputMax, selectedQuantity + 1));
+                                                        }}
+                                                        className="w-10 h-10 rounded-lg text-[18px] font-bold"
+                                                    >
+                                                        +
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {/* Quantity Range Slider - Below Input */}
+                                            <div className="mt-4">
+                                                <label className="block font-semibold mb-2 text-[14px]">Adjust Quantity</label>
+                                                <input
+                                                    type="range"
+                                                    min={inputMin}
+                                                    max={inputMax}
+                                                    value={selectedQuantity}
+                                                    onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
+                                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent"
+                                                    style={{
+                                                        background: `linear-gradient(to right, #987727 0%, #987727 ${((selectedQuantity - inputMin) / (inputMax - inputMin)) * 100}%, #e5e7eb ${((selectedQuantity - inputMin) / (inputMax - inputMin)) * 100}%, #e5e7eb 100%)`
+                                                    }}
+                                                />
+                                                <div className="flex justify-between text-[12px] text-gray-500 mt-1">
+                                                    <span>{inputMin.toLocaleString()}</span>
+                                                    <span>{Math.floor((inputMin + inputMax) / 2).toLocaleString()}</span>
+                                                    <span>{inputMax.toLocaleString()}+</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
                         )}
 
@@ -760,7 +951,9 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                 
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[16px] font-semibold text-gray-700">Original Price:</span>
+                                        <span className="text-[16px] font-semibold text-gray-700">
+                                            Original Price ({selectedQuantity} units):
+                                        </span>
                                         <span className="text-[20px] font-bold text-gray-500 line-through">
                                             ${calculateTotalPrice().toFixed(2)}
                                         </span>
@@ -774,7 +967,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                     </div>
                                     
                                     <div className="flex items-center justify-between pt-2 border-t-2 border-accent">
-                                        <span className="text-[20px] font-bold text-gray-800">Final Price:</span>
+                                        <span className="text-[20px] font-bold text-gray-800">Final Price ({selectedQuantity} units):</span>
                                         <span className="text-[32px] font-black text-accent">
                                             ${calculateDiscountedPrice().toFixed(2)}
                                         </span>
@@ -807,52 +1000,6 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             </Link>
                         </div>
 
-                        <div className="space-y-[25px]">
-                            {/* Product Description */}
-                            <div>
-                                <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Product Description</h3>
-                                <p className="sm:text-[16px] text-[14px] leading-[24px] whitespace-pre-line">
-                                    {product.description || 'No description available.'}
-                                </p>
-                            </div>
-
-                            {/* Keywords */}
-                            {product.keywords && product.keywords.length > 0 && (
-                            <div>
-                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Keywords</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {product.keywords.map((keyword, index) => (
-                                            <span
-                                                key={index}
-                                                className="px-3 py-1 bg-gray-100 rounded-full text-[14px] text-foreground"
-                                            >
-                                                {keyword.keyword}
-                                            </span>
-                                        ))}
-                                    </div>
-                            </div>
-                            )}
-
-                            {/* Distributor Info */}
-                            {product.distributor_only_info && (
-                            <div>
-                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Additional Information</h3>
-                                    <p className="sm:text-[16px] text-[14px] leading-[24px]">
-                                        {product.distributor_only_info}
-                                </p>
-                            </div>
-                            )}
-
-                            {/* Caution */}
-                            {product.is_caution && product.caution_comment && (
-                                <div className="rounded-lg bg-yellow-50 border-l-4 border-yellow-400 px-4 py-3">
-                                    <h3 className="font-bold text-[18px] leading-[20px] mb-[5px] text-yellow-800">Caution</h3>
-                                    <p className="sm:text-[16px] text-[14px] leading-[24px] text-yellow-700">
-                                        {product.caution_comment}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
             </div>
