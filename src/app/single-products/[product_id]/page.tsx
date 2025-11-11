@@ -62,7 +62,15 @@ function ProductDetailContent() {
                     canonicalUrl={pathname ? `${typeof window !== 'undefined' ? window.location.origin : ''}${pathname}` : undefined}
                 />
             )}
-            <Header/>
+            <Suspense fallback={
+                <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading header...</div>
+                    </div>
+                </div>
+            }>
+                <Header/>
+            </Suspense>
             <MainBanner/>
             {loading && (
                 <div className="py-[50px] pb-[75px]">
@@ -97,7 +105,11 @@ function Page() {
     return (
         <Suspense fallback={
             <>
-                <Header/>
+                <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading header...</div>
+                    </div>
+                </div>
                 <MainBanner/>
                 <div className="py-[50px] pb-[75px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

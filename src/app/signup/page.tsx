@@ -12,7 +12,15 @@ export const dynamic = 'force-dynamic';
 function SignupContent() {
     return (
         <>
-            <Header/>
+            <Suspense fallback={
+                <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading header...</div>
+                    </div>
+                </div>
+            }>
+                <Header/>
+            </Suspense>
             <section className="relative banner_layers w-[calc(100%-40px)] bg-no-repeat  bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[82px] xl:py-[64px] py-[54px] bg-[url(/images/contact-banner.jpg)]">
                 <div className="wrapper relative z-10">
                     <div className="text-center text-white">
@@ -42,7 +50,11 @@ function Page() {
     return (
         <Suspense fallback={
             <>
-                <Header/>
+                <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading header...</div>
+                    </div>
+                </div>
                 <div className="py-[50px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">
                         <div className="text-center">Loading...</div>

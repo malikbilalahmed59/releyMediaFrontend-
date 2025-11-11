@@ -12,7 +12,15 @@ export const dynamic = 'force-dynamic';
 function PortfolioContent() {
     return (
         <>
-            <Header/>
+            <Suspense fallback={
+                <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading header...</div>
+                    </div>
+                </div>
+            }>
+                <Header/>
+            </Suspense>
             <MainBanner/>
             <Portfolio_Items/>
             <Customer_Feedback/>
@@ -27,7 +35,11 @@ function Page() {
     return (
         <Suspense fallback={
             <>
-                <Header/>
+                <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
+                    <div className="wrapper 2xl:px-0 px-[15px]">
+                        <div className="text-center">Loading header...</div>
+                    </div>
+                </div>
                 <MainBanner/>
                 <div className="py-[50px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">
