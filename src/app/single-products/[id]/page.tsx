@@ -15,19 +15,29 @@ import { getProductDetail, type ProductDetail } from '@/lib/api/catalog';
 function ProductDetailContent() {
     const params = useParams();
     const pathname = usePathname();
-    const productId = params.product_id as string;
+    const idParam = params.id as string;
     const [product, setProduct] = useState<ProductDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProduct = async () => {
-            if (!productId) return;
+            if (!idParam) return;
+            
+            // Convert id to number (Django primary key)
+            const productId = parseInt(idParam, 10);
+            if (isNaN(productId)) {
+                setError('Invalid product ID');
+                setLoading(false);
+                return;
+            }
             
             setLoading(true);
             setError(null);
             try {
                 const productData = await getProductDetail(productId);
+                console.log('Product detail API response:', productData);
+                console.log('Available fields:', Object.keys(productData));
                 setProduct(productData);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch product');
@@ -38,7 +48,7 @@ function ProductDetailContent() {
         };
 
         fetchProduct();
-    }, [productId]);
+    }, [idParam]);
 
     // Generate SEO metadata
     const keywords = product?.keywords?.map(k => k.keyword).join(', ') || '';
@@ -125,7 +135,4 @@ function Page() {
 }
 
 export default Page;
-
-
-
 

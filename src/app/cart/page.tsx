@@ -5,7 +5,7 @@ import Footer from "@/components/Site/Footer";
 import MainBanner from "@/components/Site/Main_Banner";
 import Client_Logo from "@/components/Site/Client_Logo";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
-import Checkout from "@/components/Site/Checkout";
+import Cart from "@/components/Site/Cart";
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +22,7 @@ function CartContent() {
                 <Header/>
             </Suspense>
             <MainBanner/>
-            <Checkout/>
+            <Cart/>
             <Client_Logo/>
             <Footer/>
         </>

@@ -1,6 +1,7 @@
 'use client'
 import Link from "next/link"
 import { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Thumbs } from 'swiper/modules'
 import 'swiper/css'
@@ -16,6 +17,12 @@ import {
 import { type ProductDetail, type Part, type PriceGroup, type PriceTier } from '@/lib/api/catalog';
 import { createSlug } from '@/lib/utils/slug';
 import pen from "../../../public/images/pen.png";
+import { useAuth } from '@/contexts/AuthContext';
+import * as accountsAPI from '@/lib/api/accounts';
+import type { UserAddress } from '@/lib/api/accounts';
+import type { CartCustomization } from '@/lib/api/customization';
+import { useToast } from '@/components/ui/toast';
+import CustomizationSelector from '@/components/Site/CustomizationSelector';
 
 interface ProductSectionProps {
     product?: ProductDetail | null;
@@ -28,6 +35,12 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
     const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [selectedCustomizations, setSelectedCustomizations] = useState<CartCustomization[]>([]);
+    const [customizationTotalPrice, setCustomizationTotalPrice] = useState<number>(0);
+    const { isAuthenticated } = useAuth();
+    const router = useRouter();
+    const { addToast } = useToast();
 
     if (!product) {
         return (
@@ -49,12 +62,33 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                 : [pen.src];
 
     // Get colors from parts - group by unique color
+    // Only include parts that have actual color information (primary_color with color_name OR colors array)
+    // DO NOT use part_name as a fallback - only show colors if they actually exist
     const uniqueColors = useMemo(() => {
         const colorMap = new Map<string, Part>();
         product.parts?.forEach(part => {
-            const colorKey = part.primary_color?.color_name || part.part_name || 'default';
-            if (!colorMap.has(colorKey)) {
-                colorMap.set(colorKey, part);
+            // Only consider parts with actual color information
+            // Check if primary_color exists and has a color_name
+            const hasPrimaryColor = part.primary_color && part.primary_color.color_name;
+            // Check if colors array exists and has items
+            const hasColorsArray = part.colors && Array.isArray(part.colors) && part.colors.length > 0;
+            
+            if (hasPrimaryColor || hasColorsArray) {
+                let colorKey: string | null = null;
+                
+                // Prefer primary_color.color_name
+                if (hasPrimaryColor && part.primary_color?.color_name) {
+                    colorKey = part.primary_color.color_name;
+                } 
+                // Fallback to first color in colors array
+                else if (hasColorsArray && part.colors?.[0]?.color_name) {
+                    colorKey = part.colors[0].color_name;
+                }
+                
+                // Only add if we have a valid color key
+                if (colorKey && !colorMap.has(colorKey)) {
+                    colorMap.set(colorKey, part);
+                }
             }
         });
         return Array.from(colorMap.values());
@@ -63,12 +97,15 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     // Initialize selections when product loads
     useMemo(() => {
         if (product) {
-            // Select first unique color part if available
-            if (product.parts && product.parts.length > 0) {
+            // Select first unique color part if available (only if there are actual colors)
+            if (product.parts && product.parts.length > 0 && uniqueColors.length > 0) {
                 const firstColor = uniqueColors[0];
                 if (firstColor) {
                     setSelectedPart(firstColor);
                 }
+            } else if (product.parts && product.parts.length > 0 && uniqueColors.length === 0) {
+                // If no colors but parts exist, don't auto-select any part
+                setSelectedPart(null);
             }
             // Initialize quantity to minimum from first price tier
             if (product.price_groups && product.price_groups.length > 0) {
@@ -284,9 +321,9 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
         const minQty = tier.quantity_min;
         const maxQty = tier.quantity_max;
         const qtyText = maxQty ? `${minQty}-${maxQty}` : `${minQty}+`;
-        const originalPrice = parseFloat(tier.price);
-        const discountedPrice = originalPrice * (1 - DISCOUNT_PERCENTAGE / 100);
-        return `${qtyText} EA : $${originalPrice.toFixed(2)} → $${discountedPrice.toFixed(2)}`;
+        const originalPrice = tier.price ? parseFloat(tier.price) : 0;
+        const discountedPrice = (originalPrice || 0) * (1 - DISCOUNT_PERCENTAGE / 100);
+        return `${qtyText} EA : $${(originalPrice || 0).toFixed(2)} → ${(discountedPrice || 0).toFixed(2)}`;
     };
 
     // Toggle setup charge selection
@@ -351,21 +388,28 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     // Calculate total price (before discount) - multiplied by quantity
     const calculateTotalPrice = (): number => {
         let total = 0;
-        if (selectedBasePriceTier) {
-            total += parseFloat(selectedBasePriceTier.price) * selectedQuantity;
+        if (selectedBasePriceTier && selectedBasePriceTier.price) {
+            const price = parseFloat(selectedBasePriceTier.price);
+            if (!isNaN(price)) {
+                total += price * selectedQuantity;
+            }
         }
         selectedSetupCharges.forEach(group => {
-            if (group.prices && group.prices.length > 0) {
+            if (group.prices && group.prices.length > 0 && group.prices[0].price) {
                 // Setup charges are typically one-time, not multiplied by quantity
-                total += parseFloat(group.prices[0].price);
+                const price = parseFloat(group.prices[0].price);
+                if (!isNaN(price)) {
+                    total += price;
+                }
             }
         });
-        return total;
+        return total || 0;
     };
 
     // Calculate discounted price
     const calculateDiscountedPrice = (): number => {
         const originalTotal = calculateTotalPrice();
+        if (!originalTotal || isNaN(originalTotal)) return 0;
         const discountAmount = originalTotal * (DISCOUNT_PERCENTAGE / 100);
         return originalTotal - discountAmount;
     };
@@ -373,16 +417,186 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     // Calculate discount amount
     const calculateDiscountAmount = (): number => {
         const originalTotal = calculateTotalPrice();
+        if (!originalTotal || isNaN(originalTotal)) return 0;
         return originalTotal * (DISCOUNT_PERCENTAGE / 100);
+    };
+
+    // Calculate shipping fee (if base price < $500, add $100)
+    const calculateShippingFee = (): number => {
+        const originalTotal = calculateTotalPrice();
+        if (!originalTotal || isNaN(originalTotal)) return 0;
+        // Check if base price (before discount) is below $500
+        if (originalTotal < 500) {
+            return 100;
+        }
+        return 0;
+    };
+
+    // Check if order qualifies for free shipping
+    const hasFreeShipping = (): boolean => {
+        const originalTotal = calculateTotalPrice();
+        if (!originalTotal || isNaN(originalTotal)) return false;
+        return originalTotal >= 500;
     };
 
     // Get category slug for breadcrumb
     const categorySlug = product.ai_category ? createSlug(product.ai_category.name) : null;
     const categoryName = product.ai_category?.name || 'Products';
+    
+    // Check if product is in Apparel category
+    const isApparel = categoryName.toLowerCase() === 'apparel' || 
+                     product.categories?.some(cat => {
+                         const catName = typeof cat === 'string' ? cat : (cat?.name || '');
+                         return catName.toLowerCase() === 'apparel';
+                     }) || false;
 
     // Get minimum price from base cost
-    const minPrice = basePriceGroup?.min_price || product.min_price || 0;
-    const maxPrice = basePriceGroup?.max_price || product.max_price || minPrice;
+    const minPrice = basePriceGroup?.min_price ?? product.min_price ?? 0;
+    const maxPrice = basePriceGroup?.max_price ?? product.max_price ?? minPrice ?? 0;
+    
+    // Check if product has no pricing (requires custom quote)
+    const hasNoPricing = (minPrice === 0 || minPrice === null || minPrice === undefined) && 
+                         (maxPrice === 0 || maxPrice === null || maxPrice === undefined) &&
+                         (!basePriceGroup || !basePriceGroup.prices || basePriceGroup.prices.length === 0);
+
+    // Handle Add to Cart
+    const handleAddToCart = async () => {
+        if (!isAuthenticated) {
+            router.push(`/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+            return;
+        }
+
+        if (!product || !selectedBasePriceTier) {
+            addToast({
+                type: 'warning',
+                title: 'Selection Required',
+                description: 'Please select quantity and options',
+            });
+            return;
+        }
+
+        setIsAddingToCart(true);
+        try {
+            const cartData: accountsAPI.AddToCartRequest = {
+                product_id: product.product_id,
+                part_id: selectedPart?.part_id,
+                quantity: selectedQuantity,
+            };
+            
+            // Add customizations if any are selected
+            if (selectedCustomizations.length > 0) {
+                cartData.customizations = selectedCustomizations;
+            }
+            
+            await accountsAPI.addToCart(cartData);
+            
+            // Dispatch event to update cart in header
+            window.dispatchEvent(new Event('cartUpdated'));
+            
+            addToast({
+                type: 'success',
+                title: 'Added to Cart',
+                description: 'Item has been added to your cart successfully!',
+            });
+        } catch (error: any) {
+            console.error('Error adding to cart:', error);
+            addToast({
+                type: 'error',
+                title: 'Add to Cart Failed',
+                description: error.message || 'Failed to add item to cart',
+            });
+        } finally {
+            setIsAddingToCart(false);
+        }
+    };
+
+    // Check if user has both billing and shipping addresses
+    const checkAddresses = async (): Promise<boolean> => {
+        try {
+            const addresses = await accountsAPI.getAddresses();
+            // Handle different response formats
+            let addressList: UserAddress[] = [];
+            if (Array.isArray(addresses)) {
+                addressList = addresses;
+            } else if (addresses && typeof addresses === 'object') {
+                if (Array.isArray((addresses as any).results)) {
+                    addressList = (addresses as any).results;
+                } else if (Array.isArray((addresses as any).data)) {
+                    addressList = (addresses as any).data;
+                } else if (Array.isArray((addresses as any).addresses)) {
+                    addressList = (addresses as any).addresses;
+                }
+            }
+            
+            const hasBilling = addressList.some(addr => addr.address_type === 'billing');
+            const hasShipping = addressList.some(addr => addr.address_type === 'shipping');
+            
+            return hasBilling && hasShipping;
+        } catch (error) {
+            console.error('Error checking addresses:', error);
+            return false;
+        }
+    };
+
+    // Handle Buy Now (adds to cart and redirects to checkout)
+    const handleBuyNow = async () => {
+        if (!isAuthenticated) {
+            router.push(`/signin?returnUrl=${encodeURIComponent(window.location.pathname)}`);
+            return;
+        }
+
+        if (!product || !selectedBasePriceTier) {
+            addToast({
+                type: 'warning',
+                title: 'Selection Required',
+                description: 'Please select quantity and options',
+            });
+            return;
+        }
+
+        // Check if user has both billing and shipping addresses
+        const hasAddresses = await checkAddresses();
+        
+        if (!hasAddresses) {
+            addToast({
+                type: 'warning',
+                title: 'Addresses Required',
+                description: 'Please add both billing and shipping addresses in your profile before proceeding to checkout.',
+            });
+            router.push('/profile?tab=addresses');
+            return;
+        }
+
+        setIsAddingToCart(true);
+        try {
+            const cartData: accountsAPI.AddToCartRequest = {
+                product_id: product.product_id,
+                part_id: selectedPart?.part_id,
+                quantity: selectedQuantity,
+            };
+            
+            // Add customizations if any are selected
+            if (selectedCustomizations.length > 0) {
+                cartData.customizations = selectedCustomizations;
+            }
+            
+            await accountsAPI.addToCart(cartData);
+            
+            // Dispatch event to update cart in header
+            window.dispatchEvent(new Event('cartUpdated'));
+            
+            // Redirect to checkout
+            router.push('/checkout');
+        } catch (error: any) {
+            console.error('Error adding to cart:', error);
+            addToast({
+                type: 'error',
+                title: 'Add to Cart Failed',
+                description: error.message || 'Failed to add item to cart',
+            });
+            setIsAddingToCart(false);
+        }
+    };
 
     return (
         <section className="py-[40px]">
@@ -465,6 +679,14 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         </Swiper>
                         )}
 
+                        {/* Product Description - First */}
+                        <div className="mt-6">
+                            <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Product Description</h3>
+                            <p className="sm:text-[16px] text-[14px] leading-[24px] whitespace-pre-line">
+                                {product.description || 'No description available.'}
+                            </p>
+                        </div>
+
                         {/* Marketing Points */}
                         {product.marketing_points && product.marketing_points.length > 0 && (
                         <div className="mt-6">
@@ -479,13 +701,42 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         </div>
                         )}
 
-                        {/* Product Description */}
+                        {/* Categories */}
+                        {product.categories && product.categories.length > 0 && (
                         <div className="mt-6">
-                            <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Product Description</h3>
-                            <p className="sm:text-[16px] text-[14px] leading-[24px] whitespace-pre-line">
-                                {product.description || 'No description available.'}
-                            </p>
-                        </div>
+                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Categories</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {product.categories.map((category: any, index: number) => (
+                                            <span
+                                                key={index}
+                                                className="px-3 py-1 bg-blue-100 rounded-full text-[14px] text-foreground"
+                                            >
+                                                {category.name || category}
+                                            </span>
+                                        ))}
+                                    </div>
+                            </div>
+                        )}
+
+                        {/* AI Subcategory */}
+                        {product.ai_subcategory && (
+                        <div className="mt-6">
+                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Subcategory</h3>
+                                    <p className="sm:text-[16px] text-[14px] leading-[24px]">
+                                        {typeof product.ai_subcategory === 'object' ? product.ai_subcategory.name : String(product.ai_subcategory)}
+                                    </p>
+                            </div>
+                        )}
+
+                        {/* Distributor Info - Below Marketing Points */}
+                        {product.distributor_only_info && (
+                        <div className="mt-6">
+                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Additional Information</h3>
+                                    <p className="sm:text-[16px] text-[14px] leading-[24px]">
+                                        {product.distributor_only_info}
+                                </p>
+                            </div>
+                        )}
 
                         {/* Keywords */}
                         {product.keywords && product.keywords.length > 0 && (
@@ -501,16 +752,6 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                             </span>
                                         ))}
                                     </div>
-                            </div>
-                        )}
-
-                        {/* Distributor Info */}
-                        {product.distributor_only_info && (
-                        <div className="mt-6">
-                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Additional Information</h3>
-                                    <p className="sm:text-[16px] text-[14px] leading-[24px]">
-                                        {product.distributor_only_info}
-                                </p>
                             </div>
                         )}
 
@@ -547,29 +788,49 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             {product.product_name}
                         </h1>
 
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="flex items-center gap-2">
-                                <span className="xl:text-[30px] sm:text-[28px] text-[24px] font-bold line-through text-gray-400">
-                                    ${minPrice.toFixed(2)}
-                                </span>
-                                <span className="xl:text-[30px] sm:text-[28px] text-[24px] font-bold text-accent">
-                                    ${(minPrice * 0.8).toFixed(2)}
-                                </span>
+                        {/* Custom Quote Request Message - Continuously Moving */}
+                        {hasNoPricing && (
+                            <div className="mb-4 overflow-hidden bg-red-50 border-2 border-red-500 rounded-lg">
+                                <div className="relative py-3">
+                                    <div className="flex animate-scroll whitespace-nowrap" style={{ width: '200%' }}>
+                                        <span className="text-red-600 font-bold text-[16px] md:text-[18px] px-4 inline-block">
+                                            📋 Product ID: {product.id || product.product_id} — To order this product, please send us a custom quote request. Our team will provide you with pricing and availability information.
+                                        </span>
+                                        <span className="text-red-600 font-bold text-[16px] md:text-[18px] px-4 inline-block">
+                                            📋 Product ID: {product.id || product.product_id} — To order this product, please send us a custom quote request. Our team will provide you with pricing and availability information.
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="bg-red-500 text-white px-3 py-1 rounded-lg font-bold text-[14px] animate-pulse">
-                                {DISCOUNT_PERCENTAGE}% OFF
-                            </div>
-                        </div>
-                        <p className="text-[14px] text-accent font-semibold mb-0">
-                            You Save ${(minPrice * 0.2).toFixed(2)}!
-                            {maxPrice !== minPrice && ` - Save up to $${(maxPrice * 0.2).toFixed(2)}!`}
-                        </p>
-                        <p className="text-[14px] text-gray-600 mt-1">
-                            <span className="text-[16px] font-Regular"> (Inclusive of taxes)</span>
-                        </p>
-                        <p className="text-[16px] mb-[10px]">
-                            <span className="font-semibold text-accent">✓ Ready to Order</span> — Customize with your logo • Fast turnaround • Free returns within 7 days
-                        </p>
+                        )}
+                        
+                        {!hasNoPricing && (
+                            <>
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="xl:text-[30px] sm:text-[28px] text-[24px] font-bold line-through text-gray-400">
+                                            ${(minPrice || 0).toFixed(2)}
+                                        </span>
+                                        <span className="xl:text-[30px] sm:text-[28px] text-[24px] font-bold text-accent">
+                                            ${((minPrice || 0) * 0.8).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="bg-red-500 text-white px-3 py-1 rounded-lg font-bold text-[14px] animate-pulse">
+                                        {DISCOUNT_PERCENTAGE}% OFF
+                                    </div>
+                                </div>
+                                <p className="text-[14px] text-accent font-semibold mb-0">
+                                    You Save ${((minPrice || 0) * 0.2).toFixed(2)}!
+                                    {maxPrice !== minPrice && ` - Save up to $${((maxPrice || 0) * 0.2).toFixed(2)}!`}
+                                </p>
+                                <p className="text-[14px] text-gray-600 mt-1">
+                                    <span className="text-[16px] font-Regular"> (Inclusive of taxes)</span>
+                                </p>
+                                <p className="text-[16px] mb-[10px]">
+                                    <span className="font-semibold text-accent">✓ Ready to Order</span> — Customize with your logo • Fast turnaround • Free returns within 7 days
+                                </p>
+                            </>
+                        )}
 
                         {/* Color Selection */}
                         {colors.length > 0 && (
@@ -618,9 +879,9 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                             Selected: <span className="font-semibold text-foreground">
                                                 {selectedPart.primary_color?.color_name || selectedPart.part_name}
                                             </span>
-                                            {selectedPart.min_price && selectedPart.max_price && (
+                                            {selectedPart.min_price != null && selectedPart.max_price != null && (
                                                 <span className="ml-2">
-                                                    (${selectedPart.min_price.toFixed(2)} - ${selectedPart.max_price.toFixed(2)})
+                                                    (${(selectedPart.min_price || 0).toFixed(2)} - ${(selectedPart.max_price || 0).toFixed(2)})
                                                 </span>
                                             )}
                                         </p>
@@ -709,7 +970,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         )}
 
                         {/* Quantity Selection */}
-                        {basePriceGroup && basePricingOptions.length > 0 && (
+                        {!hasNoPricing && basePriceGroup && basePricingOptions.length > 0 && (
                         <div className="xl:mb-6 mb-4">
                                 <label className="block font-semibold mb-[8px] text-[16px] mb-1">
                                     Quantity <span className="text-red-500">*</span>
@@ -746,8 +1007,8 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                             const qtyText = maxQty 
                                                                 ? `${minQty.toLocaleString()}-${maxQty.toLocaleString()}` 
                                                                 : `${minQty.toLocaleString()}+`;
-                                                            const originalPrice = parseFloat(tier.price);
-                                                            const discountedPrice = originalPrice * (1 - DISCOUNT_PERCENTAGE / 100);
+                                                            const originalPrice = tier.price ? parseFloat(tier.price) : 0;
+                                                            const discountedPrice = (originalPrice || 0) * (1 - DISCOUNT_PERCENTAGE / 100);
                                                             const isActive = selectedBasePriceTier === tier;
                                                             
                                                             return (
@@ -770,11 +1031,11 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                                     </td>
                                                                     <td className="border border-gray-300 px-4 py-3 text-[14px]">
                                                                         <span className="line-through text-gray-400">
-                                                                            ${originalPrice.toFixed(2)}
+                                                                            ${(originalPrice || 0).toFixed(2)}
                                                                         </span>
                                                                     </td>
                                                                     <td className="border border-gray-300 px-4 py-3 text-[14px] font-bold text-accent">
-                                                                        ${discountedPrice.toFixed(2)}
+                                                                        ${(discountedPrice || 0).toFixed(2)}
                                                                     </td>
                                                                     <td className="border border-gray-300 px-4 py-3 text-[14px]">
                                                                         <span className="bg-red-500 text-white px-2 py-1 rounded text-[12px] font-bold">
@@ -804,13 +1065,35 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                 <div className="flex-1">
                                                     <input
                                                         type="number"
-                                                        min={inputMin}
-                                                        max={inputMax}
-                                                        value={selectedQuantity}
+                                                        value={selectedQuantity || ''}
                                                         onChange={(e) => {
-                                                            const value = parseInt(e.target.value) || inputMin;
-                                                            setSelectedQuantity(Math.max(inputMin, Math.min(inputMax, value)));
+                                                            const value = e.target.value;
+                                                            // Allow empty string for free typing
+                                                            if (value === '') {
+                                                                setSelectedQuantity(0);
+                                                                return;
+                                                            }
+                                                            // Parse the value - allow any number to be typed (including negative, decimals, etc.)
+                                                            const numValue = parseFloat(value);
+                                                            if (!isNaN(numValue) && isFinite(numValue)) {
+                                                                // Allow any number to be typed, even if outside min/max
+                                                                // Use floor to handle decimals
+                                                                const intValue = Math.floor(Math.abs(numValue));
+                                                                setSelectedQuantity(intValue);
+                                                            }
                                                         }}
+                                                        onBlur={(e) => {
+                                                            // Validate and clamp on blur only
+                                                            const value = parseFloat(e.target.value);
+                                                            if (isNaN(value) || !isFinite(value) || value < inputMin) {
+                                                                setSelectedQuantity(inputMin);
+                                                            } else if (value > inputMax) {
+                                                                setSelectedQuantity(inputMax);
+                                                            } else {
+                                                                setSelectedQuantity(Math.floor(value));
+                                                            }
+                                                        }}
+                                                        placeholder={`Min: ${inputMin}, Max: ${inputMax}`}
                                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-[16px] font-semibold focus:outline-none focus:border-accent transition-colors"
                                                     />
                                                 </div>
@@ -863,7 +1146,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         )}
 
                         {/* Setup Charges (Other Price Groups) */}
-                        {setupChargeGroups.length > 0 && (
+                        {!hasNoPricing && setupChargeGroups.length > 0 && (
                             <div className="xl:mb-6 mb-4">
                                 <label className="block font-semibold mb-[8px] text-[16px] mb-1">
                                     Setup Charges <span className="text-[14px] font-normal text-[#666]">(Optional)</span>
@@ -874,9 +1157,10 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                 <div className="space-y-3">
                                     {setupChargeGroups.map((setupGroup) => {
                                         const isSelected = selectedSetupCharges.some(g => g.id === setupGroup.id);
-                                        const setupPrice = setupGroup.prices && setupGroup.prices.length > 0 
+                                        const setupPrice = setupGroup.prices && setupGroup.prices.length > 0 && setupGroup.prices[0].price
                                             ? parseFloat(setupGroup.prices[0].price) 
-                                            : setupGroup.min_price || 0;
+                                            : (setupGroup.min_price || 0);
+                                        const safeSetupPrice = (setupPrice && !isNaN(setupPrice)) ? setupPrice : 0;
                                         return (
                                             <div
                                                 key={setupGroup.id}
@@ -899,18 +1183,18 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                             <h4 className="font-semibold text-[16px] text-foreground">
                                                                 {setupGroup.group_name}
                                                             </h4>
-                                                            {setupGroup.prices && setupGroup.prices.length > 0 && (
+                                                            {setupGroup.prices && setupGroup.prices.length > 0 && setupGroup.prices[0] && (
                                                                 <p className="text-[14px] text-[#666] mt-1">
                                                                     {setupGroup.prices[0].quantity_min === 1 && !setupGroup.prices[0].quantity_max 
                                                                         ? 'One-time charge'
-                                                                        : formatPriceTier(setupGroup.prices[0])
+                                                                        : (setupGroup.prices[0].price ? formatPriceTier(setupGroup.prices[0]) : 'Price not available')
                                                                     }
                                                                 </p>
                                                             )}
                                                         </div>
                                                     </div>
                                                     <span className="font-bold text-[18px] text-foreground">
-                                                        ${setupPrice.toFixed(2)}
+                                                        ${safeSetupPrice.toFixed(2)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -929,7 +1213,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                     : group.min_price || 0;
                                                 return (
                                                     <li key={group.id} className="text-[14px] text-foreground">
-                                                        {group.group_name}: <span className="font-semibold">${price.toFixed(2)}</span>
+                                                        {group.group_name}: <span className="font-semibold">${(price || 0).toFixed(2)}</span>
                                                     </li>
                                                 );
                                             })}
@@ -939,8 +1223,21 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             </div>
                         )}
 
+                        {/* Customization Selector - Only for Apparel */}
+                        {isApparel && (
+                            <div className="xl:mb-6 mb-4">
+                                <CustomizationSelector
+                                    quantity={selectedQuantity}
+                                    onCustomizationsChange={(customizations, totalPrice) => {
+                                        setSelectedCustomizations(customizations);
+                                        setCustomizationTotalPrice(totalPrice);
+                                    }}
+                                />
+                            </div>
+                        )}
+
                         {/* Total Price Display with Discount */}
-                        {selectedBasePriceTier && (
+                        {!hasNoPricing && selectedBasePriceTier && (
                             <div className="xl:mb-6 mb-4 p-5 bg-gradient-to-br from-blue-50 to-sky-50 rounded-lg border-2 border-accent shadow-lg">
                                 <div className="flex items-center gap-2 mb-3">
                                     <div className="bg-red-500 text-white px-3 py-1 rounded-lg font-bold text-[16px] animate-pulse">
@@ -966,10 +1263,45 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                         </span>
                                     </div>
                                     
+                                    {customizationTotalPrice > 0 && (
+                                        <div className="flex items-center justify-between bg-accent/10 px-3 py-2 rounded">
+                                            <span className="text-[16px] font-semibold text-foreground">Customizations:</span>
+                                            <span className="text-[18px] font-bold text-accent">
+                                                +${customizationTotalPrice.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    
+                                    {calculateShippingFee() > 0 && (
+                                        <div className="flex items-center justify-between bg-yellow-50 px-3 py-2 rounded border border-yellow-200">
+                                            <span className="text-[16px] font-semibold text-yellow-800">Shipping Fee:</span>
+                                            <span className="text-[18px] font-bold text-yellow-700">
+                                                +${calculateShippingFee().toFixed(2)}
+                                            </span>
+                                        </div>
+                                    )}
+                                    
+                                    {hasFreeShipping() && (
+                                        <div className="flex items-center justify-between bg-green-50 px-3 py-2 rounded border border-green-200">
+                                            <span className="text-[16px] font-semibold text-green-800">🚚 Free Shipping!</span>
+                                            <span className="text-[14px] text-green-700 font-semibold">
+                                                Orders over $500 qualify
+                                            </span>
+                                        </div>
+                                    )}
+                                    
+                                    {!hasFreeShipping() && (
+                                        <div className="bg-blue-50 px-3 py-2 rounded border border-blue-200">
+                                            <p className="text-[13px] text-blue-800 text-center">
+                                                💡 <strong>Free Shipping:</strong> Add ${(500 - calculateTotalPrice()).toFixed(2)} more to qualify for free shipping!
+                                            </p>
+                                        </div>
+                                    )}
+                                    
                                     <div className="flex items-center justify-between pt-2 border-t-2 border-accent">
                                         <span className="text-[20px] font-bold text-gray-800">Final Price ({selectedQuantity} units):</span>
                                         <span className="text-[32px] font-black text-accent">
-                                            ${calculateDiscountedPrice().toFixed(2)}
+                                            ${(calculateDiscountedPrice() + customizationTotalPrice + calculateShippingFee()).toFixed(2)}
                                         </span>
                                     </div>
                                     
@@ -988,17 +1320,25 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             </div>
                         )}
 
-                        <div className="flex gap-3 xl:mb-6 mb-4">
-                            <Link href="/cart">
+                        {/* Add to Cart and Buy Now buttons - Only show if product has pricing */}
+                        {!hasNoPricing && (
+                            <div className="flex gap-3 xl:mb-6 mb-4">
                                 <Button
-                                    className="flex-1 bg-foreground md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer"
-                                    variant="secondary">Add to Cart</Button>
-                            </Link>
-                            <Link href="/checkout">
-                                <Button variant="outline"
-                                        className="flex-1 md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer hover:text-white">Buy Now</Button>
-                            </Link>
-                        </div>
+                                    onClick={handleAddToCart}
+                                    disabled={isAddingToCart}
+                                    className="flex-1 bg-foreground md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer disabled:opacity-50"
+                                    variant="secondary">
+                                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                                </Button>
+                                <Button 
+                                    onClick={handleBuyNow}
+                                    disabled={isAddingToCart}
+                                    variant="outline"
+                                    className="flex-1 md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer hover:text-white disabled:opacity-50">
+                                    Buy Now
+                                </Button>
+                            </div>
+                        )}
 
                     </div>
                 </div>

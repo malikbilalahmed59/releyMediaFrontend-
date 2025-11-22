@@ -42,11 +42,14 @@ function CategoryProductsContent() {
                 // Now fetch products for this category
                 const page = parseInt(searchParams.get('page') || '1');
                 const ordering = (searchParams.get('ordering') as 'best_match' | 'newest' | 'most_popular' | 'price_low_high' | 'price_high_low') || 'newest';
+                const query = searchParams.get('q') || undefined; // Get search query parameter
                 const minPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
                 const maxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
                 const minQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
                 const maxQuantity = searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined;
+                const material = searchParams.get('material') || undefined;
                 const brand = searchParams.get('brand') || undefined;
+                const color = searchParams.get('color') || undefined;
                 const closeout = searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined;
                 const usaMade = searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined;
                 const bestSelling = searchParams.get('best_selling') === 'true' ? true : searchParams.get('best_selling') === 'false' ? false : undefined;
@@ -55,13 +58,16 @@ function CategoryProductsContent() {
                 const subcategoryId = searchParams.get('subcategory_id') ? parseInt(searchParams.get('subcategory_id')!) : undefined;
                 
                 const results = await getProductsByCategory(foundCategory.id, {
+                    q: query, // Pass search query to API
                     page,
                     ordering,
                     min_price: minPrice,
                     max_price: maxPrice,
                     min_quantity: minQuantity,
                     max_quantity: maxQuantity,
+                    material,
                     brand,
+                    color,
                     closeout,
                     usa_made: usaMade,
                     best_selling: bestSelling,
@@ -110,7 +116,7 @@ function CategoryProductsContent() {
             }>
                 <Header/>
             </Suspense>
-            <MainBanner/>
+            <MainBanner productCount={searchResults?.count} />
             {loading && (
                 <div className="py-[50px] pb-[75px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">
@@ -130,6 +136,7 @@ function CategoryProductsContent() {
                     searchResults={searchResults}
                     loading={false}
                     error={null}
+                    category={category}
                 />
             )}
             <Customer_Feedback/>

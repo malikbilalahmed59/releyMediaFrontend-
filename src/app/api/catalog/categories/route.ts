@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip, deflate, br',
       },
       // Cache for 1 hour as per API documentation
       next: { revalidate: 3600 },

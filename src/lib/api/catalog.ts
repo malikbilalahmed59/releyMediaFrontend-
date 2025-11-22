@@ -4,6 +4,8 @@
  * Base URL can be easily updated here for different environments
  * For client-side calls, we use Next.js API routes as proxy to avoid CORS issues
  */
+import { cachedFetch, parallelFetch } from './cache';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://backend.relymedia.com';
 const USE_PROXY = typeof window !== 'undefined'; // Use proxy for client-side, direct for server-side
 
@@ -12,7 +14,9 @@ const USE_PROXY = typeof window !== 'undefined'; // Use proxy for client-side, d
  */
 export interface SearchQueryParams {
   q?: string;
+  material?: string;
   brand?: string;
+  color?: string;
   closeout?: boolean;
   usa_made?: boolean;
   best_selling?: boolean;
@@ -241,19 +245,13 @@ export async function searchProducts(
     : `${API_BASE_URL}/api/catalog/search/${queryString ? `?${queryString}` : ''}`;
   
   try {
-    const response = await fetch(url, {
+    // Use cached fetch for better performance
+    return await cachedFetch<SearchResponse>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(errorData.error || `API Error: ${response.status} ${response.statusText}`);
-    }
-    
-    return await response.json();
+    }, true);
   } catch (error) {
     console.error('Error searching products:', error);
     throw error;
@@ -274,25 +272,18 @@ export async function getProductsByCategory(
   const queryString = buildQueryString(params);
   
   // Use Next.js API route as proxy for client-side calls to avoid CORS
-  // Note: You'll need to create this API route if using category filtering
   const url = USE_PROXY 
     ? `/api/catalog/categories/${categoryId}/products${queryString ? `?${queryString}` : ''}`
     : `${API_BASE_URL}/api/catalog/categories/${categoryId}/products/${queryString ? `?${queryString}` : ''}`;
   
   try {
-    const response = await fetch(url, {
+    // Use cached fetch for better performance
+    return await cachedFetch<CategoryProductsResponse>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(errorData.error || `API Error: ${response.status} ${response.statusText}`);
-    }
-    
-    return await response.json();
+    }, true);
   } catch (error) {
     console.error('Error fetching category products:', error);
     throw error;
@@ -311,19 +302,29 @@ export async function getCategories(): Promise<CategoriesResponse> {
     : `${API_BASE_URL}/api/catalog/categories/`;
   
   try {
-    const response = await fetch(url, {
+    // Use cached fetch for better performance (categories are static, cache longer)
+    const data = await cachedFetch<any>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    }, true);
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: response.statusText }));
-      throw new Error(errorData.error || `API Error: ${response.status} ${response.statusText}`);
+    // Validate response structure
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid response format from categories API');
     }
     
-    return await response.json();
+    // Ensure response has the expected structure
+    if (!data.categories && !Array.isArray(data.categories)) {
+      console.warn('Categories API response missing categories array:', data);
+      return { count: 0, categories: [] };
+    }
+    
+    return {
+      count: data.count ?? data.categories?.length ?? 0,
+      categories: data.categories || []
+    };
   } catch (error) {
     console.error('Error fetching categories:', error);
     throw error;
@@ -365,49 +366,28 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 /**
  * Get Product Detail
  * 
- * @param productId - Product ID
+ * @param id - Product ID (Django primary key, not product_id)
  * @returns Promise with product details
  */
-export async function getProductDetail(productId: string): Promise<ProductDetail> {
+export async function getProductDetail(id: number): Promise<ProductDetail> {
   // Use Next.js API route as proxy for client-side calls to avoid CORS
   const url = USE_PROXY 
-    ? `/api/catalog/products/${productId}/detail`
-    : `${API_BASE_URL}/api/catalog/products/${productId}/detail/`;
+    ? `/api/catalog/products/${id}/detail`
+    : `${API_BASE_URL}/api/catalog/products/${id}/detail/`;
   
   try {
-    const response = await fetch(url, {
+    // Use cached fetch for better performance (product details are relatively stable)
+    return await cachedFetch<ProductDetail>(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-    });
-    
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error(`Product not found: ${productId}`);
-      }
-      
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch (e) {
-        const errorText = await response.text();
-        errorData = { error: response.statusText, details: errorText };
-      }
-      
-      const errorMessage = errorData.error || errorData.details || `API Error: ${response.status} ${response.statusText}`;
-      console.error('Product detail API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData,
-        url
-      });
-      
-      throw new Error(errorMessage);
-    }
-    
-    return await response.json();
+    }, true);
   } catch (error) {
+    // Handle 404 specifically
+    if (error instanceof Error && error.message.includes('404')) {
+      throw new Error(`Product not found: ${id}`);
+    }
     console.error('Error fetching product detail:', error);
     throw error;
   }
@@ -440,6 +420,184 @@ export async function getProducts(
     return await response.json();
   } catch (error) {
     console.error('Error fetching products:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get Filter Materials
+ * 
+ * Get top 20 most repeated distinct materials based on category/subcategory/search context.
+ * 
+ * @param params - Filter parameters (category_id, subcategory_id, q)
+ * @returns Promise with materials list
+ */
+export interface FilterMaterialsParams {
+  category_id?: number;
+  subcategory_id?: number;
+  q?: string;
+}
+
+export interface FilterMaterial {
+  name: string;
+  count: number;
+}
+
+export interface FilterMaterialsResponse {
+  materials: FilterMaterial[];
+}
+
+export async function getFilterMaterials(
+  params: FilterMaterialsParams = {}
+): Promise<FilterMaterialsResponse> {
+  const queryString = buildQueryString(params);
+  
+  const url = USE_PROXY 
+    ? `/api/catalog/filter-options/materials${queryString ? `?${queryString}` : ''}`
+    : `${API_BASE_URL}/api/catalog/filter-options/materials/${queryString ? `?${queryString}` : ''}`;
+  
+  try {
+    // Use cached fetch for better performance (filter options are relatively static)
+    return await cachedFetch<FilterMaterialsResponse>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, true);
+  } catch (error) {
+    console.error('Error fetching filter materials:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get Filter Brands
+ * 
+ * Get top 20 most repeated distinct brands based on category/subcategory/search context.
+ * 
+ * @param params - Filter parameters (category_id, subcategory_id, q)
+ * @returns Promise with brands list
+ */
+export interface FilterBrandsParams {
+  category_id?: number;
+  subcategory_id?: number;
+  q?: string;
+}
+
+export interface FilterBrand {
+  name: string;
+  count: number;
+}
+
+export interface FilterBrandsResponse {
+  brands: FilterBrand[];
+}
+
+export async function getFilterBrands(
+  params: FilterBrandsParams = {}
+): Promise<FilterBrandsResponse> {
+  const queryString = buildQueryString(params);
+  
+  const url = USE_PROXY 
+    ? `/api/catalog/filter-options/brands${queryString ? `?${queryString}` : ''}`
+    : `${API_BASE_URL}/api/catalog/filter-options/brands/${queryString ? `?${queryString}` : ''}`;
+  
+  try {
+    // Use cached fetch for better performance (filter options are relatively static)
+    return await cachedFetch<FilterBrandsResponse>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, true);
+  } catch (error) {
+    console.error('Error fetching filter brands:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get Filter Colors
+ * 
+ * Get top 20 most repeated distinct colors based on category/subcategory/search context.
+ * 
+ * @param params - Filter parameters (category_id, subcategory_id, q)
+ * @returns Promise with colors list
+ */
+export interface FilterColorsParams {
+  category_id?: number;
+  subcategory_id?: number;
+  q?: string;
+}
+
+export interface FilterColor {
+  name: string;
+  count: number;
+}
+
+export interface FilterColorsResponse {
+  colors: FilterColor[];
+}
+
+export async function getFilterColors(
+  params: FilterColorsParams = {}
+): Promise<FilterColorsResponse> {
+  const queryString = buildQueryString(params);
+  
+  const url = USE_PROXY 
+    ? `/api/catalog/filter-options/colors${queryString ? `?${queryString}` : ''}`
+    : `${API_BASE_URL}/api/catalog/filter-options/colors/${queryString ? `?${queryString}` : ''}`;
+  
+  try {
+    // Use cached fetch for better performance (filter options are relatively static)
+    return await cachedFetch<FilterColorsResponse>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, true);
+  } catch (error) {
+    console.error('Error fetching filter colors:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get Category Subcategories
+ * 
+ * Get subcategories for a specific category.
+ * 
+ * @param categoryId - AI Category ID
+ * @returns Promise with subcategories
+ */
+export interface SubcategoriesResponse {
+  category: {
+    id: number;
+    name: string;
+  };
+  subcategories: Array<{
+    id: number;
+    name: string;
+  }>;
+}
+
+export async function getCategorySubcategories(
+  categoryId: number
+): Promise<SubcategoriesResponse> {
+  const url = USE_PROXY 
+    ? `/api/catalog/categories/${categoryId}/subcategories`
+    : `${API_BASE_URL}/api/catalog/categories/${categoryId}/subcategories/`;
+  
+  try {
+    // Use cached fetch for better performance (subcategories are relatively static)
+    return await cachedFetch<SubcategoriesResponse>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, true);
+  } catch (error) {
+    console.error('Error fetching category subcategories:', error);
     throw error;
   }
 }

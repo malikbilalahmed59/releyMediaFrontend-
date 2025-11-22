@@ -20,8 +20,10 @@ export async function GET(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip, deflate, br',
       },
-      cache: 'no-store',
+      // Cache category products for 1 minute
+      next: { revalidate: 60 },
     });
     
     if (!response.ok) {

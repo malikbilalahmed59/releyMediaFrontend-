@@ -65,7 +65,8 @@ export async function exampleGetCategories() {
 // Example 4: Get product details
 export async function exampleProductDetail() {
   try {
-    const product = await getProductDetail('PEN-001');
+    // Note: getProductDetail now uses Django primary key (id) as number, not product_id string
+    const product = await getProductDetail(123);
     console.log('Product details:', product);
     return product;
   } catch (error) {

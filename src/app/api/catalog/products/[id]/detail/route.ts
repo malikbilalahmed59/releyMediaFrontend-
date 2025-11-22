@@ -4,11 +4,12 @@ const API_BASE_URL = 'https://backend.relymedia.com';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ productId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { productId } = await params;
-    const url = `${API_BASE_URL}/api/catalog/products/${productId}/detail/`;
+    const { id } = await params;
+    // id is the Django primary key (id), not the product_id field
+    const url = `${API_BASE_URL}/api/catalog/products/${id}/detail/`;
     
     console.log('Proxying product detail request to:', url);
     
@@ -17,8 +18,10 @@ export async function GET(
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Accept-Encoding': 'gzip, deflate, br',
       },
-      cache: 'no-store',
+      // Cache product details for 5 minutes, revalidate in background
+      next: { revalidate: 300 },
     });
     
     if (!response.ok) {
@@ -58,7 +61,4 @@ export async function GET(
     );
   }
 }
-
-
-
 

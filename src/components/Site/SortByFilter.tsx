@@ -66,11 +66,22 @@ export default function SortByFilter() {
         // Close the popover
         setOpen(false);
         
-        // Update URL with new ordering
+        // Update URL with new ordering - preserve current path (category or products page)
         const params = new URLSearchParams(searchParams.toString());
         params.set('ordering', orderingMap[id].value);
         params.set('page', '1'); // Reset to first page
-        router.push(`/products?${params.toString()}`);
+        
+        // Check if we're on a category page
+        const pathname = window.location.pathname;
+        const isCategoryPage = pathname?.startsWith('/products/category/');
+        
+        if (isCategoryPage) {
+            // Preserve category slug in the path
+            router.push(`${pathname}?${params.toString()}`);
+        } else {
+            // Regular products page
+            router.push(`/products?${params.toString()}`);
+        }
     }
 
     return (

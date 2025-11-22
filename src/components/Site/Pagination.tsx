@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -14,13 +14,15 @@ interface PaginationProps {
 export default function Pagination({ currentPage, totalPages, totalCount, pageSize }: PaginationProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const pathname = usePathname();
 
     const changePage = (newPage: number) => {
         if (newPage < 1 || newPage > totalPages) return;
         
         const params = new URLSearchParams(searchParams.toString());
         params.set('page', newPage.toString());
-        router.push(`/products?${params.toString()}`);
+        // Preserve the current pathname (e.g., /products/category/apparel)
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     // Calculate page range to show

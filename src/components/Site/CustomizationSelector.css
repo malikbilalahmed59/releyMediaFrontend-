@@ -1,0 +1,6 @@
+/* Make price text white when SelectItem is highlighted/focused */
+[data-slot="select-item"][data-highlighted] .price-text,
+[data-slot="select-item"]:focus .price-text {
+  color: white !important;
+}
+

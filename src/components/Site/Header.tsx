@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {Mail, Phone, Search, ShoppingBasket, User} from "lucide-react";
@@ -17,18 +17,69 @@ import {
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import ShopCategories from "@/components/Site/ShopCategories";
+import { useAuth } from "@/contexts/AuthContext";
+import * as accountsAPI from '@/lib/api/accounts';
+import type { Cart } from '@/lib/api/accounts';
 
 function Header() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState('');
+    const [cart, setCart] = useState<Cart | null>(null);
+    const [cartLoading, setCartLoading] = useState(false);
+    const { isAuthenticated } = useAuth();
     
     // Check which filters are active
     const isUsaMade = searchParams.get('usa_made') === 'true';
     const isClearance = searchParams.get('closeout') === 'true';
     const isRushService = searchParams.get('rush_service') === 'true';
     const isProductsPage = pathname === '/products';
+
+    const loadCart = useCallback(async () => {
+        try {
+            setCartLoading(true);
+            const cartData = await accountsAPI.getCart();
+            setCart(cartData);
+        } catch (error) {
+            console.error('Error loading cart:', error);
+            setCart(null);
+        } finally {
+            setCartLoading(false);
+        }
+    }, []);
+
+    // Load cart when authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            loadCart();
+        } else {
+            setCart(null);
+        }
+    }, [isAuthenticated, loadCart]);
+
+    // Reload cart when pathname changes (in case items were added)
+    useEffect(() => {
+        if (isAuthenticated && (pathname === '/cart' || pathname === '/checkout' || pathname === '/products' || pathname.startsWith('/single-products'))) {
+            loadCart();
+        }
+    }, [pathname, isAuthenticated, loadCart]);
+
+    // Listen for cart update events
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        
+        const handleCartUpdate = () => {
+            loadCart();
+        };
+
+        window.addEventListener('cartUpdated', handleCartUpdate);
+        return () => {
+            window.removeEventListener('cartUpdated', handleCartUpdate);
+        };
+    }, [isAuthenticated, loadCart]);
+
+    const cartItemCount = cart?.total_items || 0;
 
     const handleSearch = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -167,8 +218,33 @@ function Header() {
                                 </Button>
                             </form>
                             <ul className="flex lg:gap-[12px] gap-[6px]">
-                                <li><Link href="" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px] relative"><ShoppingBasket /> <span className="absolute top-1/2 -translate-y-1/2 right-[10px] w-[12px] h-[12px] bg-[#987727] flex items-center justify-center rounded-full text-[8px] text-white">6</span></Link></li>
-                                <li><Link href="profile" className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"><User /></Link></li>
+                                <li>
+                                    <Link 
+                                        href="/cart" 
+                                        className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px] relative"
+                                    >
+                                        <ShoppingBasket /> 
+                                        {isAuthenticated && cartItemCount > 0 && (
+                                            <span className="absolute top-1/2 -translate-y-1/2 right-[10px] w-[12px] h-[12px] bg-[#987727] flex items-center justify-center rounded-full text-[8px] text-white">
+                                                {cartItemCount > 99 ? '99+' : cartItemCount}
+                                            </span>
+                                        )}
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link 
+                                        href="/profile" 
+                                        onClick={(e) => {
+                                            if (!isAuthenticated) {
+                                                e.preventDefault();
+                                                router.push(`/signin?returnUrl=${encodeURIComponent('/profile')}`);
+                                            }
+                                        }}
+                                        className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"
+                                    >
+                                        <User />
+                                    </Link>
+                                </li>
                             </ul>
                         </div>
                     </div>

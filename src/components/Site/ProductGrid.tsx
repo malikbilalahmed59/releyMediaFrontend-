@@ -3,17 +3,18 @@ import FilterSidebar from "@/components/Site/FilterSidebar";
 import BuyCart from "@/components/Site/Buy_Cart";
 import SortByFilter from "@/components/Site/SortByFilter";
 import Pagination from "@/components/Site/Pagination";
-import { type SearchResponse } from '@/lib/api/catalog';
+import { type SearchResponse, type Category } from '@/lib/api/catalog';
 
 interface ProductGridProps {
     searchResults?: SearchResponse | null;
     loading?: boolean;
     error?: string | null;
+    category?: Category | null;
 }
 
-function ProductGrid({ searchResults, loading, error }: ProductGridProps) {
-    // Extract category data if it's a CategoryProductsResponse
-    const categoryData = (searchResults as any)?.category;
+function ProductGrid({ searchResults, loading, error, category }: ProductGridProps) {
+    // Extract category data if it's a CategoryProductsResponse, otherwise use passed category
+    const categoryData = (searchResults as any)?.category || category;
     
     return (
         <div className="py-[50px] pb-[75px]">

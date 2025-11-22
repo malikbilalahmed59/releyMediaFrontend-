@@ -37,7 +37,9 @@ function SigninContent() {
                     </div>
                 </div>
             </section>
-            <Signin_Form/>
+            <Suspense fallback={<div className="py-[50px] text-center">Loading form...</div>}>
+                <Signin_Form/>
+            </Suspense>
             <div className="bg-gradient">
                 <Client_Logo/>
             </div>

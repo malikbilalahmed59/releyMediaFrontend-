@@ -3,9 +3,23 @@ import Image from "next/image";
 import check from "../../../public/images/check.svg";
 import Contact_Form from "@/components/Site/Contact_Form";
 
-function MainBanner() {
+interface MainBannerProps {
+    productCount?: number | null;
+}
+
+function MainBanner({ productCount }: MainBannerProps) {
+    // Format number with commas
+    const formatNumber = (num: number): string => {
+        return num.toLocaleString('en-US');
+    };
+
+    // Use provided product count if available, otherwise use default
+    const displayCount = productCount && productCount > 0 
+        ? formatNumber(productCount) 
+        : '1,000,000';
+
     const cont = {
-        heading: `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">1,000,000</strong> Promotional Items <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`,
+        heading: `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">${displayCount}</strong> Promotional Items <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`,
         features: [
             "110% Price Beat Guarantee",
             "Free Shipping, Proofs & Samples",

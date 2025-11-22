@@ -1,12 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import {Mail, User ,PhoneCall } from "lucide-react";
 import Image from "next/image";
 import contact_shape from "../../../public/images/contact_shape_img.png";
+import { useAuth } from "@/contexts/AuthContext";
+import * as accountsAPI from '@/lib/api/accounts';
+import { useToast } from "@/components/ui/toast";
 
 import {
     Select,
@@ -17,6 +20,9 @@ import {
 } from "@/components/ui/select"
 
 function ContactPageForm() {
+    const { isAuthenticated, user } = useAuth();
+    const { addToast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState({
         firstName: '',
         lastName: '',
@@ -27,14 +33,104 @@ function ContactPageForm() {
         message: '',
     })
 
+    // Prefill form with user data when authenticated
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            setForm(prev => ({
+                ...prev,
+                firstName: user.first_name || '',
+                lastName: user.last_name || '',
+                email: user.email || '',
+                phone: user.phone_number || '',
+            }));
+        }
+    }, [isAuthenticated, user]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        console.log(form)
-        // Add your submission logic here (API call, etc.)
+        
+        // Validate all required fields
+        const errors: string[] = [];
+        
+        if (!form.firstName || !form.firstName.trim()) {
+            errors.push('First name is required');
+        }
+        
+        if (!form.lastName || !form.lastName.trim()) {
+            errors.push('Last name is required');
+        }
+        
+        if (!form.email || !form.email.trim()) {
+            errors.push('Email is required');
+        }
+        
+        if (!form.phone || !form.phone.trim()) {
+            errors.push('Phone number is required');
+        }
+        
+        if (!form.quantity || !form.quantity.trim()) {
+            errors.push('Quantity is required');
+        }
+        
+        if (!form.productType || !form.productType.trim()) {
+            errors.push('Product type is required');
+        }
+        
+        if (!form.message || !form.message.trim()) {
+            errors.push('Message is required');
+        }
+        
+        if (errors.length > 0) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: errors.join('. '),
+            });
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await accountsAPI.submitQuoteRequest({
+                first_name: form.firstName,
+                last_name: form.lastName,
+                email: form.email,
+                phone: form.phone,
+                quantity: form.quantity,
+                product_type: form.productType,
+                message: form.message,
+            });
+
+            addToast({
+                type: 'success',
+                title: 'Quote Request Submitted',
+                description: 'Your quote request has been submitted successfully. We will contact you soon!',
+            });
+
+            // Reset form after successful submission
+            setForm({
+                firstName: isAuthenticated && user ? (user.first_name || '') : '',
+                lastName: isAuthenticated && user ? (user.last_name || '') : '',
+                email: isAuthenticated && user ? (user.email || '') : '',
+                phone: isAuthenticated && user ? (user.phone_number || '') : '',
+                quantity: '',
+                productType: '',
+                message: '',
+            });
+        } catch (error: any) {
+            console.error('Error submitting quote request:', error);
+            addToast({
+                type: 'error',
+                title: 'Submission Failed',
+                description: error.message || 'Failed to submit quote request. Please try again.',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
     return (
@@ -49,41 +145,50 @@ function ContactPageForm() {
 
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                                 <div className="relative w-full ">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                     <Input
                                         type="text"
+                                        name="firstName"
                                         placeholder="Enter your first name"
-                                        className="!pl-10 contact-input"
+                                        value={form.firstName}
+                                        onChange={handleChange}
+                                        className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                     />
                                 </div>
                             <div className="relative w-full ">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4" />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="text"
+                                    name="lastName"
                                     placeholder="Enter your last name"
-                                    className="!pl-10 contact-input"
+                                    value={form.lastName}
+                                    onChange={handleChange}
+                                    className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                         </div>
 
                         <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div className="relative w-full ">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="email"
+                                    name="email"
                                     placeholder="Enter your email address"
-                                    className="!pl-10 contact-input"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                             <div className="relative w-full">
-                                <PhoneCall className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4" />
+                                <PhoneCall className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     id="phone"
                                     name="phone"
                                     placeholder="Enter your phone number"
                                     value={form.phone}
                                     onChange={handleChange}
-                                    className="!pl-10 contact-input"
+                                    className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                         </div>
@@ -98,7 +203,7 @@ function ContactPageForm() {
                                     value={form.quantity}
                                     onChange={handleChange}
                                     min={250}
-                                    className="contact-input"
+                                    className="contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                             <div>
@@ -130,7 +235,14 @@ function ContactPageForm() {
                                 className="contact-input resize-none  min-h-[88px]"
                             />
                         </div>
-                        <Button type="submit" variant="secondary" className="w-full h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] cursor-pointer text-foreground" >Send</Button>
+                        <Button 
+                            type="submit" 
+                            variant="secondary" 
+                            disabled={isSubmitting}
+                            className="w-full h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] cursor-pointer text-foreground disabled:opacity-50"
+                        >
+                            {isSubmitting ? 'Submitting...' : 'Send'}
+                        </Button>
                     </form>
                 </div>
             </div>

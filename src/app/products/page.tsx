@@ -53,7 +53,9 @@ function ProductsContent() {
         const maxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
         const minQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
         const maxQuantity = searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined;
+        const material = searchParams.get('material') || undefined;
         const brand = searchParams.get('brand') || undefined;
+        const color = searchParams.get('color') || undefined;
         const closeout = searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined;
         const usaMade = searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined;
         const bestSelling = searchParams.get('best_selling') === 'true' ? true : searchParams.get('best_selling') === 'false' ? false : undefined;
@@ -73,7 +75,9 @@ function ProductsContent() {
                     max_price: maxPrice,
                     min_quantity: minQuantity,
                     max_quantity: maxQuantity,
+                    material,
                     brand,
+                    color,
                     closeout,
                     usa_made: usaMade,
                     best_selling: bestSelling,
@@ -146,7 +150,7 @@ function ProductsContent() {
             }>
                 <Header/>
             </Suspense>
-            <MainBanner/>
+            <MainBanner productCount={searchResults?.count} />
             <ProductGrid 
                 searchResults={searchResults}
                 loading={loading}

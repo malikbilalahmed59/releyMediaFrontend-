@@ -2,6 +2,22 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Scrolling animation for custom quote message */
+@keyframes scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-scroll {
+    animation: scroll 30s linear infinite;
+    display: flex;
+    will-change: transform;
+}
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -228,5 +244,34 @@
   background: #fff;
   figure{
     background: #F5F5F5;
+  }
+}
+
+/* Cart Table Styling */
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cart-table thead {
+  background-color: var(--muted);
+}
+
+.cart-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.cart-table tbody tr:hover {
+  background-color: var(--muted);
+}
+
+@media (max-width: 768px) {
+  .cart-table {
+    font-size: 14px;
+  }
+  
+  .cart-table th,
+  .cart-table td {
+    padding: 12px 8px;
   }
 }

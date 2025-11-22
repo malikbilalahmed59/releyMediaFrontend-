@@ -16,9 +16,10 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept-Encoding': 'gzip, deflate, br',
       },
-      // Disable caching for search results
-      cache: 'no-store',
+      // Cache search results for 30 seconds (short cache for dynamic results)
+      next: { revalidate: 30 },
     });
     
     if (!response.ok) {
