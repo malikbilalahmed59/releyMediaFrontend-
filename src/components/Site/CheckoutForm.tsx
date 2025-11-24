@@ -40,6 +40,13 @@ function CheckoutFormContent() {
     const [sameAsBilling, setSameAsBilling] = useState(false);
     const { user } = useAuth();
     const router = useRouter();
+    
+    // Payment form fields
+    const [cardNumber, setCardNumber] = useState("");
+    const [cardExpMonth, setCardExpMonth] = useState("");
+    const [cardExpYear, setCardExpYear] = useState("");
+    const [cardCvv, setCardCvv] = useState("");
+    const [cardholderName, setCardholderName] = useState("");
 
     useEffect(() => {
         loadData();
@@ -219,8 +226,78 @@ function CheckoutFormContent() {
             return;
         }
 
+        // Validate payment method and fields
+        if (paymentMethod === 'credit') {
+            if (!cardNumber || !cardExpMonth || !cardExpYear || !cardCvv) {
+                addToast({
+                    type: 'warning',
+                    title: 'Payment Information Required',
+                    description: 'Please fill in all credit card fields',
+                });
+                return;
+            }
+        } else if (paymentMethod === 'paypal') {
+            addToast({
+                type: 'info',
+                title: 'PayPal Integration',
+                description: 'PayPal integration is coming soon. Please use credit card for now.',
+            });
+            return;
+        }
+
         setProcessing(true);
         try {
+            // Calculate amounts
+            const originalSubtotal = parseFloat(cart.total_price) || 0;
+            const DISCOUNT_PERCENTAGE = 20;
+            const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
+            const subtotal = originalSubtotal - discountAmount;
+            const shippingFee = originalSubtotal < 500 ? 100 : 0;
+            const total = subtotal + shippingFee;
+
+            // Process payment if credit card
+            let paymentResult = null;
+            if (paymentMethod === 'credit') {
+                try {
+                    const paymentResponse = await fetch('/api/payments/process', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            paymentMethod: 'credit',
+                            paymentData: {
+                                cardNumber: cardNumber.replace(/\s/g, ''),
+                                cardExpMonth,
+                                cardExpYear,
+                                cvv: cardCvv,
+                            },
+                            amount: total.toFixed(2),
+                            amountShipping: shippingFee > 0 ? shippingFee.toFixed(2) : undefined,
+                            amountTax: '0.00',
+                        }),
+                    });
+
+                    const paymentData = await paymentResponse.json();
+                    
+                    if (!paymentData.success) {
+                        throw new Error(paymentData.error || 'Payment processing failed');
+                    }
+
+                    paymentResult = paymentData;
+                } catch (paymentError: any) {
+                    console.error('Payment processing error:', paymentError);
+                    addToast({
+                        type: 'error',
+                        title: 'Payment Failed',
+                        description: paymentError.message || 'Failed to process payment. Please check your card details and try again.',
+                    });
+                    setProcessing(false);
+                    return;
+                }
+            }
+
+            // Create order after successful payment
             const order = await accountsAPI.checkout({
                 billing_address_id: billingAddressId,
                 shipping_address_id: finalShippingAddressId,
@@ -230,7 +307,9 @@ function CheckoutFormContent() {
             addToast({
                 type: 'success',
                 title: 'Order Placed',
-                description: 'Your order has been placed successfully!',
+                description: paymentResult 
+                    ? `Your order has been placed successfully! Transaction ID: ${paymentResult.transactionId}`
+                    : 'Your order has been placed successfully!',
             });
             
             // Redirect to order confirmation page
@@ -576,7 +655,7 @@ function CheckoutFormContent() {
                                     <RadioGroup
                                         value={paymentMethod}
                                         onValueChange={setPaymentMethod}
-                                        className="space-y-4 lg:mb-[65px] mb-[55px]"
+                                        className="space-y-4 mb-6"
                                     >
                                         <div className="flex space-x-[15px]">
                                             <RadioGroupItem value="credit" id="credit" className="w-[21px] h-[21px] relative top-[6px]"/>
@@ -593,6 +672,108 @@ function CheckoutFormContent() {
                                         </div>
                                     </RadioGroup>
 
+                                    {/* Credit Card Form */}
+                                    {paymentMethod === 'credit' && (
+                                        <div className="space-y-4 mb-6 p-4 bg-white rounded-lg border border-gray-200">
+                                            <h4 className="font-semibold text-[16px] mb-3">Credit Card Information</h4>
+                                            
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <Label htmlFor="cardholderName" className="form-label">Cardholder Name</Label>
+                                                    <Input
+                                                        id="cardholderName"
+                                                        type="text"
+                                                        placeholder="John Doe"
+                                                        value={cardholderName}
+                                                        onChange={(e) => setCardholderName(e.target.value)}
+                                                        className="form-input"
+                                                        maxLength={100}
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Label htmlFor="cardNumber" className="form-label">Card Number</Label>
+                                                    <Input
+                                                        id="cardNumber"
+                                                        type="text"
+                                                        placeholder="4444 3333 2222 1111"
+                                                        value={cardNumber}
+                                                        onChange={(e) => {
+                                                            // Format card number with spaces
+                                                            const value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                                                            const formatted = value.match(/.{1,4}/g)?.join(' ') || value;
+                                                            setCardNumber(formatted);
+                                                        }}
+                                                        className="form-input"
+                                                        maxLength={19}
+                                                    />
+                                                </div>
+
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="col-span-1">
+                                                        <Label htmlFor="cardExpMonth" className="form-label">Month</Label>
+                                                        <Select
+                                                            value={cardExpMonth}
+                                                            onValueChange={setCardExpMonth}
+                                                        >
+                                                            <SelectTrigger className="form-input">
+                                                                <SelectValue placeholder="MM" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {Array.from({ length: 12 }, (_, i) => {
+                                                                    const month = (i + 1).toString().padStart(2, '0');
+                                                                    return (
+                                                                        <SelectItem key={month} value={month}>
+                                                                            {month}
+                                                                        </SelectItem>
+                                                                    );
+                                                                })}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="col-span-1">
+                                                        <Label htmlFor="cardExpYear" className="form-label">Year</Label>
+                                                        <Select
+                                                            value={cardExpYear}
+                                                            onValueChange={setCardExpYear}
+                                                        >
+                                                            <SelectTrigger className="form-input">
+                                                                <SelectValue placeholder="YYYY" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {Array.from({ length: 20 }, (_, i) => {
+                                                                    const year = (new Date().getFullYear() + i).toString();
+                                                                    return (
+                                                                        <SelectItem key={year} value={year}>
+                                                                            {year}
+                                                                        </SelectItem>
+                                                                    );
+                                                                })}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+
+                                                    <div className="col-span-1">
+                                                        <Label htmlFor="cardCvv" className="form-label">CVV</Label>
+                                                        <Input
+                                                            id="cardCvv"
+                                                            type="text"
+                                                            placeholder="123"
+                                                            value={cardCvv}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value.replace(/\D/g, '');
+                                                                setCardCvv(value);
+                                                            }}
+                                                            className="form-input"
+                                                            maxLength={4}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="flex flex-wrap justify-center items-center lg:gap-[16px] gap-[10px]">
                                         <Image src="/images/visa.png" alt="Visa" width={57} height={40} />
                                         <Image src="/images/mastercard.png" alt="MasterCard" width={57} height={40} />
@@ -607,11 +788,16 @@ function CheckoutFormContent() {
 
                                     <Button
                                         onClick={handleCheckout}
-                                        disabled={processing || !billingAddressId || !shippingAddressId}
+                                        disabled={
+                                            processing || 
+                                            !billingAddressId || 
+                                            !shippingAddressId ||
+                                            (paymentMethod === 'credit' && (!cardNumber || !cardExpMonth || !cardExpYear || !cardCvv))
+                                        }
                                         variant="secondary"
                                         className="w-full h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] cursor-pointer bg-foreground text-white mt-6 disabled:opacity-50"
                                     >
-                                        {processing ? 'Processing...' : 'Place Order'}
+                                        {processing ? 'Processing Payment...' : 'Place Order'}
                                     </Button>
                                 </CardContent>
                             </Card>
