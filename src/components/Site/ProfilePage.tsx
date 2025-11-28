@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -265,7 +266,14 @@ export default function ProfilePage() {
         <div className="wrapper 2xl:px-0 px-[15px] mx-auto py-[50px]">
             <Card className="max-w-2xl mx-auto shadow-lg rounded-2xl gap-0 p-0">
                 <CardHeader className="py-[18px] gap-0">
-                    <CardTitle className="text-[22px] font-semibold">Profile Settings</CardTitle>
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-[22px] font-semibold">Profile Settings</CardTitle>
+                        <Link href="/accounts/orders">
+                            <Button variant="outline" className="h-auto py-2 px-4 text-[14px] font-semibold">
+                                My Orders
+                            </Button>
+                        </Link>
+                    </div>
                 </CardHeader>
                 <Separator />
                 <CardContent className="py-[24px]">

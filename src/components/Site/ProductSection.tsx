@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { type ProductDetail, type Part, type PriceGroup, type PriceTier } from '@/lib/api/catalog';
 import { createSlug } from '@/lib/utils/slug';
+import { stripHtmlTags } from '@/lib/utils';
+import { Truck } from 'lucide-react';
 import pen from "../../../public/images/pen.png";
 import { useAuth } from '@/contexts/AuthContext';
 import * as accountsAPI from '@/lib/api/accounts';
@@ -478,7 +480,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
         setIsAddingToCart(true);
         try {
             const cartData: accountsAPI.AddToCartRequest = {
-                product_id: product.product_id,
+                product_id: product.id,
                 part_id: selectedPart?.part_id,
                 quantity: selectedQuantity,
             };
@@ -570,7 +572,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
         setIsAddingToCart(true);
         try {
             const cartData: accountsAPI.AddToCartRequest = {
-                product_id: product.product_id,
+                product_id: product.id,
                 part_id: selectedPart?.part_id,
                 quantity: selectedQuantity,
             };
@@ -683,7 +685,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         <div className="mt-6">
                             <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Product Description</h3>
                             <p className="sm:text-[16px] text-[14px] leading-[24px] whitespace-pre-line">
-                                {product.description || 'No description available.'}
+                                {stripHtmlTags(product.description) || 'No description available.'}
                             </p>
                         </div>
 
@@ -886,7 +888,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                             )}
                                         </p>
                                         {selectedPart.description && (
-                                            <p className="text-[13px] text-[#888] italic">{selectedPart.description}</p>
+                                            <p className="text-[13px] text-[#888] italic">{stripHtmlTags(selectedPart.description)}</p>
                                         )}
                                         {selectedPart.primary_material && (
                                             <p className="text-[13px] text-[#888]">
@@ -1055,7 +1057,8 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                 {basePricingOptions.length > 0 && (() => {
                                     const minQty = Math.min(...basePricingOptions.map(t => t.quantity_min));
                                     const maxQty = Math.max(...basePricingOptions.map(t => t.quantity_max || t.quantity_min));
-                                    const inputMax = maxQty > 0 ? maxQty : 10000;
+                                    // Set inputMax to a very high value to allow users to enter any quantity
+                                    const inputMax = 1000000; // Allow up to 1 million units
                                     const inputMin = minQty > 0 ? minQty : 1;
                                     
                                     return (
@@ -1083,17 +1086,15 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                             }
                                                         }}
                                                         onBlur={(e) => {
-                                                            // Validate and clamp on blur only
+                                                            // Validate and clamp on blur only (no upper bound)
                                                             const value = parseFloat(e.target.value);
                                                             if (isNaN(value) || !isFinite(value) || value < inputMin) {
                                                                 setSelectedQuantity(inputMin);
-                                                            } else if (value > inputMax) {
-                                                                setSelectedQuantity(inputMax);
                                                             } else {
                                                                 setSelectedQuantity(Math.floor(value));
                                                             }
                                                         }}
-                                                        placeholder={`Min: ${inputMin}, Max: ${inputMax}`}
+                                                        placeholder={`Min: ${inputMin}`}
                                                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-[16px] font-semibold focus:outline-none focus:border-accent transition-colors"
                                                     />
                                                 </div>
@@ -1110,7 +1111,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                     <Button
                                                         variant="outline"
                                                         onClick={() => {
-                                                            setSelectedQuantity(Math.min(inputMax, selectedQuantity + 1));
+                                                            setSelectedQuantity(selectedQuantity + 1);
                                                         }}
                                                         className="w-10 h-10 rounded-lg text-[18px] font-bold"
                                                     >
@@ -1119,26 +1120,28 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                 </div>
                                             </div>
 
-                                            {/* Quantity Range Slider - Below Input */}
-                                            <div className="mt-4">
-                                                <label className="block font-semibold mb-2 text-[14px]">Adjust Quantity</label>
-                                                <input
-                                                    type="range"
-                                                    min={inputMin}
-                                                    max={inputMax}
-                                                    value={selectedQuantity}
-                                                    onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
-                                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent"
-                                                    style={{
-                                                        background: `linear-gradient(to right, #987727 0%, #987727 ${((selectedQuantity - inputMin) / (inputMax - inputMin)) * 100}%, #e5e7eb ${((selectedQuantity - inputMin) / (inputMax - inputMin)) * 100}%, #e5e7eb 100%)`
-                                                    }}
-                                                />
-                                                <div className="flex justify-between text-[12px] text-gray-500 mt-1">
-                                                    <span>{inputMin.toLocaleString()}</span>
-                                                    <span>{Math.floor((inputMin + inputMax) / 2).toLocaleString()}</span>
-                                                    <span>{inputMax.toLocaleString()}+</span>
+                                            {/* Quantity Range Slider - Below Input (only show if maxQty is reasonable) */}
+                                            {maxQty <= 10000 && (
+                                                <div className="mt-4">
+                                                    <label className="block font-semibold mb-2 text-[14px]">Adjust Quantity</label>
+                                                    <input
+                                                        type="range"
+                                                        min={inputMin}
+                                                        max={Math.max(maxQty, inputMin + 100)}
+                                                        value={Math.min(selectedQuantity, Math.max(maxQty, inputMin + 100))}
+                                                        onChange={(e) => setSelectedQuantity(parseInt(e.target.value))}
+                                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent"
+                                                        style={{
+                                                            background: `linear-gradient(to right, #987727 0%, #987727 ${((Math.min(selectedQuantity, Math.max(maxQty, inputMin + 100)) - inputMin) / (Math.max(maxQty, inputMin + 100) - inputMin)) * 100}%, #e5e7eb ${((Math.min(selectedQuantity, Math.max(maxQty, inputMin + 100)) - inputMin) / (Math.max(maxQty, inputMin + 100) - inputMin)) * 100}%, #e5e7eb 100%)`
+                                                        }}
+                                                    />
+                                                    <div className="flex justify-between text-[12px] text-gray-500 mt-1">
+                                                        <span>{inputMin.toLocaleString()}</span>
+                                                        <span>{Math.floor((inputMin + Math.max(maxQty, inputMin + 100)) / 2).toLocaleString()}</span>
+                                                        <span>{Math.max(maxQty, inputMin + 100).toLocaleString()}+</span>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </div>
                                     );
                                 })()}
@@ -1274,7 +1277,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                     
                                     {calculateShippingFee() > 0 && (
                                         <div className="flex items-center justify-between bg-yellow-50 px-3 py-2 rounded border border-yellow-200">
-                                            <span className="text-[16px] font-semibold text-yellow-800">Shipping Fee:</span>
+                                            <span className="text-[16px] font-semibold text-yellow-800">Less than minimum fee:</span>
                                             <span className="text-[18px] font-bold text-yellow-700">
                                                 +${calculateShippingFee().toFixed(2)}
                                             </span>
@@ -1317,6 +1320,19 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                         Includes base cost + {selectedSetupCharges.length} setup charge{selectedSetupCharges.length > 1 ? 's' : ''}
                                     </p>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Shipping Policy Information */}
+                        {!hasNoPricing && (
+                            <div className="xl:mb-6 mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Truck className="w-5 h-5 text-accent" />
+                                    <h4 className="font-semibold text-[16px] text-foreground">Shipping Information</h4>
+                                </div>
+                                <p className="text-[14px] text-foreground leading-relaxed">
+                                    Free ground shipping to the lower 48 states applies as long as the quantity of the item ordered multiplied by the per unit price is at least $500. Otherwise a flat $100 less than the minimum charge will apply for any such item. Additional charges may apply for shipping by air or to other locations. Certain items or customizations may incur additional costs not captured during checkout and will be quoted before processing the order. Unless exempt, sales tax will apply to orders shipped to Minnesota and will be added after checkout.
+                                </p>
                             </div>
                         )}
 

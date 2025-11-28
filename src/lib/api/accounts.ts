@@ -143,8 +143,8 @@ export interface Cart {
 }
 
 export interface AddToCartRequest {
-  product_id: string;
-  part_id?: string;
+  product_id: number; // Django primary key (unique ID from URL)
+  part_id?: string; // Part ID string (e.g., "1507C-517-OSM-CAP")
   quantity: number;
   customizations?: Array<{
     customization_type: 'screen_print' | 'embroidery' | 'digital_print';
@@ -191,6 +191,8 @@ export interface CheckoutRequest {
   billing_address_id: number;
   shipping_address_id: number;
   notes?: string;
+  payment_status?: 'paid' | 'pending' | 'failed';
+  transaction_id?: string;
 }
 
 // Quote Request Types
@@ -205,6 +207,7 @@ export interface QuoteRequest {
   specifications?: string;
   message?: string;
   product_id?: string;
+  referred_url?: string;
 }
 
 export interface QuoteRequestResponse {

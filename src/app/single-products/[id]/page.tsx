@@ -11,6 +11,7 @@ import ProductSection from "@/components/Site/ProductSection";
 import RelatedProducts from "@/components/Site/RelatedProducts";
 import SEOHead from "@/components/Site/SEOHead";
 import { getProductDetail, type ProductDetail } from '@/lib/api/catalog';
+import { stripHtmlTags } from '@/lib/utils';
 
 function ProductDetailContent() {
     const params = useParams();
@@ -52,8 +53,9 @@ function ProductDetailContent() {
 
     // Generate SEO metadata
     const keywords = product?.keywords?.map(k => k.keyword).join(', ') || '';
-    const metaDescription = product?.description 
-        ? product.description.substring(0, 155).trim() + (product.description.length > 155 ? '...' : '')
+    const plainDescription = product?.description ? stripHtmlTags(product.description) : '';
+    const metaDescription = plainDescription
+        ? plainDescription.substring(0, 155).trim() + (plainDescription.length > 155 ? '...' : '')
         : `${product?.product_name || 'Product'} - Browse our catalog at RELYmedia`;
     
     // Enhanced title with brand/category if available

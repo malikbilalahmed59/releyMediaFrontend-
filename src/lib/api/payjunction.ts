@@ -2,22 +2,16 @@
  * PayJunction API Service
  * 
  * Handles payment processing via PayJunction API
+ * Supports credit card and ACH payments with billing/shipping addresses
  */
 
-const PAYJUNCTION_SANDBOX_URL = 'https://api.payjunctionlabs.com';
-const PAYJUNCTION_PRODUCTION_URL = 'https://api.payjunction.com';
+const PAYJUNCTION_BASE_URL = process.env.PAYJUNCTION_USE_SANDBOX === 'false'
+  ? 'https://api.payjunction.com'
+  : 'https://api.payjunctionlabs.com';
 
-// Environment variables for PayJunction credentials
-const PAYJUNCTION_USERNAME = process.env.PAYJUNCTION_USERNAME || 'relymedia';
-const PAYJUNCTION_PASSWORD = process.env.PAYJUNCTION_PASSWORD || 'Bilal(00)Ahmed';
-const PAYJUNCTION_APP_KEY = process.env.PAYJUNCTION_APP_KEY || '83ef9f5a-b3da-43ba-97fd-2044c45751d5';
-const USE_SANDBOX = process.env.PAYJUNCTION_USE_SANDBOX !== 'false'; // Default to sandbox
-
-const BASE_URL = USE_SANDBOX ? PAYJUNCTION_SANDBOX_URL : PAYJUNCTION_PRODUCTION_URL;
-
-/**
- * Type definitions for PayJunction API
- */
+const PAYJUNCTION_USERNAME = process.env.PAYJUNCTION_USERNAME || '';
+const PAYJUNCTION_PASSWORD = process.env.PAYJUNCTION_PASSWORD || '';
+const PAYJUNCTION_APP_KEY = process.env.PAYJUNCTION_APP_KEY || '';
 
 export interface CreditCardPaymentRequest {
   cardNumber: string;
@@ -29,267 +23,177 @@ export interface CreditCardPaymentRequest {
   status?: 'CAPTURE' | 'HOLD'; // Default: CAPTURE
   amountShipping?: string; // Optional shipping amount
   amountTax?: string; // Optional tax amount
-}
-
-export interface ACHPaymentRequest {
-  achRoutingNumber: string;
-  achAccountNumber: string;
-  achAccountType: 'CHECKING' | 'SAVINGS';
-  achType: 'PPD' | 'WEB' | 'TEL' | 'CCD';
-  amountBase: string;
-  action?: 'CHARGE' | 'REFUND'; // Default: CHARGE
-  status?: 'CAPTURE' | 'HOLD'; // Default: CAPTURE
-}
-
-export interface TransactionUpdateRequest {
-  status?: 'VOID' | 'HOLD' | 'CAPTURE';
-  amountBase?: string;
-  amountShipping?: string;
-  amountTax?: string;
+  // Billing address fields
+  billingFirstName?: string;
+  billingLastName?: string;
+  billingCompanyName?: string;
+  billingAddress?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingZip?: string;
+  // Shipping address fields
+  shippingAddress?: string;
+  shippingCity?: string;
+  shippingState?: string;
+  shippingZip?: string;
 }
 
 export interface PayJunctionResponse {
   transactionId?: string;
-  status?: string;
+  transaction_id?: string;
+  status?: 'CAPTURE' | 'HOLD' | 'REFUND' | 'DECLINED' | 'VOID';
   message?: string;
   errors?: Array<{
-    field: string;
     message: string;
+    parameter?: string;
   }>;
-  [key: string]: any; // Allow for additional response fields
+  response?: {
+    approved?: boolean;
+    code?: string;
+    message?: string;
+    statusMessage?: string;
+    processor?: any;
+  };
+  [key: string]: any;
 }
 
 /**
- * Create Basic Auth header
+ * Create Basic Auth header for PayJunction
  */
 function getAuthHeader(): string {
-  // Ensure credentials are properly encoded
-  const username = PAYJUNCTION_USERNAME;
-  const password = PAYJUNCTION_PASSWORD;
-  const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+  const credentials = Buffer.from(`${PAYJUNCTION_USERNAME}:${PAYJUNCTION_PASSWORD}`).toString('base64');
   return `Basic ${credentials}`;
 }
 
 /**
- * Make request to PayJunction API
+ * Charge a credit card via PayJunction
  */
-async function payJunctionRequest<T>(
-  endpoint: string,
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'POST',
-  data?: Record<string, string>
-): Promise<T> {
-  const url = `${BASE_URL}${endpoint}`;
+export async function chargeCreditCard(data: CreditCardPaymentRequest): Promise<PayJunctionResponse> {
+  // Validate amountBase
+  const amountBase = parseFloat(data.amountBase);
+  if (isNaN(amountBase) || amountBase <= 0) {
+    throw new Error('Amount Base must be a positive number');
+  }
+
+  // Format amountBase to 2 decimal places
+  const formattedAmountBase = amountBase.toFixed(2);
+
+  // Build form data
+  const formData = new URLSearchParams();
+  formData.append('cardNumber', data.cardNumber);
+  formData.append('cardExpMonth', data.cardExpMonth.padStart(2, '0'));
+  formData.append('cardExpYear', data.cardExpYear);
+  formData.append('amountBase', formattedAmountBase);
   
-  const headers: HeadersInit = {
-    'Accept': 'application/json',
-    'X-PJ-Application-Key': PAYJUNCTION_APP_KEY,
-    'Authorization': getAuthHeader(),
-  };
-
-  const options: RequestInit = {
-    method,
-    headers,
-  };
-
-  // Add form data for POST/PUT requests
-  if (data && (method === 'POST' || method === 'PUT')) {
-    const formData = new URLSearchParams();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, value);
-      }
-    });
-    options.body = formData.toString();
-    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+  if (data.cvv) {
+    formData.append('cardCvv', data.cvv);
+  }
+  
+  if (data.action) {
+    formData.append('action', data.action);
+  } else {
+    formData.append('action', 'CHARGE');
+  }
+  
+  if (data.status) {
+    formData.append('status', data.status);
+  } else {
+    formData.append('status', 'CAPTURE');
   }
 
-  try {
-    const response = await fetch(url, options);
-    const responseText = await response.text();
-    
-    if (!response.ok) {
-      let errorMessage = `PayJunction API error: ${response.status} ${response.statusText}`;
-      try {
-        const errorData = JSON.parse(responseText);
-        errorMessage = errorData.message || errorData.error || errorMessage;
-        if (errorData.errors) {
-          errorMessage += ` - ${JSON.stringify(errorData.errors)}`;
-        }
-      } catch {
-        errorMessage += ` - ${responseText}`;
-      }
-      throw new Error(errorMessage);
+  // Add shipping and tax amounts if provided
+  if (data.amountShipping) {
+    const shippingAmount = parseFloat(data.amountShipping);
+    if (!isNaN(shippingAmount) && shippingAmount >= 0) {
+      formData.append('amountShipping', shippingAmount.toFixed(2));
     }
-
-    // Parse response
-    try {
-      return JSON.parse(responseText) as T;
-    } catch {
-      // If response is not JSON, return as text
-      return { message: responseText } as T;
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Unknown error occurred while processing payment');
   }
+
+  if (data.amountTax) {
+    const taxAmount = parseFloat(data.amountTax);
+    if (!isNaN(taxAmount) && taxAmount >= 0) {
+      formData.append('amountTax', taxAmount.toFixed(2));
+    }
+  }
+
+  // Add billing address fields if provided
+  if (data.billingFirstName) {
+    formData.append('billingFirstName', data.billingFirstName);
+  }
+  if (data.billingLastName) {
+    formData.append('billingLastName', data.billingLastName);
+  }
+  if (data.billingCompanyName) {
+    formData.append('billingCompanyName', data.billingCompanyName);
+  }
+  if (data.billingAddress) {
+    formData.append('billingAddress', data.billingAddress);
+  }
+  if (data.billingCity) {
+    formData.append('billingCity', data.billingCity);
+  }
+  if (data.billingState) {
+    formData.append('billingState', data.billingState);
+  }
+  if (data.billingZip) {
+    formData.append('billingZip', data.billingZip);
+  }
+
+  // Add shipping address fields if provided
+  if (data.shippingAddress) {
+    formData.append('shippingAddress', data.shippingAddress);
+  }
+  if (data.shippingCity) {
+    formData.append('shippingCity', data.shippingCity);
+  }
+  if (data.shippingState) {
+    formData.append('shippingState', data.shippingState);
+  }
+  if (data.shippingZip) {
+    formData.append('shippingZip', data.shippingZip);
+  }
+
+  const response = await fetch(`${PAYJUNCTION_BASE_URL}/transactions`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'X-PJ-Application-Key': PAYJUNCTION_APP_KEY,
+      'Authorization': getAuthHeader(),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: formData.toString(),
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    const errorMessage = responseData.errors?.[0]?.message || responseData.message || `PayJunction API error: ${response.statusText}`;
+    throw new Error(errorMessage);
+  }
+
+  return responseData;
 }
 
 /**
- * Charge a credit card (default action: CHARGE, default status: CAPTURE)
+ * Refund a credit card transaction
  */
-export async function chargeCreditCard(
-  request: CreditCardPaymentRequest
-): Promise<PayJunctionResponse> {
-  const data: Record<string, string> = {
-    cardNumber: request.cardNumber.replace(/\s/g, ''), // Remove spaces
-    cardExpMonth: request.cardExpMonth.padStart(2, '0'), // Ensure 2 digits
-    cardExpYear: request.cardExpYear,
-    amountBase: parseFloat(request.amountBase).toFixed(2),
-  };
-
-  // Add optional fields
-  if (request.action) {
-    data.action = request.action;
-  }
-  if (request.status) {
-    data.status = request.status;
-  }
-  if (request.amountShipping) {
-    data.amountShipping = parseFloat(request.amountShipping).toFixed(2);
-  }
-  if (request.amountTax) {
-    data.amountTax = parseFloat(request.amountTax).toFixed(2);
-  }
-  if (request.cvv) {
-    data.cardCvv = request.cvv;
-  }
-
-  return payJunctionRequest<PayJunctionResponse>('/transactions', 'POST', data);
-}
-
-/**
- * Refund a credit card
- */
-export async function refundCreditCard(
-  request: CreditCardPaymentRequest
-): Promise<PayJunctionResponse> {
+export async function refundCreditCard(data: Omit<CreditCardPaymentRequest, 'action'> & { action?: 'REFUND' }): Promise<PayJunctionResponse> {
   return chargeCreditCard({
-    ...request,
+    ...data,
     action: 'REFUND',
   });
 }
 
 /**
- * Authorize a credit card (hold funds without capturing)
+ * Refund an ACH transaction (placeholder - not implemented)
  */
-export async function authorizeCreditCard(
-  request: CreditCardPaymentRequest
-): Promise<PayJunctionResponse> {
-  return chargeCreditCard({
-    ...request,
-    status: 'HOLD',
-  });
+export async function refundACH(data: any): Promise<PayJunctionResponse> {
+  throw new Error('ACH refunds are not currently supported');
 }
 
 /**
- * Charge a checking account (ACH)
- */
-export async function chargeACH(
-  request: ACHPaymentRequest
-): Promise<PayJunctionResponse> {
-  const data: Record<string, string> = {
-    achRoutingNumber: request.achRoutingNumber,
-    achAccountNumber: request.achAccountNumber,
-    achAccountType: request.achAccountType,
-    achType: request.achType,
-    amountBase: parseFloat(request.amountBase).toFixed(2),
-  };
-
-  if (request.action) {
-    data.action = request.action;
-  }
-  if (request.status) {
-    data.status = request.status;
-  }
-
-  return payJunctionRequest<PayJunctionResponse>('/transactions', 'POST', data);
-}
-
-/**
- * Refund a checking account (ACH)
- */
-export async function refundACH(
-  request: ACHPaymentRequest
-): Promise<PayJunctionResponse> {
-  return chargeACH({
-    ...request,
-    action: 'REFUND',
-  });
-}
-
-/**
- * Update a transaction (void, hold, or capture)
- */
-export async function updateTransaction(
-  transactionId: string,
-  request: TransactionUpdateRequest
-): Promise<PayJunctionResponse> {
-  const data: Record<string, string> = {};
-
-  if (request.status) {
-    data.status = request.status;
-  }
-  if (request.amountBase) {
-    data.amountBase = parseFloat(request.amountBase).toFixed(2);
-  }
-  if (request.amountShipping) {
-    data.amountShipping = parseFloat(request.amountShipping).toFixed(2);
-  }
-  if (request.amountTax) {
-    data.amountTax = parseFloat(request.amountTax).toFixed(2);
-  }
-
-  return payJunctionRequest<PayJunctionResponse>(
-    `/transactions/${transactionId}`,
-    'PUT',
-    data
-  );
-}
-
-/**
- * Void a transaction
+ * Void a transaction (placeholder - not implemented)
  */
 export async function voidTransaction(transactionId: string): Promise<PayJunctionResponse> {
-  return updateTransaction(transactionId, { status: 'VOID' });
+  throw new Error('Transaction voiding is not currently supported');
 }
-
-/**
- * Capture a held transaction
- */
-export async function captureTransaction(
-  transactionId: string,
-  amountBase?: string,
-  amountShipping?: string
-): Promise<PayJunctionResponse> {
-  const request: TransactionUpdateRequest = { status: 'CAPTURE' };
-  if (amountBase) {
-    request.amountBase = amountBase;
-  }
-  if (amountShipping) {
-    request.amountShipping = amountShipping;
-  }
-  return updateTransaction(transactionId, request);
-}
-
-/**
- * Get transaction details
- */
-export async function getTransaction(transactionId: string): Promise<PayJunctionResponse> {
-  return payJunctionRequest<PayJunctionResponse>(
-    `/transactions/${transactionId}`,
-    'GET'
-  );
-}
-

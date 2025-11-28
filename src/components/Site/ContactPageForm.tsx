@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
@@ -22,6 +23,7 @@ import {
 function ContactPageForm() {
     const { isAuthenticated, user } = useAuth();
     const { addToast } = useToast();
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState({
         firstName: '',
@@ -103,24 +105,11 @@ function ContactPageForm() {
                 quantity: form.quantity,
                 product_type: form.productType,
                 message: form.message,
+                referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
             });
 
-            addToast({
-                type: 'success',
-                title: 'Quote Request Submitted',
-                description: 'Your quote request has been submitted successfully. We will contact you soon!',
-            });
-
-            // Reset form after successful submission
-            setForm({
-                firstName: isAuthenticated && user ? (user.first_name || '') : '',
-                lastName: isAuthenticated && user ? (user.last_name || '') : '',
-                email: isAuthenticated && user ? (user.email || '') : '',
-                phone: isAuthenticated && user ? (user.phone_number || '') : '',
-                quantity: '',
-                productType: '',
-                message: '',
-            });
+            // Redirect to success page
+            router.push('/success/contact');
         } catch (error: any) {
             console.error('Error submitting quote request:', error);
             addToast({

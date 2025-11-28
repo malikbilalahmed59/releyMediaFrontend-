@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {SquarePen, User} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +11,7 @@ import { useToast } from "@/components/ui/toast";
 function ContactForm() {
     const { isAuthenticated, user } = useAuth();
     const { addToast } = useToast();
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [form, setForm] = useState({
         name: '',
@@ -85,24 +87,11 @@ function ContactForm() {
                 phone: form.phone,
                 quantity: form.quantity,
                 specifications: form.specifications,
+                referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
             });
 
-            addToast({
-                type: 'success',
-                title: 'Quote Request Submitted',
-                description: 'Your quote request has been submitted successfully. We will contact you soon!',
-            });
-
-            // Reset form after successful submission (keep prefilled data if user is logged in)
-            setForm({
-                name: isAuthenticated && user 
-                    ? (user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username || '')
-                    : '',
-                email: isAuthenticated && user ? (user.email || '') : '',
-                phone: isAuthenticated && user ? (user.phone_number || '') : '',
-                quantity: '',
-                specifications: '',
-            });
+            // Redirect to success page
+            router.push('/success/quote-request');
         } catch (error: any) {
             console.error('Error submitting quote request:', error);
             addToast({

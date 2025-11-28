@@ -10,16 +10,19 @@ import 'swiper/css/pagination';
 import { Button } from "@/components/ui/button";
 import { MoveRight, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { searchProducts, type Product } from '@/lib/api/catalog';
+import { stripHtmlTags } from '@/lib/utils';
 import pen from "../../../public/images/pen.png";
 
 // Helper function to truncate description
 // Show more description for products without pricing to fill space
 const truncateDescription = (text: string, maxLength: number = 100, hasNoPricing: boolean = false): string => {
     if (!text) return '';
+    // Strip HTML tags first
+    const plainText = stripHtmlTags(text);
     // Show more description (200 chars) for products without pricing
     const length = hasNoPricing ? 200 : maxLength;
-    if (text.length <= length) return text;
-    return text.substring(0, length).trim() + '...';
+    if (plainText.length <= length) return plainText;
+    return plainText.substring(0, length).trim() + '...';
 };
 
 // Helper function to get product image

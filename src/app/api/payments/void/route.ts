@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error: any) {
-    console.error('Void transaction error:', error);
     return NextResponse.json(
       {
         success: false,
@@ -49,4 +48,11 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+
+
+
+
+
 

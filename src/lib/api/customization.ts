@@ -4,7 +4,9 @@
  * Handles customization options and pricing for apparel products
  */
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://backend.relymedia.com';
-const USE_PROXY = typeof window !== 'undefined';
+// Use Next.js API routes as proxy for client-side calls to avoid CORS issues
+// Set to false only if Django has CORS properly configured
+const USE_PROXY = typeof window !== 'undefined'; // Use proxy for client-side, direct for server-side
 
 /**
  * Type definitions for Customization API

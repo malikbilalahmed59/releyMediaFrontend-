@@ -7,6 +7,8 @@
 import { cachedFetch, parallelFetch } from './cache';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://backend.relymedia.com';
+// Use Next.js API routes as proxy for client-side calls to avoid CORS issues
+// Set to false only if Django has CORS properly configured
 const USE_PROXY = typeof window !== 'undefined'; // Use proxy for client-side, direct for server-side
 
 /**
@@ -129,7 +131,12 @@ export interface Part {
   unspsc?: string;
   primary_color?: Color;
   colors?: Color[];
-  apparel_size?: string;
+  // apparel_size can be either a string OR an object with nested size info
+  apparel_size?: string | {
+    apparel_style?: string;
+    label_size?: string;
+    custom_size?: string;
+  };
   apparel_style?: string;
   label_size?: string;
   custom_size?: string;
@@ -366,11 +373,12 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 /**
  * Get Product Detail
  * 
- * @param id - Product ID (Django primary key, not product_id)
+ * @param id - Product ID (can be Django primary key as number/string, or product_id as string)
  * @returns Promise with product details
  */
-export async function getProductDetail(id: number): Promise<ProductDetail> {
+export async function getProductDetail(id: number | string): Promise<ProductDetail> {
   // Use Next.js API route as proxy for client-side calls to avoid CORS
+  // The API route will handle both Django IDs and product_ids
   const url = USE_PROXY 
     ? `/api/catalog/products/${id}/detail`
     : `${API_BASE_URL}/api/catalog/products/${id}/detail/`;
@@ -383,12 +391,24 @@ export async function getProductDetail(id: number): Promise<ProductDetail> {
         'Content-Type': 'application/json',
       },
     }, true);
-  } catch (error) {
-    // Handle 404 specifically
-    if (error instanceof Error && error.message.includes('404')) {
-      throw new Error(`Product not found: ${id}`);
+  } catch (error: any) {
+    // Handle 404 specifically - check both status code and message
+    if (error?.status === 404 || (error instanceof Error && error.message.includes('404'))) {
+      const notFoundError = new Error(`Product not found: ${id}`);
+      (notFoundError as any).status = 404;
+      (notFoundError as any).isNotFound = true;
+      throw notFoundError;
     }
     console.error('Error fetching product detail:', error);
+    // Re-throw with more context if it's an HTTP error
+    if (error?.status) {
+      const httpError = new Error(error.message || `HTTP ${error.status}: ${error.statusText || 'Unknown error'}`) as any;
+      httpError.status = error.status;
+      httpError.statusText = error.statusText;
+      httpError.details = error.details;
+      httpError.url = error.url || url;
+      throw httpError;
+    }
     throw error;
   }
 }
