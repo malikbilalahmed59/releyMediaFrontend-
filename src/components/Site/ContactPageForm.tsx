@@ -11,6 +11,7 @@ import contact_shape from "../../../public/images/contact_shape_img.png";
 import { useAuth } from "@/contexts/AuthContext";
 import * as accountsAPI from '@/lib/api/accounts';
 import { useToast } from "@/components/ui/toast";
+import { getCategories, type Category } from '@/lib/api/catalog';
 
 import {
     Select,
@@ -25,6 +26,8 @@ function ContactPageForm() {
     const { addToast } = useToast();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
     const [form, setForm] = useState({
         firstName: '',
         lastName: '',
@@ -34,6 +37,21 @@ function ContactPageForm() {
         productType: '',
         message: '',
     })
+
+    // Fetch categories on component mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await getCategories();
+                setCategories(data.categories || []);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     // Prefill form with user data when authenticated
     useEffect(() => {
@@ -51,6 +69,12 @@ function ContactPageForm() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
+
+    // Helper function to validate phone number (exactly 10 digits)
+    const validatePhoneNumber = (phone: string): boolean => {
+        const digitsOnly = phone.replace(/\D/g, '');
+        return digitsOnly.length === 10;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -72,6 +96,8 @@ function ContactPageForm() {
         
         if (!form.phone || !form.phone.trim()) {
             errors.push('Phone number is required');
+        } else if (!validatePhoneNumber(form.phone)) {
+            errors.push('Phone number must be exactly 10 digits');
         }
         
         if (!form.quantity || !form.quantity.trim()) {
@@ -200,15 +226,23 @@ function ContactPageForm() {
                                     onValueChange={(value) =>
                                         setForm({ ...form, productType: value })
                                     }
-
+                                    value={form.productType}
                                 >
                                     <SelectTrigger id="productType" className="contact-input w-full h-[52px]">
                                         <SelectValue placeholder="Product Type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="bottle">Bottle</SelectItem>
-                                        <SelectItem value="can">Can</SelectItem>
-                                        <SelectItem value="box">Box</SelectItem>
+                                        {loadingCategories ? (
+                                            <SelectItem value="loading" disabled>Loading categories...</SelectItem>
+                                        ) : categories.length > 0 ? (
+                                            categories.map((category) => (
+                                                <SelectItem key={category.id} value={category.name}>
+                                                    {category.name}
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <SelectItem value="none" disabled>No categories available</SelectItem>
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>

@@ -19,7 +19,7 @@ function MainBanner({ productCount }: MainBannerProps) {
         : '1,000,000';
 
     const cont = {
-        heading: `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">${displayCount}</strong> Promotional Items <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`,
+        heading: `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">1,000,000</strong> Promotional Items <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`,
         features: [
             "110% Price Beat Guarantee",
             "Free Shipping, Proofs & Samples",

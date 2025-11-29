@@ -37,6 +37,12 @@ function ContactForm() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    // Helper function to validate phone number (exactly 10 digits)
+    const validatePhoneNumber = (phone: string): boolean => {
+        const digitsOnly = phone.replace(/\D/g, '');
+        return digitsOnly.length === 10;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -53,15 +59,15 @@ function ContactForm() {
         
         if (!form.phone || !form.phone.trim()) {
             errors.push('Phone number is required');
+        } else if (!validatePhoneNumber(form.phone)) {
+            errors.push('Phone number must be exactly 10 digits');
         }
         
         if (!form.quantity || !form.quantity.trim()) {
             errors.push('Quantity is required');
         }
         
-        if (!form.specifications || !form.specifications.trim()) {
-            errors.push('Specifications are required');
-        }
+        // Specifications is optional, no validation needed
         
         if (errors.length > 0) {
             addToast({
