@@ -47,7 +47,7 @@ function QuoteRequestSuccessContent() {
                                 </div>
                             </div>
                             <h2 className="lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold mb-4">
-                                Quote Request Submitted Successfully!
+                                THANK YOU!
                             </h2>
                             <p className="text-[16px] leading-[24px] text-muted-foreground mb-8">
                                 Your quote request has been submitted successfully. Our team will review your request and contact you soon. Most inquiries are responded to within 10 minutes.
@@ -108,5 +108,6 @@ function Page() {
 }
 
 export default Page;
+
 
 
