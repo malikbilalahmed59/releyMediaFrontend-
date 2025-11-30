@@ -456,6 +456,17 @@ export interface FilterMaterialsParams {
   category_id?: number;
   subcategory_id?: number;
   q?: string;
+  brand?: string;
+  material?: string; // Currently selected material (excluded from results)
+  color?: string;
+  closeout?: boolean;
+  usa_made?: boolean;
+  rush_service?: boolean;
+  eco_friendly?: boolean;
+  min_price?: number;
+  max_price?: number;
+  min_quantity?: number;
+  max_quantity?: number;
 }
 
 export interface FilterMaterial {
@@ -502,6 +513,17 @@ export interface FilterBrandsParams {
   category_id?: number;
   subcategory_id?: number;
   q?: string;
+  brand?: string; // Currently selected brand (excluded from results)
+  material?: string;
+  color?: string;
+  closeout?: boolean;
+  usa_made?: boolean;
+  rush_service?: boolean;
+  eco_friendly?: boolean;
+  min_price?: number;
+  max_price?: number;
+  min_quantity?: number;
+  max_quantity?: number;
 }
 
 export interface FilterBrand {

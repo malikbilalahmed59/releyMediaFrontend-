@@ -37,10 +37,10 @@ function ContactForm() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
-    // Helper function to validate phone number (exactly 10 digits)
+    // Helper function to validate phone number (minimum 10 digits, no maximum)
     const validatePhoneNumber = (phone: string): boolean => {
         const digitsOnly = phone.replace(/\D/g, '');
-        return digitsOnly.length === 10;
+        return digitsOnly.length >= 10;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +60,7 @@ function ContactForm() {
         if (!form.phone || !form.phone.trim()) {
             errors.push('Phone number is required');
         } else if (!validatePhoneNumber(form.phone)) {
-            errors.push('Phone number must be exactly 10 digits');
+            errors.push('Phone number must be at least 10 digits');
         }
         
         if (!form.quantity || !form.quantity.trim()) {
@@ -147,7 +147,7 @@ function ContactForm() {
                             <input
                                 type="email"
                                 name="email"
-                                placeholder="email"
+                                placeholder="Email"
                                 value={form.email}
                                 onChange={handleChange}
                                 className="bg-transparent outline-none text-white placeholder-white placeholder:text-[16px] text-[16px] w-full"
@@ -161,6 +161,7 @@ function ContactForm() {
                                 type="number"
                                 name="quantity"
                                 placeholder="Quantity"
+                                min="10"
                                 value={form.quantity}
                                 onChange={handleChange}
                                 className="bg-transparent outline-none text-white placeholder-white placeholder:text-[16px] text-[16px] w-full"

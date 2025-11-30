@@ -40,8 +40,13 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
     const [loadingMaterials, setLoadingMaterials] = useState(false);
     const [brands, setBrands] = useState<FilterBrand[]>([]);
     const [loadingBrands, setLoadingBrands] = useState(false);
-    const [showAllMaterials, setShowAllMaterials] = useState(false);
-    const [showAllBrands, setShowAllBrands] = useState(false);
+    // Initialize showAll states based on whether items are selected
+    const [showAllMaterials, setShowAllMaterials] = useState(() => {
+        return !!searchParams.get('material');
+    });
+    const [showAllBrands, setShowAllBrands] = useState(() => {
+        return !!searchParams.get('brand');
+    });
     const [showAllColors, setShowAllColors] = useState(false);
     
     // Static list of colors in the exact order provided
@@ -97,6 +102,19 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
     const [bestSelling, setBestSelling] = useState(searchParams.get('best_selling') === 'true');
     const [rushService, setRushService] = useState(searchParams.get('rush_service') === 'true');
     const [ecoFriendly, setEcoFriendly] = useState(searchParams.get('eco_friendly') === 'true');
+
+    // Auto-expand sections when items are selected
+    useEffect(() => {
+        if (selectedMaterial) {
+            setShowAllMaterials(true);
+        }
+    }, [selectedMaterial]);
+    
+    useEffect(() => {
+        if (selectedBrand) {
+            setShowAllBrands(true);
+        }
+    }, [selectedBrand]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -156,24 +174,58 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
             
             const categoryId = categoryData?.id;
             const searchQuery = searchParams.get('q') || undefined;
+            
+            // Get all current filter values from URL params
+            const currentBrand = searchParams.get('brand') || undefined;
+            const currentMaterial = searchParams.get('material') || undefined;
+            const currentColor = searchParams.get('color') || undefined;
+            const currentCloseout = searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined;
+            const currentUsaMade = searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined;
+            const currentRushService = searchParams.get('rush_service') === 'true' ? true : searchParams.get('rush_service') === 'false' ? false : undefined;
+            const currentEcoFriendly = searchParams.get('eco_friendly') === 'true' ? true : searchParams.get('eco_friendly') === 'false' ? false : undefined;
+            const currentMinPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
+            const currentMaxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
+            const currentMinQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
+            const currentMaxQuantity = searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined;
 
-            // Fetch materials and brands in PARALLEL for maximum speed
-            const params = {
+            // Base params with all filters except the one being fetched
+            const baseParams = {
                 category_id: categoryId,
                 subcategory_id: subcategoryId || undefined,
                 q: searchQuery,
+                color: currentColor,
+                closeout: currentCloseout,
+                usa_made: currentUsaMade,
+                rush_service: currentRushService,
+                eco_friendly: currentEcoFriendly,
+                min_price: currentMinPrice,
+                max_price: currentMaxPrice,
+                min_quantity: currentMinQuantity,
+                max_quantity: currentMaxQuantity,
             };
 
             setLoadingMaterials(true);
             setLoadingBrands(true);
             
             try {
+                // Fetch materials with brand filter (if brand is selected, show materials for that brand)
+                // Don't exclude selected material - it should appear in the list to show it's selected
+                // Fetch brands with material filter (if material is selected, show brands for that material)
+                // Don't exclude selected brand - it should appear in the list to show it's selected
                 const [materialsData, brandsData] = await Promise.all([
-                    getFilterMaterials(params).catch(err => {
+                    getFilterMaterials({
+                        ...baseParams,
+                        brand: currentBrand, // Include brand filter when fetching materials (filter by selected brand)
+                        // Don't pass material: currentMaterial - we want selected material to show in the list
+                    }).catch(err => {
                         console.error('Error fetching materials:', err);
                         return { materials: [] };
                     }),
-                    getFilterBrands(params).catch(err => {
+                    getFilterBrands({
+                        ...baseParams,
+                        // Don't pass brand: currentBrand - we want selected brand to show in the list
+                        material: currentMaterial, // Include material filter when fetching brands (filter by selected material)
+                    }).catch(err => {
                         console.error('Error fetching brands:', err);
                         return { brands: [] };
                     }),
@@ -588,35 +640,38 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                     ) : materials.length > 0 ? (
                         <>
                             <div className="space-y-2">
-                                {(showAllMaterials ? materials : materials.slice(0, 5)).map((material) => (
-                                    <div
-                                        key={material.name}
-                                        className={`flex items-center space-x-2 cursor-pointer hover:text-accent ${
-                                            selectedMaterial === material.name ? 'font-bold text-accent' : ''
-                                        }`}
-                                        onClick={() => {
-                                            const newMaterial = selectedMaterial === material.name ? null : material.name;
-                                            setSelectedMaterial(newMaterial);
-                                            const params = new URLSearchParams(searchParams.toString());
-                                            if (newMaterial) {
-                                                params.set('material', newMaterial);
-                                            } else {
-                                                params.delete('material');
-                                            }
-                                            params.set('page', '1');
-                                            updateUrlWithFilters(params);
-                                        }}
-                                    >
-                                        <Checkbox 
-                                            checked={selectedMaterial === material.name}
-                                            className="w-[18px] h-[18px]" 
-                                            disabled
-                                        />
-                                        <label className="text-[17px] text-[#919191] cursor-pointer flex-1">
-                                            {material.name} <span className="text-[14px] text-[#B2B2B2]">({material.count})</span>
-                                        </label>
-                                    </div>
-                                ))}
+                                {(showAllMaterials ? materials : materials.slice(0, 5)).map((material) => {
+                                    const handleMaterialChange = () => {
+                                        const newMaterial = selectedMaterial === material.name ? null : material.name;
+                                        setSelectedMaterial(newMaterial);
+                                        const params = new URLSearchParams(searchParams.toString());
+                                        if (newMaterial) {
+                                            params.set('material', newMaterial);
+                                        } else {
+                                            params.delete('material');
+                                        }
+                                        params.set('page', '1');
+                                        updateUrlWithFilters(params);
+                                    };
+                                    return (
+                                        <div
+                                            key={material.name}
+                                            className={`flex items-center space-x-2 cursor-pointer hover:text-accent ${
+                                                selectedMaterial === material.name ? 'font-bold text-accent' : ''
+                                            }`}
+                                            onClick={handleMaterialChange}
+                                        >
+                                            <Checkbox 
+                                                checked={selectedMaterial === material.name}
+                                                onCheckedChange={handleMaterialChange}
+                                                className="w-[18px] h-[18px]" 
+                                            />
+                                            <label className="text-[17px] text-[#919191] cursor-pointer flex-1">
+                                                {material.name} <span className="text-[14px] text-[#B2B2B2]">({material.count})</span>
+                                            </label>
+                                        </div>
+                                    );
+                                })}
                             </div>
                             {materials.length > 5 && (
                                 <button
@@ -650,35 +705,38 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                     ) : brands.length > 0 ? (
                         <>
                             <div className="space-y-2">
-                                {(showAllBrands ? brands : brands.slice(0, 5)).map((brand) => (
-                                    <div
-                                        key={brand.name}
-                                        className={`flex items-center space-x-2 cursor-pointer hover:text-accent ${
-                                            selectedBrand === brand.name ? 'font-bold text-accent' : ''
-                                        }`}
-                                        onClick={() => {
-                                            const newBrand = selectedBrand === brand.name ? null : brand.name;
-                                            setSelectedBrand(newBrand);
-                                            const params = new URLSearchParams(searchParams.toString());
-                                            if (newBrand) {
-                                                params.set('brand', newBrand);
-                                            } else {
-                                                params.delete('brand');
-                                            }
-                                            params.set('page', '1');
-                                            updateUrlWithFilters(params);
-                                        }}
-                                    >
-                                        <Checkbox 
-                                            checked={selectedBrand === brand.name}
-                                            className="w-[18px] h-[18px]" 
-                                            disabled
-                                        />
-                                        <label className="text-[17px] text-[#919191] cursor-pointer flex-1">
-                                            {brand.name} <span className="text-[14px] text-[#B2B2B2]">({brand.count})</span>
-                                        </label>
-                                    </div>
-                                ))}
+                                {(showAllBrands ? brands : brands.slice(0, 5)).map((brand) => {
+                                    const handleBrandChange = () => {
+                                        const newBrand = selectedBrand === brand.name ? null : brand.name;
+                                        setSelectedBrand(newBrand);
+                                        const params = new URLSearchParams(searchParams.toString());
+                                        if (newBrand) {
+                                            params.set('brand', newBrand);
+                                        } else {
+                                            params.delete('brand');
+                                        }
+                                        params.set('page', '1');
+                                        updateUrlWithFilters(params);
+                                    };
+                                    return (
+                                        <div
+                                            key={brand.name}
+                                            className={`flex items-center space-x-2 cursor-pointer hover:text-accent ${
+                                                selectedBrand === brand.name ? 'font-bold text-accent' : ''
+                                            }`}
+                                            onClick={handleBrandChange}
+                                        >
+                                            <Checkbox 
+                                                checked={selectedBrand === brand.name}
+                                                onCheckedChange={handleBrandChange}
+                                                className="w-[18px] h-[18px]" 
+                                            />
+                                            <label className="text-[17px] text-[#919191] cursor-pointer flex-1">
+                                                {brand.name} <span className="text-[14px] text-[#B2B2B2]">({brand.count})</span>
+                                            </label>
+                                        </div>
+                                    );
+                                })}
                             </div>
                             {brands.length > 5 && (
                                 <button
@@ -707,35 +765,38 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
             <div className="mb-[20px]">
                 <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Colors</h4>
                 <div className="grid grid-cols-3 gap-2">
-                    {(showAllColors ? staticColors : staticColors.slice(0, 15)).map((color) => (
-                        <div
-                            key={color}
-                            className={`flex items-center space-x-1 cursor-pointer hover:text-accent ${
-                                selectedColor === color ? 'font-bold text-accent' : ''
-                            }`}
-                            onClick={() => {
-                                const newColor = selectedColor === color ? null : color;
-                                setSelectedColor(newColor);
-                                const params = new URLSearchParams(searchParams.toString());
-                                if (newColor) {
-                                    params.set('color', newColor);
-                                } else {
-                                    params.delete('color');
-                                }
-                                params.set('page', '1');
-                                updateUrlWithFilters(params);
-                            }}
-                        >
-                            <Checkbox 
-                                checked={selectedColor === color}
-                                className="w-[16px] h-[16px]" 
-                                disabled
-                            />
-                            <label className="text-[14px] text-[#919191] cursor-pointer flex-1 truncate">
-                                {color}
-                            </label>
-                        </div>
-                    ))}
+                    {(showAllColors ? staticColors : staticColors.slice(0, 15)).map((color) => {
+                        const handleColorChange = () => {
+                            const newColor = selectedColor === color ? null : color;
+                            setSelectedColor(newColor);
+                            const params = new URLSearchParams(searchParams.toString());
+                            if (newColor) {
+                                params.set('color', newColor);
+                            } else {
+                                params.delete('color');
+                            }
+                            params.set('page', '1');
+                            updateUrlWithFilters(params);
+                        };
+                        return (
+                            <div
+                                key={color}
+                                className={`flex items-center space-x-1 cursor-pointer hover:text-accent ${
+                                    selectedColor === color ? 'font-bold text-accent' : ''
+                                }`}
+                                onClick={handleColorChange}
+                            >
+                                <Checkbox 
+                                    checked={selectedColor === color}
+                                    onCheckedChange={handleColorChange}
+                                    className="w-[16px] h-[16px]" 
+                                />
+                                <label className="text-[14px] text-[#919191] cursor-pointer flex-1 truncate">
+                                    {color}
+                                </label>
+                            </div>
+                        );
+                    })}
                 </div>
                 {staticColors.length > 15 && (
                     <button

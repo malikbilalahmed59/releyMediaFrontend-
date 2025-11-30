@@ -116,7 +116,7 @@ function CategoryProductsContent() {
             }>
                 <Header/>
             </Suspense>
-            <MainBanner productCount={searchResults?.count} />
+            <MainBanner productCount={searchResults?.count} categoryName={category?.name} />
             {loading && (
                 <div className="py-[50px] pb-[75px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

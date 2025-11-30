@@ -28,7 +28,7 @@ function HomeContent() {
           <Product_Categories/>
           <BestSelling/>
           <Services/>
-          <Search_Terms/>
+          {/* <Search_Terms/> */}
           <Customer_Feedback/>
           <Client_Logo/>
           <Footer/>

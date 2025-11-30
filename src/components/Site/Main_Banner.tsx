@@ -5,9 +5,10 @@ import Contact_Form from "@/components/Site/Contact_Form";
 
 interface MainBannerProps {
     productCount?: number | null;
+    categoryName?: string | null;
 }
 
-function MainBanner({ productCount }: MainBannerProps) {
+function MainBanner({ productCount, categoryName }: MainBannerProps) {
     // Format number with commas
     const formatNumber = (num: number): string => {
         return num.toLocaleString('en-US');
@@ -16,10 +17,20 @@ function MainBanner({ productCount }: MainBannerProps) {
     // Use provided product count if available, otherwise use default
     const displayCount = productCount && productCount > 0 
         ? formatNumber(productCount) 
-        : '1,000,000';
+        : '774,044';
+
+    // Generate heading based on whether we have a category name
+    let heading: string;
+    if (categoryName && productCount && productCount > 0) {
+        // Show "Found X [category] products" format for category pages
+        heading = `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">${displayCount}</strong> ${categoryName} Products <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`;
+    } else {
+        // Default heading for home page or when no category
+        heading = `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">${displayCount}</strong> Promotional Items <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`;
+    }
 
     const cont = {
-        heading: `Over <strong class="font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">1,000,000</strong> Promotional Items <br/> at Prices <span class="text-accent font-black 2xl:text-[45px] xl:text-[40px] md:text-[36px] sm:text-[30px] text-[26px]">25%+</span> Below the Competition`,
+        heading: heading,
         features: [
             "110% Price Beat Guarantee",
             "Free Shipping, Proofs & Samples",
