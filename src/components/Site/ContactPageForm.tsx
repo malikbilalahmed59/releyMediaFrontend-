@@ -70,10 +70,10 @@ function ContactPageForm() {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
-    // Helper function to validate phone number (exactly 10 digits)
+    // Helper function to validate phone number (minimum 10 digits, no maximum)
     const validatePhoneNumber = (phone: string): boolean => {
         const digitsOnly = phone.replace(/\D/g, '');
-        return digitsOnly.length === 10;
+        return digitsOnly.length >= 10;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -97,7 +97,7 @@ function ContactPageForm() {
         if (!form.phone || !form.phone.trim()) {
             errors.push('Phone number is required');
         } else if (!validatePhoneNumber(form.phone)) {
-            errors.push('Phone number must be exactly 10 digits');
+            errors.push('Phone number must be at least 10 digits');
         }
         
         if (!form.quantity || !form.quantity.trim()) {
@@ -108,9 +108,7 @@ function ContactPageForm() {
             errors.push('Product type is required');
         }
         
-        if (!form.message || !form.message.trim()) {
-            errors.push('Message is required');
-        }
+        // Message is optional, no validation needed
         
         if (errors.length > 0) {
             addToast({
@@ -123,13 +121,18 @@ function ContactPageForm() {
 
         setIsSubmitting(true);
         try {
+            // Combine first name and last name into name field
+            const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
+            
             await accountsAPI.submitQuoteRequest({
+                name: fullName,
                 first_name: form.firstName,
                 last_name: form.lastName,
                 email: form.email,
                 phone: form.phone,
                 quantity: form.quantity,
                 product_type: form.productType,
+                specifications: form.message, // Map message to specifications field
                 message: form.message,
                 referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
             });
