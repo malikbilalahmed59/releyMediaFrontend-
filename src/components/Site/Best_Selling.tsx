@@ -84,7 +84,7 @@ function BestSelling() {
         return (
             <section className="2xl:pb-[80px] xl:py-[60px] sm:py-[50px] py-[40px]">
                 <div className="wrapper 2xl:px-0 px-[15px]">
-                    <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">Best Selling</h2>
+                    <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">On Sale Now</h2>
                     <div className="text-center py-[50px]">
                         <p className="text-[18px]">Loading best selling products...</p>
                     </div>
@@ -97,7 +97,7 @@ function BestSelling() {
         return (
             <section className="2xl:pb-[80px] xl:py-[60px] sm:py-[50px] py-[40px]">
                 <div className="wrapper 2xl:px-0 px-[15px]">
-                    <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">Best Selling</h2>
+                    <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">On Sale Now</h2>
                     <div className="text-center py-[50px]">
                         <p className="text-red-500 text-[18px]">Error: {error}</p>
                     </div>
@@ -189,9 +189,9 @@ function BestSelling() {
     };
 
     return (
-        <section className="2xl:pb-[80px] xl:py-[60px] sm:py-[50px] py-[40px]">
+        <section className="2xl:pb-[80px] xl:pt-[30px] xl:pb-[60px] sm:pt-[25px] sm:pb-[50px] pt-[20px] pb-[40px]">
             <div className="wrapper 2xl:px-0 px-[15px]">
-                <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">Best Selling</h2>
+                <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">On Sale Now</h2>
                 
                 <div className="relative">
                     <Swiper

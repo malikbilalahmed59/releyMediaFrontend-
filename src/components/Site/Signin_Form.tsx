@@ -100,7 +100,7 @@ function Signin_Form() {
                                 <Input
                                     type="email"
                                     name="email"
-                                    placeholder="Enter your email address"
+                                    placeholder="Email"
                                     value={form.email}
                                     onChange={handleChange}
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
@@ -111,7 +111,7 @@ function Signin_Form() {
                                 <Input
                                     type="password"
                                     name="password"
-                                    placeholder="Enter your password"
+                                    placeholder="Password"
                                     value={form.password}
                                     onChange={handleChange}
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"

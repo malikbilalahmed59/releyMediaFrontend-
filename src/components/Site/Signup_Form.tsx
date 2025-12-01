@@ -12,14 +12,11 @@ import { useRouter } from "next/navigation"
 
 function Signup_Form() {
     const [form, setForm] = useState({
-        firstName: '',
-        lastName: '',
+        name: '',
         email: '',
         phone: '',
         password: '',
         confirmPassword: '',
-        username: '',
-        businessName: '',
     })
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
@@ -28,7 +25,15 @@ function Signup_Form() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setForm({ ...form, [name]: value })
+        
+        // Special handling for phone field - only allow numbers and limit to 10 digits
+        if (name === 'phone') {
+            const digitsOnly = value.replace(/\D/g, '');
+            const limitedValue = digitsOnly.slice(0, 10);
+            setForm({ ...form, [name]: limitedValue });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
         setError(null) // Clear error on input change
     }
 
@@ -37,6 +42,24 @@ function Signup_Form() {
         setError(null)
 
         // Validation
+        if (!form.name || !form.name.trim()) {
+            setError('Name is required')
+            return
+        }
+
+        if (!form.email || !form.email.trim()) {
+            setError('Email is required')
+            return
+        }
+
+        if (form.phone && form.phone.trim()) {
+            const digitsOnly = form.phone.replace(/\D/g, '');
+            if (digitsOnly.length !== 10) {
+                setError('Phone number must be exactly 10 digits')
+                return
+            }
+        }
+
         if (form.password !== form.confirmPassword) {
             setError('Passwords do not match')
             return
@@ -47,8 +70,12 @@ function Signup_Form() {
             return
         }
 
-        // Generate username from email if not provided
-        const username = form.username || form.email.split('@')[0]
+        // Generate username from email
+        const username = form.email.split('@')[0]
+        // Split name into first and last name
+        const nameParts = form.name.trim().split(/\s+/)
+        const firstName = nameParts[0] || ''
+        const lastName = nameParts.slice(1).join(' ') || ''
 
         setIsLoading(true)
 
@@ -58,10 +85,10 @@ function Signup_Form() {
                 username: username,
                 password: form.password,
                 password_confirm: form.confirmPassword,
-                first_name: form.firstName,
-                last_name: form.lastName,
+                first_name: firstName,
+                last_name: lastName,
                 phone_number: form.phone,
-                business_name: form.businessName,
+                business_name: '',
             })
             
             // Redirect to home after successful registration (auto-login happens in register)
@@ -80,97 +107,62 @@ function Signup_Form() {
                         onSubmit={handleSubmit}
                         className="w-full max-w-[821px] border-[#2525251A] rounded-[12px] sm:px-[24px] px-[18px] md:py-[36px] py-[26px] border"
                     >
-                        <h2 className="lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold text-center mb-[26px]">
-                            Get Started
-                        </h2>
-
-                        {/* First & Last Name */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        {/* Name */}
+                        <div className="mb-4">
                             <div className="relative w-full">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="text"
-                                    name="firstName"
-                                    placeholder="Enter your first name"
-                                    value={form.firstName}
+                                    name="name"
+                                    placeholder="Name"
+                                    value={form.name}
                                     onChange={handleChange}
-                                    className="!pl-10 contact-input !h-auto !rounded-[12px]"
-                                />
-                            </div>
-                            <div className="relative w-full">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
-                                <Input
-                                    type="text"
-                                    name="lastName"
-                                    placeholder="Enter your last name"
-                                    value={form.lastName}
-                                    onChange={handleChange}
+                                    required
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                         </div>
 
-                        {/* Email & Phone */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        {/* Email */}
+                        <div className="mb-4">
                             <div className="relative w-full">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="email"
                                     name="email"
-                                    placeholder="Enter your email address"
+                                    placeholder="Email"
                                     value={form.email}
                                     onChange={handleChange}
                                     required
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
+                        </div>
+
+                        {/* Phone */}
+                        <div className="mb-4">
                             <div className="relative w-full">
                                 <PhoneCall className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="tel"
                                     name="phone"
-                                    placeholder="Enter your phone number"
+                                    placeholder="Phone"
                                     value={form.phone}
                                     onChange={handleChange}
+                                    maxLength={10}
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                         </div>
 
-                        {/* Username & Business Name */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                            <div className="relative w-full">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
-                                <Input
-                                    type="text"
-                                    name="username"
-                                    placeholder="Username (optional)"
-                                    value={form.username}
-                                    onChange={handleChange}
-                                    className="!pl-10 contact-input !h-auto !rounded-[12px]"
-                                />
-                            </div>
-                            <div className="relative w-full">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
-                                <Input
-                                    type="text"
-                                    name="businessName"
-                                    placeholder="Business name (optional)"
-                                    value={form.businessName}
-                                    onChange={handleChange}
-                                    className="!pl-10 contact-input !h-auto !rounded-[12px]"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password & Confirm Password */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        {/* Password */}
+                        <div className="mb-4">
                             <div className="relative w-full">
                                 <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="password"
                                     name="password"
-                                    placeholder="Enter your password"
+                                    placeholder="Password"
                                     value={form.password}
                                     onChange={handleChange}
                                     required
@@ -178,12 +170,16 @@ function Signup_Form() {
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
+                        </div>
+
+                        {/* Confirm Password */}
+                        <div className="mb-4">
                             <div className="relative w-full">
                                 <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="password"
                                     name="confirmPassword"
-                                    placeholder="Confirm password"
+                                    placeholder="Confirm Password"
                                     value={form.confirmPassword}
                                     onChange={handleChange}
                                     required

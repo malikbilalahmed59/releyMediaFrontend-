@@ -419,26 +419,19 @@ export default function ProfilePage() {
                                                 <Checkbox
                                                     id="same_as_billing_profile"
                                                     checked={sameAsBilling}
-                                                    onCheckedChange={(checked) => {
-                                                        setSameAsBilling(checked as boolean);
+                                                    onCheckedChange={async (checked) => {
+                                                        const isChecked = checked as boolean;
+                                                        setSameAsBilling(isChecked);
+                                                        // Automatically sync when checkbox is checked
+                                                        if (isChecked && selectedBillingId) {
+                                                            await handleSyncAddresses();
+                                                        }
                                                     }}
                                                 />
                                                 <Label htmlFor="same_as_billing_profile" className="text-[14px] cursor-pointer font-semibold">
                                                     Same as billing address
                                                 </Label>
                                             </div>
-                                            {sameAsBilling && selectedBillingId && (
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={handleSyncAddresses}
-                                                    disabled={processing}
-                                                    className="h-8 text-xs font-semibold"
-                                                >
-                                                    {processing ? 'Syncing...' : '🔄 Sync Now'}
-                                                </Button>
-                                            )}
                                         </div>
                                     </div>
                                     {sameAsBilling && selectedBillingId && (
@@ -466,14 +459,6 @@ export default function ProfilePage() {
                                             onAddressSaved={handleAddressSaved}
                                             syncWithType={null}
                                         />
-                                    )}
-                                    {sameAsBilling && (
-                                        <div className="text-center py-4 bg-muted/30 rounded-lg">
-                                            <p className="text-[14px] text-muted-foreground">
-                                                Shipping address will be the same as billing address. 
-                                                Create or edit a billing address to sync automatically, or click "Sync Now" to sync existing addresses.
-                                            </p>
-                                        </div>
                                     )}
                                 </div>
                             </div>

@@ -34,13 +34,22 @@ function ContactForm() {
     }, [isAuthenticated, user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        
+        // Special handling for phone field - only allow numbers and limit to 10 digits
+        if (name === 'phone') {
+            const digitsOnly = value.replace(/\D/g, '');
+            const limitedValue = digitsOnly.slice(0, 10);
+            setForm({ ...form, [name]: limitedValue });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
     };
 
-    // Helper function to validate phone number (minimum 10 digits, no maximum)
+    // Helper function to validate phone number (exactly 10 digits)
     const validatePhoneNumber = (phone: string): boolean => {
         const digitsOnly = phone.replace(/\D/g, '');
-        return digitsOnly.length >= 10;
+        return digitsOnly.length === 10;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +69,7 @@ function ContactForm() {
         if (!form.phone || !form.phone.trim()) {
             errors.push('Phone number is required');
         } else if (!validatePhoneNumber(form.phone)) {
-            errors.push('Phone number must be at least 10 digits');
+            errors.push('Phone number must be exactly 10 digits');
         }
         
         if (!form.quantity || !form.quantity.trim()) {

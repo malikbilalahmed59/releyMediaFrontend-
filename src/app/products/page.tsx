@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useRef, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Header from "@/components/Site/Header";
 import Footer from "@/components/Site/Footer";
@@ -18,6 +18,45 @@ function ProductsContent() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [redirecting, setRedirecting] = useState(false);
+
+    const abortControllerRef = useRef<AbortController | null>(null);
+
+    // Memoize search params to prevent unnecessary refetches
+    const searchParamsMemo = useMemo(() => {
+        const query = searchParams.get('q') || '';
+        const page = parseInt(searchParams.get('page') || '1');
+        const ordering = (searchParams.get('ordering') as any) || 'best_match';
+        const minPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
+        const maxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
+        const minQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
+        const maxQuantity = searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined;
+        const material = searchParams.get('material') || undefined;
+        const brand = searchParams.get('brand') || undefined;
+        const color = searchParams.get('color') || undefined;
+        const closeout = searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined;
+        const usaMade = searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined;
+        const bestSelling = searchParams.get('best_selling') === 'true' ? true : searchParams.get('best_selling') === 'false' ? false : undefined;
+        const rushService = searchParams.get('rush_service') === 'true' ? true : searchParams.get('rush_service') === 'false' ? false : undefined;
+        const ecoFriendly = searchParams.get('eco_friendly') === 'true' ? true : searchParams.get('eco_friendly') === 'false' ? false : undefined;
+        
+        return {
+            query,
+            page,
+            ordering,
+            minPrice,
+            maxPrice,
+            minQuantity,
+            maxQuantity,
+            material,
+            brand,
+            color,
+            closeout,
+            usaMade,
+            bestSelling,
+            rushService,
+            ecoFriendly,
+        };
+    }, [searchParams]);
 
     useEffect(() => {
         // Handle backward compatibility: redirect old category_id URLs to slug-based URLs
@@ -46,58 +85,65 @@ function ProductsContent() {
             return;
         }
 
-        const query = searchParams.get('q') || '';
-        const page = parseInt(searchParams.get('page') || '1');
-        const ordering = (searchParams.get('ordering') as any) || 'best_match';
-        const minPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
-        const maxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
-        const minQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
-        const maxQuantity = searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined;
-        const material = searchParams.get('material') || undefined;
-        const brand = searchParams.get('brand') || undefined;
-        const color = searchParams.get('color') || undefined;
-        const closeout = searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined;
-        const usaMade = searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined;
-        const bestSelling = searchParams.get('best_selling') === 'true' ? true : searchParams.get('best_selling') === 'false' ? false : undefined;
-        const rushService = searchParams.get('rush_service') === 'true' ? true : searchParams.get('rush_service') === 'false' ? false : undefined;
-        const ecoFriendly = searchParams.get('eco_friendly') === 'true' ? true : searchParams.get('eco_friendly') === 'false' ? false : undefined;
-
         const fetchProducts = async () => {
+            // Cancel previous request if it exists
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+            
+            // Create new AbortController for this request
+            abortControllerRef.current = new AbortController();
+            const signal = abortControllerRef.current.signal;
+            
             setLoading(true);
             setError(null);
             try {
                 // Use search endpoint (category pages are now handled by /products/category/[slug])
                 const results = await searchProducts({
-                    q: query || undefined,
-                    page,
-                    ordering,
-                    min_price: minPrice,
-                    max_price: maxPrice,
-                    min_quantity: minQuantity,
-                    max_quantity: maxQuantity,
-                    material,
-                    brand,
-                    color,
-                    closeout,
-                    usa_made: usaMade,
-                    best_selling: bestSelling,
-                    rush_service: rushService,
-                    eco_friendly: ecoFriendly,
+                    q: searchParamsMemo.query || undefined,
+                    page: searchParamsMemo.page,
+                    ordering: searchParamsMemo.ordering,
+                    min_price: searchParamsMemo.minPrice,
+                    max_price: searchParamsMemo.maxPrice,
+                    min_quantity: searchParamsMemo.minQuantity,
+                    max_quantity: searchParamsMemo.maxQuantity,
+                    material: searchParamsMemo.material,
+                    brand: searchParamsMemo.brand,
+                    color: searchParamsMemo.color,
+                    closeout: searchParamsMemo.closeout,
+                    usa_made: searchParamsMemo.usaMade,
+                    best_selling: searchParamsMemo.bestSelling,
+                    rush_service: searchParamsMemo.rushService,
+                    eco_friendly: searchParamsMemo.ecoFriendly,
                     page_size: 24,
                 });
+                
+                if (signal.aborted) return;
+                
                 setSearchResults(results);
             } catch (err) {
+                if (signal.aborted) return;
+                
                 setError(err instanceof Error ? err.message : 'Failed to fetch products');
                 console.error('Error fetching products:', err);
             } finally {
-                setLoading(false);
+                if (!signal.aborted) {
+                    setLoading(false);
+                }
             }
         };
 
         if (!redirecting) {
             fetchProducts();
         }
-    }, [searchParams, redirecting, router]);
+        
+        // Cleanup: abort request on unmount or when dependencies change
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, [searchParamsMemo, redirecting, router]);
 
     // Generate SEO metadata from search results
     const query = searchParams.get('q') || '';
@@ -106,7 +152,7 @@ function ProductsContent() {
         (query ? `Search Results for '${query}'` : 'Products') + 
         (page > 1 ? ` - Page ${page}` : '');
     const seoDescription = searchResults?.meta?.seo?.description || 
-        (searchResults ? `Found ${searchResults.count} products` : 'Browse our product catalog');
+        (searchResults ? `Found ${searchResults.count.toLocaleString('en-US')} products` : 'Browse our product catalog');
     const canonicalUrl = searchResults?.meta?.seo?.canonical_url || '';
 
     if (redirecting) {

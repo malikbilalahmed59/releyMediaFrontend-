@@ -21,51 +21,11 @@ function CartContent() {
     const router = useRouter();
     const { addToast } = useToast();
 
-    // Check if user has both billing and shipping addresses
-    const checkAddresses = async (): Promise<boolean> => {
-        try {
-            const addresses = await accountsAPI.getAddresses();
-            // Handle different response formats
-            let addressList: UserAddress[] = [];
-            if (Array.isArray(addresses)) {
-                addressList = addresses;
-            } else if (addresses && typeof addresses === 'object') {
-                if (Array.isArray((addresses as any).results)) {
-                    addressList = (addresses as any).results;
-                } else if (Array.isArray((addresses as any).data)) {
-                    addressList = (addresses as any).data;
-                } else if (Array.isArray((addresses as any).addresses)) {
-                    addressList = (addresses as any).addresses;
-                }
-            }
-            
-            const hasBilling = addressList.some(addr => addr.address_type === 'billing');
-            const hasShipping = addressList.some(addr => addr.address_type === 'shipping');
-            
-            return hasBilling && hasShipping;
-        } catch (error) {
-            console.error('Error checking addresses:', error);
-            return false;
-        }
-    };
-
     const handleProceedToCheckout = async (e: React.MouseEvent) => {
         e.preventDefault();
         
         if (!isAuthenticated) {
             router.push(`/signin?returnUrl=${encodeURIComponent('/cart')}`);
-            return;
-        }
-
-        const hasAddresses = await checkAddresses();
-        
-        if (!hasAddresses) {
-            addToast({
-                type: 'warning',
-                title: 'Addresses Required',
-                description: 'Please add both billing and shipping addresses in your profile before proceeding to checkout.',
-            });
-            router.push('/profile?tab=addresses');
             return;
         }
 
@@ -212,16 +172,40 @@ function CartContent() {
     const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
     const finalSubtotal = originalSubtotal - discountAmount;
     
-    // Calculate shipping fee (if base price < $500, add $100)
+    // Calculate shipping fee per product (if base price * quantity < $500, add $100 per product)
     const calculateShippingFee = (): number => {
-        if (originalSubtotal < 500) {
-            return 100;
+        if (!cart || !cart.items || cart.items.length === 0) {
+            return 0;
         }
-        return 0;
+        
+        let totalFee = 0;
+        
+        // Check each product individually
+        cart.items.forEach((item) => {
+            const pricePerUnit = typeof item.price_per_unit === 'string' 
+                ? parseFloat(item.price_per_unit) 
+                : (item.price_per_unit || 0);
+            
+            // Calculate base price * quantity for this product
+            const productTotal = pricePerUnit * item.quantity;
+            
+            // If product total is less than $500, add $100 fee for this product
+            if (productTotal < 500) {
+                totalFee += 100;
+            }
+        });
+        
+        return totalFee;
     };
     
     const shippingFee = calculateShippingFee();
-    const hasFreeShipping = originalSubtotal >= 500;
+    // Check if all products have free shipping (each product >= $500)
+    const hasFreeShipping = cart.items.every((item) => {
+        const pricePerUnit = typeof item.price_per_unit === 'string' 
+            ? parseFloat(item.price_per_unit) 
+            : (item.price_per_unit || 0);
+        return (pricePerUnit * item.quantity) >= 500;
+    });
     const grandTotal = finalSubtotal + shippingFee;
     
     // Calculate total quantity for display
@@ -241,7 +225,7 @@ function CartContent() {
             </div>
             <div className="sm:pt-[50px] pt-[30px] xl:pb-[115px] lg:pb-[80px] pb-[50px]">
                 <div className="wrapper 2xl:px-0 px-[15px]">
-                    <div className="grid grid-cols-1 lg:grid-cols-[61%_37%] gap-[23px] w-full">
+                    <div className="grid grid-cols-1 lg:grid-cols-[68%_30%] gap-[23px] w-full">
                         {/* Product List - Table */}
                         <Card className="shadow-none border-[#25252526] rounded-[20px] bg-white overflow-hidden !p-0">
                             <CardHeader className="bg-accent rounded-t-[20px] sm:py-[18px] py-[14px] px-[30px] font-semibold text-lg h-auto gap-0 !px-[30px] !py-[18px]">
@@ -253,13 +237,13 @@ function CartContent() {
                                         <table className="w-full border-collapse">
                                             <thead>
                                                 <tr className="bg-muted/30 border-b border-border">
-                                                    <th className="text-left py-[16px] px-[20px] font-bold text-[14px] uppercase text-foreground">Product</th>
-                                                    <th className="text-center py-[16px] px-[15px] font-bold text-[14px] uppercase text-foreground hidden md:table-cell">Variant</th>
-                                                    <th className="text-center py-[16px] px-[15px] font-bold text-[14px] uppercase text-foreground hidden lg:table-cell">SKU</th>
-                                                    <th className="text-center py-[16px] px-[15px] font-bold text-[14px] uppercase text-foreground">Price</th>
-                                                    <th className="text-center py-[16px] px-[15px] font-bold text-[14px] uppercase text-foreground">Quantity</th>
-                                                    <th className="text-center py-[16px] px-[20px] font-bold text-[14px] uppercase text-foreground">Total</th>
-                                                    <th className="text-center py-[16px] px-[15px] font-bold text-[14px] uppercase text-foreground w-[50px]">Action</th>
+                                                    <th className="text-left py-[16px] px-[12px] font-bold text-[14px] uppercase text-foreground">Product</th>
+                                                    <th className="text-center py-[16px] px-[8px] font-bold text-[13px] uppercase text-foreground hidden md:table-cell">Variant</th>
+                                                    <th className="text-center py-[16px] px-[8px] font-bold text-[13px] uppercase text-foreground hidden xl:table-cell">SKU</th>
+                                                    <th className="text-center py-[16px] px-[10px] font-bold text-[14px] uppercase text-foreground">Price</th>
+                                                    <th className="text-center py-[16px] px-[10px] font-bold text-[14px] uppercase text-foreground">Quantity</th>
+                                                    <th className="text-center py-[16px] px-[12px] font-bold text-[14px] uppercase text-foreground">Total</th>
+                                                    <th className="text-center py-[16px] px-[10px] font-bold text-[14px] uppercase text-foreground w-[50px]">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -279,9 +263,9 @@ function CartContent() {
                                                             className="border-b border-border hover:bg-muted/20 transition-colors"
                                                         >
                                                             {/* Product */}
-                                                            <td className="py-[20px] px-[20px]">
-                                                                <div className="flex items-center gap-[15px]">
-                                                                    <figure className="relative w-[80px] h-[80px] bg-gradient rounded-[10px] p-[8px] flex-shrink-0">
+                                                            <td className="py-[20px] px-[12px]">
+                                                                <div className="flex items-center gap-[12px]">
+                                                                    <figure className="relative w-[70px] h-[70px] bg-gradient rounded-[10px] p-[6px] flex-shrink-0">
                                                                         <img
                                                                             src={getProductImage(item)}
                                                                             alt={item.product_name}
@@ -326,12 +310,12 @@ function CartContent() {
                                                             </td>
 
                                                             {/* Variant - Desktop */}
-                                                            <td className="py-[20px] px-[15px] text-center text-[14px] text-muted-foreground hidden md:table-cell">
+                                                            <td className="py-[20px] px-[8px] text-center text-[13px] text-muted-foreground hidden md:table-cell">
                                                                 {item.part_name || '-'}
                                                             </td>
 
                                                             {/* SKU - Desktop */}
-                                                            <td className="py-[20px] px-[15px] text-center text-[12px] text-muted-foreground hidden lg:table-cell">
+                                                            <td className="py-[20px] px-[8px] text-center text-[11px] text-muted-foreground hidden xl:table-cell">
                                                                 <div className="flex flex-col items-center">
                                                                     <span>{item.product_id || '-'}</span>
                                                                     {item.part_id && (
@@ -341,14 +325,14 @@ function CartContent() {
                                                             </td>
 
                                                             {/* Price */}
-                                                            <td className="py-[20px] px-[15px] text-center">
-                                                                <div className="text-[16px] md:text-[18px] font-semibold text-foreground">
+                                                            <td className="py-[20px] px-[10px] text-center">
+                                                                <div className="text-[15px] md:text-[16px] font-semibold text-foreground">
                                                                     ${pricePerUnit.toFixed(2)}
                                                                 </div>
                                                             </td>
                                                             
                                                             {/* Quantity */}
-                                                            <td className="py-[20px] px-[15px] text-center">
+                                                            <td className="py-[20px] px-[10px] text-center">
                                                                 <div className="flex items-center justify-center">
                                                                     <div className="flex items-center border border-border rounded-full px-2 py-1 bg-white">
                                                                         <Button
@@ -377,14 +361,14 @@ function CartContent() {
                                                             </td>
                                                             
                                                             {/* Total */}
-                                                            <td className="py-[20px] px-[20px] text-center">
-                                                                <div className="text-[16px] md:text-[18px] font-semibold text-foreground">
+                                                            <td className="py-[20px] px-[12px] text-center">
+                                                                <div className="text-[15px] md:text-[16px] font-semibold text-foreground">
                                                                     ${totalPrice.toFixed(2)}
                                                                 </div>
                                                             </td>
 
                                                             {/* Remove Action */}
-                                                            <td className="py-[20px] px-[15px] text-center">
+                                                            <td className="py-[20px] px-[10px] text-center">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
@@ -440,23 +424,23 @@ function CartContent() {
                                         <span className="sm:text-[20px] text-[18px] font-bold text-accent">${finalSubtotal.toFixed(2)}</span>
                                     </div>
 
-                                    {/* Shipping */}
+                                    {/* Less than Minimum Fee */}
                                     {hasFreeShipping ? (
                                         <div className="flex justify-between items-center py-2 bg-green-50 rounded-lg px-3 border border-green-200">
-                                            <span className="font-bold text-[16px] text-green-800">🚚 Shipping:</span>
-                                            <span className="font-semibold sm:text-[16px] text-[14px] text-green-700">FREE</span>
+                                            <span className="font-bold text-[16px] text-green-800">Less than Minimum Fee:</span>
+                                            <span className="font-semibold sm:text-[16px] text-[14px] text-green-700">$0.00</span>
                                         </div>
                                     ) : (
                                         <div className="flex justify-between items-center py-2 bg-yellow-50 rounded-lg px-3 border border-yellow-200">
-                                            <span className="font-bold text-[16px] text-yellow-800">Shipping:</span>
-                                            <span className="font-semibold sm:text-[16px] text-[14px] text-yellow-700">${shippingFee.toFixed(2)}</span>
+                                            <span className="font-bold text-[16px] text-yellow-800">Less than Minimum Fee:</span>
+                                            <span className="font-semibold sm:text-[16px] text-[14px] text-yellow-700">+${shippingFee.toFixed(2)}</span>
                                         </div>
                                     )}
                                     
                                     {!hasFreeShipping && (
                                         <div className="bg-blue-50 rounded-lg px-3 py-2 border border-blue-200">
                                             <p className="text-[13px] text-blue-800 text-center">
-                                                💡 <strong>Free Shipping:</strong> Add ${(500 - originalSubtotal).toFixed(2)} more to qualify for free shipping!
+                                                💡 <strong>Less than Minimum Fee:</strong> Each product with a total of $500 or more has no less than minimum fee.
                                             </p>
                                         </div>
                                     )}

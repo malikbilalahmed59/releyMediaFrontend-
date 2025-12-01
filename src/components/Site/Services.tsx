@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from "next/image";
+import Link from "next/link";
 import services_img1 from "../../../public/images/hero-section/services_img1.jpg";
 import group_people from "../../../public/images/hero-section/group people.jpg";
 import ecommerce_store from "../../../public/images/hero-section/ecommerce store owner.jpg";
@@ -28,9 +29,10 @@ function Services() {
             <div className="wrapper 2xl:px-0 px-[15px]">
                 <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-[20px]">
                     {content.map((item, index) => (
-                        <div
+                        <Link
                             key={index}
-                            className="border border-[#25252533] py-[10px] pl-[12px] pr-[18px] flex xl:flex-row flex-col gap-[18px] rounded-[12px]"
+                            href="/contact-us"
+                            className="border border-[#25252533] py-[10px] pl-[12px] pr-[18px] flex xl:flex-row flex-col gap-[18px] rounded-[12px] hover:border-accent transition-colors cursor-pointer"
                         >
                             <figure className="rounded-[8px] overflow-hidden xl:w-[180px] shrink-0">
                                 <Image src={item.image} alt={item.title} className="w-full h-full object-cover" />
@@ -39,7 +41,7 @@ function Services() {
                                 <h3 className="lg:text-[22px] text-[20px] leading-[24px] lg:leading-[30px] font-bold mb-[4px]">{item.title}</h3>
                                 <p className="sm:text-[16px] text-[14px] leading-[20px] sm:leading-[24px]">{item.description}</p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
 
                 </div>

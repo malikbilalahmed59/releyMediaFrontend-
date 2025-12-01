@@ -7,9 +7,9 @@ import {Autoplay} from "swiper/modules";
 function ClientLogo() {
     const slides = [
         { src: '/images/trusted-by/verizon-wireless.png', width: '150px', alt: 'Verizon Wireless' },
-        { src: '/images/trusted-by/toyota.jpg', width: '94px', alt: 'Toyota' },
+        { src: '/images/trusted-by/toyota.png', width: '94px', alt: 'Toyota' },
         { src: '/images/trusted-by/hp.png', width: '67px', alt: 'Hewlett-Packard' },
-        { src: '/images/trusted-by/microsoft.jpg', width: '150px', alt: 'Microsoft' },
+        { src: '/images/trusted-by/microsoft.png', width: '150px', alt: 'Microsoft' },
         { src: '/images/trusted-by/alcoa.png', width: '150px', alt: 'Alcoa' },
         { src: '/images/trusted-by/ebay.png', width: '200px', alt: 'eBay' },
         { src: '/images/trusted-by/best-buy.png', width: '150px', alt: 'Best Buy' },
@@ -20,7 +20,7 @@ function ClientLogo() {
         { src: '/images/trusted-by/mcdonalds.png', width: '150px', alt: 'McDonalds' },
     ];
     return (
-        <section className="sm:py-[36px] pb-[36px]">
+        <section className="sm:py-[36px] pb-[36px] bg-[#E8E8E8]">
             <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold  2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">Trusted By</h2>
             <div className="2xl:w-[calc(100vw-((100vw-1238px)/2))] ml-auto 2xl:px-0 px-[15px]">
                 <Swiper className="client_logo"

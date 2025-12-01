@@ -126,7 +126,7 @@ function BuyCart({ products = [], totalCount = 0 }: BuyCartProps) {
         <>
             {totalCount > 0 && (
                 <div className="mb-[20px] text-[16px] text-[#666]">
-                    Found {totalCount} product{totalCount !== 1 ? 's' : ''}
+                    Found {totalCount.toLocaleString('en-US')} product{totalCount !== 1 ? 's' : ''}
                 </div>
             )}
             <div className="grid grid-cols-[repeat(auto-fill,minmax(245px,1fr))] gap-[20px]">

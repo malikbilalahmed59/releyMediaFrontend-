@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -91,6 +91,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
     const [searchQuery, setSearchQuery] = useState<string>(
         searchParams.get('q') || ''
     );
+    const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
     
     // Filter state from URL params
     const [minPrice, setMinPrice] = useState(searchParams.get('min_price') || '');
@@ -165,43 +166,54 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
         fetchSubcategories();
     }, [categoryData?.id, categoryData?.subcategories]);
 
+    // Memoize filter params to prevent unnecessary refetches
+    const filterParams = useMemo(() => {
+        const subcategoryIdFromUrl = searchParams.get('subcategory_id');
+        const subcategoryId = subcategoryIdFromUrl ? parseInt(subcategoryIdFromUrl) : selectedSubcategory;
+        
+        return {
+            categoryId: categoryData?.id,
+            subcategoryId: subcategoryId || undefined,
+            searchQuery: searchParams.get('q') || undefined,
+            brand: searchParams.get('brand') || undefined,
+            material: searchParams.get('material') || undefined,
+            color: searchParams.get('color') || undefined,
+            closeout: searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined,
+            usaMade: searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined,
+            rushService: searchParams.get('rush_service') === 'true' ? true : searchParams.get('rush_service') === 'false' ? false : undefined,
+            ecoFriendly: searchParams.get('eco_friendly') === 'true' ? true : searchParams.get('eco_friendly') === 'false' ? false : undefined,
+            minPrice: searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined,
+            maxPrice: searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined,
+            minQuantity: searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined,
+            maxQuantity: searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined,
+        };
+    }, [categoryData?.id, selectedSubcategory, searchParams]);
+
     // Fetch dynamic filters (materials and brands) based on context
     useEffect(() => {
+        const abortController = new AbortController();
+        
         const fetchDynamicFilters = async () => {
-            // Get subcategory from URL params directly to ensure we have the latest value
-            const subcategoryIdFromUrl = searchParams.get('subcategory_id');
-            const subcategoryId = subcategoryIdFromUrl ? parseInt(subcategoryIdFromUrl) : selectedSubcategory;
-            
-            const categoryId = categoryData?.id;
-            const searchQuery = searchParams.get('q') || undefined;
-            
-            // Get all current filter values from URL params
-            const currentBrand = searchParams.get('brand') || undefined;
-            const currentMaterial = searchParams.get('material') || undefined;
-            const currentColor = searchParams.get('color') || undefined;
-            const currentCloseout = searchParams.get('closeout') === 'true' ? true : searchParams.get('closeout') === 'false' ? false : undefined;
-            const currentUsaMade = searchParams.get('usa_made') === 'true' ? true : searchParams.get('usa_made') === 'false' ? false : undefined;
-            const currentRushService = searchParams.get('rush_service') === 'true' ? true : searchParams.get('rush_service') === 'false' ? false : undefined;
-            const currentEcoFriendly = searchParams.get('eco_friendly') === 'true' ? true : searchParams.get('eco_friendly') === 'false' ? false : undefined;
-            const currentMinPrice = searchParams.get('min_price') ? parseFloat(searchParams.get('min_price')!) : undefined;
-            const currentMaxPrice = searchParams.get('max_price') ? parseFloat(searchParams.get('max_price')!) : undefined;
-            const currentMinQuantity = searchParams.get('min_quantity') ? parseInt(searchParams.get('min_quantity')!) : undefined;
-            const currentMaxQuantity = searchParams.get('max_quantity') ? parseInt(searchParams.get('max_quantity')!) : undefined;
+            if (!filterParams.categoryId) {
+                setMaterials([]);
+                setBrands([]);
+                return;
+            }
 
             // Base params with all filters except the one being fetched
             const baseParams = {
-                category_id: categoryId,
-                subcategory_id: subcategoryId || undefined,
-                q: searchQuery,
-                color: currentColor,
-                closeout: currentCloseout,
-                usa_made: currentUsaMade,
-                rush_service: currentRushService,
-                eco_friendly: currentEcoFriendly,
-                min_price: currentMinPrice,
-                max_price: currentMaxPrice,
-                min_quantity: currentMinQuantity,
-                max_quantity: currentMaxQuantity,
+                category_id: filterParams.categoryId,
+                subcategory_id: filterParams.subcategoryId,
+                q: filterParams.searchQuery,
+                color: filterParams.color,
+                closeout: filterParams.closeout,
+                usa_made: filterParams.usaMade,
+                rush_service: filterParams.rushService,
+                eco_friendly: filterParams.ecoFriendly,
+                min_price: filterParams.minPrice,
+                max_price: filterParams.maxPrice,
+                min_quantity: filterParams.minQuantity,
+                max_quantity: filterParams.maxQuantity,
             };
 
             setLoadingMaterials(true);
@@ -215,37 +227,50 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                 const [materialsData, brandsData] = await Promise.all([
                     getFilterMaterials({
                         ...baseParams,
-                        brand: currentBrand, // Include brand filter when fetching materials (filter by selected brand)
-                        // Don't pass material: currentMaterial - we want selected material to show in the list
+                        brand: filterParams.brand, // Include brand filter when fetching materials (filter by selected brand)
+                        // Don't pass material: filterParams.material - we want selected material to show in the list
                     }).catch(err => {
+                        if (err.name === 'AbortError') return { materials: [] };
                         console.error('Error fetching materials:', err);
                         return { materials: [] };
                     }),
                     getFilterBrands({
                         ...baseParams,
-                        // Don't pass brand: currentBrand - we want selected brand to show in the list
-                        material: currentMaterial, // Include material filter when fetching brands (filter by selected material)
+                        // Don't pass brand: filterParams.brand - we want selected brand to show in the list
+                        material: filterParams.material, // Include material filter when fetching brands (filter by selected material)
                     }).catch(err => {
+                        if (err.name === 'AbortError') return { brands: [] };
                         console.error('Error fetching brands:', err);
                         return { brands: [] };
                     }),
                 ]);
                 
-                setMaterials(materialsData.materials || []);
-                setBrands(brandsData.brands || []);
+                if (!abortController.signal.aborted) {
+                    setMaterials(materialsData.materials || []);
+                    setBrands(brandsData.brands || []);
+                }
             } catch (error) {
-                console.error('Error fetching dynamic filters:', error);
-                setMaterials([]);
-                setBrands([]);
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    console.error('Error fetching dynamic filters:', error);
+                }
+                if (!abortController.signal.aborted) {
+                    setMaterials([]);
+                    setBrands([]);
+                }
             } finally {
-                setLoadingMaterials(false);
-                setLoadingBrands(false);
+                if (!abortController.signal.aborted) {
+                    setLoadingMaterials(false);
+                    setLoadingBrands(false);
+                }
             }
-
         };
 
         fetchDynamicFilters();
-    }, [categoryData?.id, selectedSubcategory, searchParams]);
+
+        return () => {
+            abortController.abort();
+        };
+    }, [filterParams]);
 
     // Sync filter state with URL params when they change
     useEffect(() => {
@@ -350,7 +375,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
         updateUrlWithFilters(params);
     };
 
-    const updateUrlWithFilters = (params: URLSearchParams) => {
+    const updateUrlWithFilters = useCallback((params: URLSearchParams) => {
         const pathname = window.location.pathname;
         const isCategoryPage = pathname?.startsWith('/products/category/');
         const categorySlug = isCategoryPage ? pathname.split('/products/category/')[1]?.split('?')[0] : null;
@@ -360,7 +385,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
         } else {
             router.push(`/products?${params.toString()}`);
         }
-    };
+    }, [router]);
 
     const handleBestSellingChange = (checked: boolean) => {
         setBestSelling(checked);
@@ -454,33 +479,68 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
         router.push(`/products/category/${categorySlug}`);
     };
 
-    const handleSearch = (value: string) => {
+    const handleSearch = useCallback((value: string) => {
         setSearchQuery(value);
-        const params = new URLSearchParams(searchParams.toString());
         
-        if (value.trim()) {
-            params.set('q', value.trim());
-        } else {
-            params.delete('q');
+        // Clear existing debounce timer
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current);
         }
         
-        params.set('page', '1');
-        updateUrlWithFilters(params);
-    };
+        // Debounce the actual search API call
+        searchDebounceRef.current = setTimeout(() => {
+            const params = new URLSearchParams(searchParams.toString());
+            
+            if (value.trim()) {
+                params.set('q', value.trim());
+            } else {
+                params.delete('q');
+            }
+            
+            params.set('page', '1');
+            updateUrlWithFilters(params);
+        }, 500); // 500ms debounce delay
+    }, [searchParams, updateUrlWithFilters]);
 
-    const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleSearchKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            handleSearch(searchQuery);
+            // Clear debounce and execute immediately on Enter
+            if (searchDebounceRef.current) {
+                clearTimeout(searchDebounceRef.current);
+            }
+            const params = new URLSearchParams(searchParams.toString());
+            
+            if (searchQuery.trim()) {
+                params.set('q', searchQuery.trim());
+            } else {
+                params.delete('q');
+            }
+            
+            params.set('page', '1');
+            updateUrlWithFilters(params);
         }
-    };
+    }, [searchQuery, searchParams, updateUrlWithFilters]);
 
-    const clearSearch = () => {
+    const clearSearch = useCallback(() => {
         setSearchQuery('');
+        // Clear debounce timer
+        if (searchDebounceRef.current) {
+            clearTimeout(searchDebounceRef.current);
+        }
         const params = new URLSearchParams(searchParams.toString());
         params.delete('q');
         params.set('page', '1');
         updateUrlWithFilters(params);
-    };
+    }, [searchParams, updateUrlWithFilters]);
+
+    // Cleanup debounce on unmount
+    useEffect(() => {
+        return () => {
+            if (searchDebounceRef.current) {
+                clearTimeout(searchDebounceRef.current);
+            }
+        };
+    }, []);
 
     return (
         <div className="w-full border border-[#ECECEC] rounded-[20px] px-[15px] py-[20px]">
@@ -503,7 +563,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                     </div>
                     <Input
                         type="text"
-                        placeholder="Search by name, description, or brand..."
+                        placeholder="Search by name or description"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={handleSearchKeyPress}
@@ -601,7 +661,8 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                         />
                         <label htmlFor="closeout" className="text-[17px] text-[#919191] cursor-pointer">Clearance</label>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    {/* Best Selling - Commented out for future phase */}
+                    {/* <div className="flex items-center space-x-2">
                         <Checkbox 
                             id="best_selling" 
                             checked={bestSelling}
@@ -609,7 +670,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                             className="w-[18px] h-[18px]" 
                         />
                         <label htmlFor="best_selling" className="text-[17px] text-[#919191] cursor-pointer">Best Selling</label>
-                    </div>
+                    </div> */}
                     <div className="flex items-center space-x-2">
                         <Checkbox 
                             id="rush_service" 
@@ -761,10 +822,10 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
                 </div>
             )}
 
-            {/* Colors Filter - Static List in 3 Columns */}
+            {/* Colors Filter - Static List in 2 Columns */}
             <div className="mb-[20px]">
                 <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Colors</h4>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                     {(showAllColors ? staticColors : staticColors.slice(0, 15)).map((color) => {
                         const handleColorChange = () => {
                             const newColor = selectedColor === color ? null : color;

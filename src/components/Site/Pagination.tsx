@@ -70,7 +70,7 @@ export default function Pagination({ currentPage, totalPages, totalCount, pageSi
     return (
         <div className="mt-[40px] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-[14px] text-[#666]">
-                Showing {startItem} to {endItem} of {totalCount} products
+                Showing {startItem.toLocaleString('en-US')} to {endItem.toLocaleString('en-US')} of {totalCount.toLocaleString('en-US')} products
             </div>
             
             <div className="flex items-center gap-2">

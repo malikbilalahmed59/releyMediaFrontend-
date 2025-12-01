@@ -30,6 +30,8 @@ function CheckoutFormContent() {
     const { addToast } = useToast();
     const [shippingAddressId, setShippingAddressId] = useState<number | null>(null);
     const [notes, setNotes] = useState("");
+    const [uploadArtwork, setUploadArtwork] = useState<File | null>(null);
+    const [dateOrderNeeded, setDateOrderNeeded] = useState("");
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
     const [sameAsBilling, setSameAsBilling] = useState(false);
@@ -338,11 +340,31 @@ function CheckoutFormContent() {
                 return; // Stop here - don't proceed to Django checkout
             }
 
+            // Convert file to base64 if present
+            let artworkBase64: string | undefined = undefined;
+            if (uploadArtwork) {
+                try {
+                    artworkBase64 = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const base64String = reader.result as string;
+                            resolve(base64String);
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(uploadArtwork);
+                    });
+                } catch (error) {
+                    console.error('Error converting artwork to base64:', error);
+                }
+            }
+
             // Create order in Django ONLY after successful payment confirmation
             const order = await accountsAPI.checkout({
                 billing_address_id: billingAddressId,
                 shipping_address_id: finalShippingAddressId,
                 notes: notes || undefined,
+                upload_artwork: artworkBase64 || undefined,
+                date_order_needed: dateOrderNeeded || undefined,
                 payment_status: paymentResult ? 'paid' : undefined,
                 transaction_id: paymentResult?.transactionId || undefined,
             });
@@ -418,16 +440,40 @@ function CheckoutFormContent() {
     const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
     const subtotal = originalSubtotal - discountAmount;
     
-    // Calculate shipping fee (if base price < $500, add $100)
+    // Calculate shipping fee per product (if base price * quantity < $500, add $100 per product)
     const calculateShippingFee = (): number => {
-        if (originalSubtotal < 500) {
-            return 100;
+        if (!cart || !cart.items || cart.items.length === 0) {
+            return 0;
         }
-        return 0;
+        
+        let totalFee = 0;
+        
+        // Check each product individually
+        cart.items.forEach((item) => {
+            const pricePerUnit = typeof item.price_per_unit === 'string' 
+                ? parseFloat(item.price_per_unit) 
+                : (item.price_per_unit || 0);
+            
+            // Calculate base price * quantity for this product
+            const productTotal = pricePerUnit * item.quantity;
+            
+            // If product total is less than $500, add $100 fee for this product
+            if (productTotal < 500) {
+                totalFee += 100;
+            }
+        });
+        
+        return totalFee;
     };
     
     const shippingFee = calculateShippingFee();
-    const hasFreeShipping = originalSubtotal >= 500;
+    // Check if all products have free shipping (each product >= $500)
+    const hasFreeShipping = cart.items.every((item) => {
+        const pricePerUnit = typeof item.price_per_unit === 'string' 
+            ? parseFloat(item.price_per_unit) 
+            : (item.price_per_unit || 0);
+        return (pricePerUnit * item.quantity) >= 500;
+    });
     const total = subtotal + shippingFee;
     
     // Calculate total quantity for display
@@ -502,26 +548,19 @@ function CheckoutFormContent() {
                                             <Checkbox
                                                 id="same_as_billing"
                                                 checked={sameAsBilling}
-                                                onCheckedChange={(checked) => {
-                                                    setSameAsBilling(checked as boolean);
+                                                onCheckedChange={async (checked) => {
+                                                    const isChecked = checked as boolean;
+                                                    setSameAsBilling(isChecked);
+                                                    // Automatically sync when checkbox is checked
+                                                    if (isChecked && billingAddressId) {
+                                                        await handleSyncAddresses();
+                                                    }
                                                 }}
                                             />
                                             <Label htmlFor="same_as_billing" className="text-[14px] cursor-pointer font-semibold">
                                                 Same as billing address
                                             </Label>
                                         </div>
-                                        {sameAsBilling && billingAddressId && (
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={handleSyncAddresses}
-                                                disabled={processing}
-                                                className="h-8 text-xs font-semibold"
-                                            >
-                                                {processing ? 'Syncing...' : '🔄 Sync Now'}
-                                            </Button>
-                                        )}
                                     </div>
                                     {!sameAsBilling && (
                                         <>
@@ -581,9 +620,6 @@ function CheckoutFormContent() {
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className="text-[12px] text-muted-foreground text-center">
-                                                💡 Tip: When you create or edit a billing address, the shipping address will automatically sync
-                                            </p>
                                         </div>
                                     )}
                                 </CardContent>
@@ -594,14 +630,45 @@ function CheckoutFormContent() {
                                 <CardHeader className="bg-accent rounded-t-[20px] xl:py-[21px] sm:py-[20px] py-[14px] px-[34px] font-semibold h-auto gap-0">
                                     <CardTitle className="text-white font-bold xl:text-[18px] text-[16px] leading-[16px] xl:leading-[18px]">Order Notes</CardTitle>
                                 </CardHeader>
-                                <CardContent className="px-[20px]">
-                                    <Label className="form-label">Additional Notes (Optional)</Label>
-                                    <textarea
-                                        value={notes}
-                                        onChange={(e) => setNotes(e.target.value)}
-                                        placeholder="Any special instructions for your order..."
-                                        className="w-full min-h-[100px] px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent"
-                                    />
+                                <CardContent className="px-[20px] space-y-4">
+                                    <div>
+                                        <Label className="form-label">Additional Notes (Optional)</Label>
+                                        <textarea
+                                            value={notes}
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            placeholder="Any special instructions for your order..."
+                                            className="w-full min-h-[100px] px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="uploadArtwork" className="form-label">Upload Artwork (Optional)</Label>
+                                        <Input
+                                            id="uploadArtwork"
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0] || null;
+                                                setUploadArtwork(file);
+                                            }}
+                                            className="form-input"
+                                        />
+                                        {uploadArtwork && (
+                                            <p className="text-[12px] text-muted-foreground mt-1">
+                                                Selected: {uploadArtwork.name}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="dateOrderNeeded" className="form-label">Date Order Needed By (Optional)</Label>
+                                        <Input
+                                            id="dateOrderNeeded"
+                                            type="text"
+                                            value={dateOrderNeeded}
+                                            onChange={(e) => setDateOrderNeeded(e.target.value)}
+                                            placeholder="e.g., 2024-12-25 or ASAP"
+                                            className="form-input"
+                                        />
+                                    </div>
                                 </CardContent>
                             </Card>
 
@@ -658,20 +725,20 @@ function CheckoutFormContent() {
 
                                         {hasFreeShipping ? (
                                             <div className="flex justify-between bg-green-50 rounded-lg px-3 py-2 border border-green-200">
-                                                <span className="font-bold text-green-800">🚚 Shipping:</span>
-                                                <span className="text-green-700 font-semibold">FREE</span>
+                                                <span className="font-bold text-green-800">Less than Minimum Fee:</span>
+                                                <span className="text-green-700 font-semibold">$0.00</span>
                                             </div>
                                         ) : (
                                             <div className="flex justify-between bg-yellow-50 rounded-lg px-3 py-2 border border-yellow-200">
-                                                <span className="font-bold text-yellow-800">Shipping:</span>
-                                                <span className="text-yellow-700 font-semibold">${shippingFee.toFixed(2)}</span>
+                                                <span className="font-bold text-yellow-800">Less than Minimum Fee:</span>
+                                                <span className="text-yellow-700 font-semibold">+${shippingFee.toFixed(2)}</span>
                                             </div>
                                         )}
                                         
                                         {!hasFreeShipping && (
                                             <div className="bg-blue-50 rounded-lg px-3 py-2 border border-blue-200">
                                                 <p className="text-[12px] text-blue-800 text-center">
-                                                    💡 <strong>Free Shipping:</strong> Add ${(500 - originalSubtotal).toFixed(2)} more to qualify for free shipping!
+                                                    💡 <strong>Less than Minimum Fee:</strong> Each product with a total of $500 or more has no less than minimum fee.
                                                 </p>
                                             </div>
                                         )}
@@ -689,15 +756,7 @@ function CheckoutFormContent() {
                         <div>
                             <Card className="bg-[#F5F5F5] border-transparent rounded-[20px] py-[20px] px-[14px] shadow-none">
                                 <CardContent className="px-0">
-                                    <h3 className="text-[18px] leading-[18px] font-bold mb-[24px]">Payment Information</h3>
-                                    
-                                    {/* Credit Card Information */}
                                     <div className="space-y-4 mb-6">
-                                        <p className="text-[14px] text-foreground/80 mb-2">
-                                            Pay via credit card (MasterCard, Maestro, Visa, Visa Electron, JCB and American Express)
-                                        </p>
-                                        <h4 className="text-[16px] font-semibold">Credit Card Information</h4>
-                                        
                                         <div>
                                             <Label htmlFor="cardholderName" className="form-label">Cardholder Name</Label>
                                             <Input

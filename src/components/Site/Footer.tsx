@@ -18,10 +18,10 @@ import {
 const footerData = {
     tagline: "Innovative Solutions. Exceptional Service",
     socialLinks: [
-        { icon: Facebook, url: "#" },
-        { icon: Instagram, url: "#" },
-        { icon: Linkedin, url: "#" },
-        { icon: Twitter, url: "#" },
+        { icon: Facebook, url: "https://www.facebook.com/profile.php?id=100076356070878", label: "Facebook" },
+        { icon: Instagram, url: "https://www.instagram.com/rely.media/", label: "Instagram" },
+        { icon: Linkedin, url: "https://www.linkedin.com/company/relymedia/", label: "LinkedIn" },
+        { icon: Twitter, url: "https://x.com/relymedia", label: "X (Twitter)" },
     ],
     sections: [
         {
@@ -42,6 +42,8 @@ const footerData = {
                 { label: "Custom Flash Drives", url: "/custom-flash-drives" },
                 { label: "Data Services", url: "/custom-data-services" },
                 { label: "Imprint Options", url: "/custom-imprint-options" },
+                { label: "Packaging and Distribution", url: "/packaging-and-distribution" },
+                { label: "24 Hour Rush Service", url: "/24-hour-rush-service" },
             ],
         },
         {
@@ -57,32 +59,32 @@ const footerData = {
                     label: "(866) 476-2095",
                     url: "tel:(866)476-2095",
                 },
-                {
-                    icon: Timer,
-                    label: (
-                        <>
-                            8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>
-                        </>
-                    ),
-                    url: "#",
-                },
+                                {
+                                    icon: Timer,
+                                    label: (
+                                        <>
+                                            8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>
+                                        </>
+                                    ),
+                                    url: null,
+                                },
                 {
                     icon: Mail,
                     label: "sales@relymedia.com",
                     url: "mailto:sales@relymedia.com",
                 },
-                {
-                    icon: MapPin,
-                    label: (
-                        <>
-                            RELYmedia <br />
-                            1170 Eagan Industrial Road <br />
-                            Suite 1 <br />
-                            Eagan MN 55121
-                        </>
-                    ),
-                    url: "#",
-                },
+                                {
+                                    icon: MapPin,
+                                    label: (
+                                        <>
+                                            RELYmedia <br />
+                                            1170 Eagan Industrial Road <br />
+                                            Suite 1 <br />
+                                            Eagan MN 55121
+                                        </>
+                                    ),
+                                    url: null,
+                                },
             ],
         },
     ],
@@ -118,12 +120,15 @@ function Footer() {
                         <ul className="flex gap-[8px] lg:justify-start justify-center">
                             {footerData.socialLinks.map((social, index) => (
                                 <li key={index}>
-                                    <Link
+                                    <a
                                         href={social.url}
-                                        className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFFFFF33] rounded-full text-white"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFFFFF33] rounded-full text-white hover:bg-[#FFFFFF66] transition-colors"
+                                        aria-label={social.label}
                                     >
                                         <social.icon size={16} />
-                                    </Link>
+                                    </a>
                                 </li>
                             ))}
                         </ul>
@@ -138,20 +143,29 @@ function Footer() {
                             <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font">
                                 {section.links.map((link, i) => {
                                     const Icon = 'icon' in link ? link.icon : null;
-                                    const isActive = pathname === link.url;
+                                    const isActive = link.url && pathname === link.url;
+                                    const hasUrl = link.url && link.url !== '#';
+                                    
                                     return (
                                         <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
-                                            <Link 
-                                                href={link.url} 
-                                                className={`flex gap-[10px] transition-colors ${
-                                                    isActive 
-                                                        ? 'font-bold text-accent' 
-                                                        : 'hover:text-accent'
-                                                }`}
-                                            >
-                                                {Icon && <Icon size={20} />}
-                                                {link.label}
-                                            </Link>
+                                            {hasUrl ? (
+                                                <Link 
+                                                    href={link.url} 
+                                                    className={`flex gap-[10px] transition-colors ${
+                                                        isActive 
+                                                            ? 'font-bold text-accent' 
+                                                            : 'hover:text-accent'
+                                                    }`}
+                                                >
+                                                    {Icon && <Icon size={20} />}
+                                                    {link.label}
+                                                </Link>
+                                            ) : (
+                                                <span className="flex gap-[10px]">
+                                                    {Icon && <Icon size={20} />}
+                                                    {link.label}
+                                                </span>
+                                            )}
                                         </li>
                                     );
                                 })}

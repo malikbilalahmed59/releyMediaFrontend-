@@ -30,11 +30,7 @@ function ContactContent() {
                                 href="/">Home</Link> <span>-</span></li>
                             <li className="flex items-center gap-1  font-black">Contact us</li>
                         </ul>
-                        <h1 className="font-bold 2xl:text-[55px] 2xl:leading-[65px] xl:text-[48px] xl:leading-[54px] lg:text-[42px] sm:text-[36px] text-[30px] leading-[38px] sm:leading-[42px] lg:leading-[48px] mb-[11px]">Request
-                            a Quote</h1>
-                        <p className="font-Regular xl:text-[24px] md:text-[20px] text-[16px] leading-[20px] md:leading-[24px] xl:leading-[32px] lg:w-[76%] w-[90%] mx-auto">Please feel free to contact us with any
-                            questions or comments. We also appreciate your feedback and suggestions. Most inquiries are
-                            responded to within 10 minutes.</p>
+                        <h1 className="font-bold 2xl:text-[55px] 2xl:leading-[65px] xl:text-[48px] xl:leading-[54px] lg:text-[42px] sm:text-[36px] text-[30px] leading-[38px] sm:leading-[42px] lg:leading-[48px] mb-[11px]">Contact Us</h1>
                     </div>
                 </div>
             </section>

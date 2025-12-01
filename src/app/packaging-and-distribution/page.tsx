@@ -9,10 +9,10 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function ResellersContent() {
+function PackagingContent() {
     const portfolioData = {
-        title: "ASI Distributors & Other Resellers",
-        fullContent: "RELYmedia is a manufacturer servicing promotional products distributors, CD/DVD replicators/brokers, and other resellers across the globe. We have very aggressive reseller pricing and a simple, streamlined ordering process. We make quoting easy by providing resellers with a comprehensive price grid and blind PDF catalog that can be sent to customers. Orders can be placed via email and there are no cumbersome forms to fill out. To learn more about being a reseller for our products, please contact us.",
+        title: "Packaging and Distribution",
+        fullContent: "We offer a full range of graphic design and prepress services and guarantee your project will be professional and unique. RELYmedia offers a wide range of packaging options including custom packaging solutions. You can provide us your specifications or we can do the designing for you.<br/><br/>From bulk mailing services to fulfillment, RELYmedia can also handle all your shipping needs. We can ship orders directly to your customers or hold your project in our warehouse for shipping at a later time. Whether your project needs to be shipped to one address or 1,000, we guarantee that all packages will arrive intact and on time.",
         descriptionLeft: "",
         descriptionRight: "",
         buttonText: "",
@@ -31,7 +31,6 @@ function ResellersContent() {
                 <Header />
             </Suspense>
             <MainBanner />
-            {/* ✅ pass the data here */}
             <PortfolioDataSection data={portfolioData} />
             <Customer_Feedback />
             <Client_Logo />
@@ -58,9 +57,10 @@ function Page() {
                 <Footer />
             </>
         }>
-            <ResellersContent />
+            <PackagingContent />
         </Suspense>
     );
 }
 
 export default Page;
+

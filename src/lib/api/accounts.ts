@@ -191,6 +191,8 @@ export interface CheckoutRequest {
   billing_address_id: number;
   shipping_address_id: number;
   notes?: string;
+  upload_artwork?: File | string | null;
+  date_order_needed?: string | null;
   payment_status?: 'paid' | 'pending' | 'failed';
   transaction_id?: string;
 }
@@ -302,7 +304,40 @@ async function authFetch<T>(
     throw new Error(`HTTP ${response.status}: ${errorText}`);
   }
 
-  return response.json();
+  // Handle empty responses (e.g., 204 No Content for DELETE requests)
+  const contentType = response.headers.get('content-type');
+  const contentLength = response.headers.get('content-length');
+  
+  // Get response text first
+  const text = await response.text().catch(() => '');
+  
+  // If no content or content-length is 0, return void/undefined
+  if (response.status === 204 || contentLength === '0' || (!contentType?.includes('application/json') && !text)) {
+    // If text is empty, return undefined (for void return types)
+    if (!text || text.trim() === '') {
+      return undefined as T;
+    }
+    // If there's text but not JSON, try to parse it
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      return undefined as T;
+    }
+  }
+
+  // Parse JSON for normal responses
+  try {
+    if (!text || text.trim() === '') {
+      return undefined as T;
+    }
+    return JSON.parse(text) as T;
+  } catch (error) {
+    // If JSON parsing fails and text is empty, return undefined for void types
+    if (!text || text.trim() === '') {
+      return undefined as T;
+    }
+    throw new Error(`Failed to parse response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**

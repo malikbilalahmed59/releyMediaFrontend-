@@ -36,9 +36,11 @@ const categoryImageMap: Record<string, any> = {
     "Outdoor, Leisure & Toys": categories_img7,
     "Office & Awards": categories_img8,
     "Health & Safety": categories_img9,
+    "Health, Wellness & Safety": categories_img9,
     "Trade Shows & Events": categories_img10,
     "Stationery & Folders": categories_img11,
     "Stationary & Folders": categories_img11,
+    "Stationary & Calendars": categories_img11,
     "Food, Candy & Water": categories_img12,
     "Eco Friendly & Sustainable": categories_img16,
 };
@@ -62,6 +64,26 @@ function ProductCategories() {
         fetchCategories();
     }, []);
 
+    // Define the exact order for categories
+    const categoryOrder = [
+        "Apparel",
+        "Pens & Other Writing",
+        "Pens & Writing", // Alternative name
+        "Drinkware",
+        "Bags",
+        "Technology & Flash Drives",
+        "Auto, Home & Tools",
+        "Outdoor, Leisure & Toys",
+        "Office & Awards",
+        "Health, Wellness & Safety",
+        "Health & Safety", // Alternative name
+        "Trade Shows & Events",
+        "Stationary & Calendars",
+        "Stationery & Folders", // Alternative name
+        "Stationary & Folders", // Alternative name
+        "Food, Candy & Water",
+    ];
+
     // Map API categories to display format with static images
     const mappedCategories = apiCategories.map((category) => {
         // Find matching image by category name
@@ -76,15 +98,41 @@ function ProductCategories() {
         };
     });
 
-    // Last 4 are filters (not categories)
+    // Helper function to find category order index
+    const getCategoryOrderIndex = (categoryName: string): number => {
+        // Normalize names for comparison (remove extra spaces, handle variations)
+        const normalize = (str: string) => str.toLowerCase().replace(/\s+/g, ' ').trim();
+        const normalizedName = normalize(categoryName);
+        
+        for (let i = 0; i < categoryOrder.length; i++) {
+            const orderName = normalize(categoryOrder[i]);
+            // Exact match or contains match
+            if (normalizedName === orderName || 
+                normalizedName.includes(orderName) || 
+                orderName.includes(normalizedName)) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    // Sort categories according to the specified order
+    const sortedCategories = mappedCategories.sort((a, b) => {
+        const indexA = getCategoryOrderIndex(a.name);
+        const indexB = getCategoryOrderIndex(b.name);
+        
+        // If both found, sort by index
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        // If only A found, A comes first
+        if (indexA !== -1) return -1;
+        // If only B found, B comes first
+        if (indexB !== -1) return 1;
+        // If neither found, maintain original order
+        return 0;
+    });
+
+    // Filter categories in the specified order (positions 13-16)
     const filterCategories = [
-        { 
-            name: "Eco Friendly & Sustainable", 
-            img: categories_img16, 
-            link: "/products",
-            isFilter: true,
-            filterType: 'eco_friendly'
-        },
         { 
             name: "Clearance", 
             img: categories_img13, 
@@ -106,9 +154,16 @@ function ProductCategories() {
             isFilter: true,
             filterType: 'usa_made'
         },
+        { 
+            name: "Eco-Friendly & Sustainable", 
+            img: categories_img16, 
+            link: "/products",
+            isFilter: true,
+            filterType: 'eco_friendly'
+        },
     ];
 
-    const allCategories = [...mappedCategories, ...filterCategories];
+    const allCategories = [...sortedCategories, ...filterCategories];
 
     const handleCategoryClick = (link: string, isFilter: boolean, filterType: string, e: React.MouseEvent) => {
         e.preventDefault();
@@ -128,7 +183,7 @@ function ProductCategories() {
     };
 
     return (
-        <section className="xl:py-[60px] sm:py-[50px] py-[40px]">
+        <section className="xl:pt-[60px] xl:pb-[30px] sm:pt-[50px] sm:pb-[25px] pt-[40px] pb-[20px]">
             <div className="wrapper 2xl:px-0 px-[15px]">
                 <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-semibold 2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">
                     Featured <span className="font-black">Promotional Product</span> Categories

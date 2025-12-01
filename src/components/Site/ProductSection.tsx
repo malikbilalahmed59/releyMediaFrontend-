@@ -825,11 +825,8 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                     You Save ${((minPrice || 0) * 0.2).toFixed(2)}!
                                     {maxPrice !== minPrice && ` - Save up to $${((maxPrice || 0) * 0.2).toFixed(2)}!`}
                                 </p>
-                                <p className="text-[14px] text-gray-600 mt-1">
-                                    <span className="text-[16px] font-Regular"> (Inclusive of taxes)</span>
-                                </p>
                                 <p className="text-[16px] mb-[10px]">
-                                    <span className="font-semibold text-accent">✓ Ready to Order</span> — Customize with your logo • Fast turnaround • Free returns within 7 days
+                                    <span className="font-semibold text-accent">✓ In Stock</span> • Customized with Your Logo • Fast Turnaround • Price Beat Guarantee
                                 </p>
                             </>
                         )}

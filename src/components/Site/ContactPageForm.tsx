@@ -11,55 +11,28 @@ import contact_shape from "../../../public/images/contact_shape_img.png";
 import { useAuth } from "@/contexts/AuthContext";
 import * as accountsAPI from '@/lib/api/accounts';
 import { useToast } from "@/components/ui/toast";
-import { getCategories, type Category } from '@/lib/api/catalog';
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 
 function ContactPageForm() {
     const { isAuthenticated, user } = useAuth();
     const { addToast } = useToast();
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loadingCategories, setLoadingCategories] = useState(true);
     const [form, setForm] = useState({
-        firstName: '',
-        lastName: '',
+        name: '',
         email: '',
         phone: '',
         quantity: '',
-        productType: '',
+        productId: '',
         message: '',
     })
-
-    // Fetch categories on component mount
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await getCategories();
-                setCategories(data.categories || []);
-            } catch (error) {
-                console.error('Error fetching categories:', error);
-            } finally {
-                setLoadingCategories(false);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     // Prefill form with user data when authenticated
     useEffect(() => {
         if (isAuthenticated && user) {
+            const fullName = user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username || '';
             setForm(prev => ({
                 ...prev,
-                firstName: user.first_name || '',
-                lastName: user.last_name || '',
+                name: fullName,
                 email: user.email || '',
                 phone: user.phone_number || '',
             }));
@@ -67,13 +40,22 @@ function ContactPageForm() {
     }, [isAuthenticated, user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
+        const { name, value } = e.target;
+        
+        // Special handling for phone field - only allow numbers and limit to 10 digits
+        if (name === 'phone') {
+            const digitsOnly = value.replace(/\D/g, '');
+            const limitedValue = digitsOnly.slice(0, 10);
+            setForm({ ...form, [name]: limitedValue });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
     }
 
-    // Helper function to validate phone number (minimum 10 digits, no maximum)
+    // Helper function to validate phone number (exactly 10 digits)
     const validatePhoneNumber = (phone: string): boolean => {
         const digitsOnly = phone.replace(/\D/g, '');
-        return digitsOnly.length >= 10;
+        return digitsOnly.length === 10;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -82,12 +64,8 @@ function ContactPageForm() {
         // Validate all required fields
         const errors: string[] = [];
         
-        if (!form.firstName || !form.firstName.trim()) {
-            errors.push('First name is required');
-        }
-        
-        if (!form.lastName || !form.lastName.trim()) {
-            errors.push('Last name is required');
+        if (!form.name || !form.name.trim()) {
+            errors.push('Name is required');
         }
         
         if (!form.email || !form.email.trim()) {
@@ -97,18 +75,14 @@ function ContactPageForm() {
         if (!form.phone || !form.phone.trim()) {
             errors.push('Phone number is required');
         } else if (!validatePhoneNumber(form.phone)) {
-            errors.push('Phone number must be at least 10 digits');
+            errors.push('Phone number must be exactly 10 digits');
         }
         
-        if (!form.quantity || !form.quantity.trim()) {
-            errors.push('Quantity is required');
+        if (!form.message || !form.message.trim()) {
+            errors.push('Please enter your question or comment');
         }
         
-        if (!form.productType || !form.productType.trim()) {
-            errors.push('Product type is required');
-        }
-        
-        // Message is optional, no validation needed
+        // Quantity and Product ID are optional, no validation needed
         
         if (errors.length > 0) {
             addToast({
@@ -121,18 +95,20 @@ function ContactPageForm() {
 
         setIsSubmitting(true);
         try {
-            // Combine first name and last name into name field
-            const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
+            // Split name into first and last name if available
+            const nameParts = form.name.trim().split(/\s+/);
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
             
             await accountsAPI.submitQuoteRequest({
-                name: fullName,
-                first_name: form.firstName,
-                last_name: form.lastName,
+                name: form.name,
+                first_name: firstName,
+                last_name: lastName,
                 email: form.email,
                 phone: form.phone,
-                quantity: form.quantity,
-                product_type: form.productType,
-                specifications: form.message, // Map message to specifications field
+                quantity: form.quantity || '',
+                product_id: form.productId || '',
+                specifications: form.message,
                 message: form.message,
                 referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
             });
@@ -159,96 +135,79 @@ function ContactPageForm() {
                         onSubmit={handleSubmit}
                         className="w-full max-w-[821px] border-[#2525251A] rounded-[12px] sm:px-[24px] px-[18px] md:py-[36px] py-[26px] border"
                     >
-                        <h2 className="lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold  2xl:mb-[34px] lg:mb-[26px]  mb-[20px] text-center">Contact Us</h2>
-
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                                <div className="relative w-full ">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
-                                    <Input
-                                        type="text"
-                                        name="firstName"
-                                        placeholder="Enter your first name"
-                                        value={form.firstName}
-                                        onChange={handleChange}
-                                        className="!pl-10 contact-input !h-auto !rounded-[12px]"
-                                    />
-                                </div>
-                            <div className="relative w-full ">
+                        {/* Name */}
+                        <div className="mb-4">
+                            <div className="relative w-full">
                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="text"
-                                    name="lastName"
-                                    placeholder="Enter your last name"
-                                    value={form.lastName}
+                                    name="name"
+                                    placeholder="Name"
+                                    value={form.name}
                                     onChange={handleChange}
+                                    required
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                            <div className="relative w-full ">
+                        {/* Email */}
+                        <div className="mb-4">
+                            <div className="relative w-full">
                                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     type="email"
                                     name="email"
-                                    placeholder="Enter your email address"
+                                    placeholder="Email"
                                     value={form.email}
                                     onChange={handleChange}
+                                    required
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
+                        </div>
+
+                        {/* Phone */}
+                        <div className="mb-4">
                             <div className="relative w-full">
                                 <PhoneCall className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground h-4 w-4 z-10" />
                                 <Input
                                     id="phone"
                                     name="phone"
-                                    placeholder="Enter your phone number"
+                                    placeholder="Phone"
                                     value={form.phone}
                                     onChange={handleChange}
+                                    maxLength={10}
+                                    required
                                     className="!pl-10 contact-input !h-auto !rounded-[12px]"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <Input
-                                    id="quantity"
-                                    name="quantity"
-                                    type="number"
-                                    placeholder="Quantity (min. 250)"
-                                    value={form.quantity}
-                                    onChange={handleChange}
-                                    min={250}
-                                    className="contact-input !h-auto !rounded-[12px]"
-                                />
-                            </div>
-                            <div>
-                                <Select
-                                    onValueChange={(value) =>
-                                        setForm({ ...form, productType: value })
-                                    }
-                                    value={form.productType}
-                                >
-                                    <SelectTrigger id="productType" className="contact-input w-full h-[52px]">
-                                        <SelectValue placeholder="Product Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {loadingCategories ? (
-                                            <SelectItem value="loading" disabled>Loading categories...</SelectItem>
-                                        ) : categories.length > 0 ? (
-                                            categories.map((category) => (
-                                                <SelectItem key={category.id} value={category.name}>
-                                                    {category.name}
-                                                </SelectItem>
-                                            ))
-                                        ) : (
-                                            <SelectItem value="none" disabled>No categories available</SelectItem>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                        {/* Quantity */}
+                        <div className="mb-4">
+                            <Input
+                                id="quantity"
+                                name="quantity"
+                                type="number"
+                                placeholder="Quantity"
+                                value={form.quantity}
+                                onChange={handleChange}
+                                className="contact-input !h-auto !rounded-[12px]"
+                            />
+                        </div>
+
+                        {/* Product ID */}
+                        <div className="mb-4">
+                            <Input
+                                id="productId"
+                                name="productId"
+                                type="text"
+                                placeholder="Product ID"
+                                value={form.productId}
+                                onChange={handleChange}
+                                className="contact-input !h-auto !rounded-[12px]"
+                            />
                         </div>
 
                         <div className="mb-6">

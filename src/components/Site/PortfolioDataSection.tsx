@@ -4,7 +4,8 @@ import Link from "next/link";
 interface PortfolioData {
     title: string;
     descriptionLeft: string;
-    descriptionRight: string;
+    descriptionRight?: string;
+    fullContent?: string; // For single column full content
     buttonText?: string;
     buttonLink?: string;
 }
@@ -18,14 +19,13 @@ const PortfolioDataSection: React.FC<PortfolioSectionProps> = ({ data }) => {
         <section className="md:pt-[60px] pt-[30px] md:pb-[80px] pb-[40px]">
             <div className="wrapper 2xl:px-0 px-[15px]">
                 <div>
-                    <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[25px] mb-[20px]">
+                    <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold 2xl:mb-[25px] mb-[20px] text-center">
                         {data.title}
                     </h2>
 
-                    <div className="grid md:grid-cols-2 md:gap-[40px] gap-[10px] text-[16px] leading-[24px] text-[#151515cc]">
-                        {/* ✅ Render HTML safely */}
-                        <p dangerouslySetInnerHTML={{ __html: data.descriptionLeft }} />
-                        <p dangerouslySetInnerHTML={{ __html: data.descriptionRight }} />
+                    <div className="max-w-4xl mx-auto text-[16px] leading-[24px] text-[#151515cc]">
+                        {/* ✅ Render HTML safely - single column */}
+                        <div dangerouslySetInnerHTML={{ __html: data.fullContent || (data.descriptionLeft + (data.descriptionRight ? ' ' + data.descriptionRight : '')) }} />
                     </div>
 
                     {/* ✅ Only render button if text is provided */}
