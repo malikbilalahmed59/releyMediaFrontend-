@@ -3,7 +3,7 @@ import Link from "next/link";
 
 interface PortfolioData {
     title: string;
-    descriptionLeft: string;
+    descriptionLeft?: string;
     descriptionRight?: string;
     fullContent?: string; // For single column full content
     buttonText?: string;
