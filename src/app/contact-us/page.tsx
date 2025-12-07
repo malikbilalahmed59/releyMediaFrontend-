@@ -23,13 +23,6 @@ function ContactContent() {
             <section className="relative banner_layers w-[calc(100%-40px)] bg-no-repeat  bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[82px] xl:py-[64px] py-[54px] bg-[url(/images/contact-banner.jpg)]">
                 <div className="wrapper relative z-10">
                     <div className="text-center text-white">
-                        <ul className="flex gap-[5px] items-center justify-center xl:mb-[8px] sm:mb-[5px]">
-                            <li className="flex items-center gap-1 justify-center">
-                                <Link
-                                className="text-[16px] leading-[16px] font-semibold   hover:text-accent"
-                                href="/">Home</Link> <span>-</span></li>
-                            <li className="flex items-center gap-1  font-black">Contact us</li>
-                        </ul>
                         <h1 className="font-bold 2xl:text-[55px] 2xl:leading-[65px] xl:text-[48px] xl:leading-[54px] lg:text-[42px] sm:text-[36px] text-[30px] leading-[38px] sm:leading-[42px] lg:leading-[48px] mb-[11px]">Contact Us</h1>
                     </div>
                 </div>

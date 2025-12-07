@@ -64,8 +64,8 @@ function RelatedProducts({ products = [] }: RelatedProductsProps) {
         // Safely handle null/undefined prices - hide price if product has no pricing
         let price = '';
         if (!productHasNoPricing) {
-            const minPrice = product.min_price ?? 0;
-            const maxPrice = product.max_price ?? 0;
+            const minPrice = product.min_price != null ? Number(product.min_price) : 0;
+            const maxPrice = product.max_price != null ? Number(product.max_price) : 0;
             price = minPrice > 0 
                 ? `$${minPrice.toFixed(2)}${maxPrice !== minPrice && maxPrice > 0 ? ` - $${maxPrice.toFixed(2)}` : ''}`
                 : 'Price on request';

@@ -556,7 +556,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
 
             {/* Search Bar - At the top */}
             <div className="mb-[20px]">
-                <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Search Products</h4>
+                <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Search Within Results</h4>
                 <div className="relative flex items-center">
                     <div className="absolute left-3 pointer-events-none z-10">
                         <Search className="h-4 w-4 text-[#B2B2B2]" />

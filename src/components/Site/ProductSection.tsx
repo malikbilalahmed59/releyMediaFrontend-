@@ -1,6 +1,6 @@
 'use client'
 import Link from "next/link"
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Thumbs } from 'swiper/modules'
@@ -38,6 +38,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
     const [thumbsSwiper, setThumbsSwiper] = useState<any>(null);
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    const [addedToCart, setAddedToCart] = useState(false);
     const [selectedCustomizations, setSelectedCustomizations] = useState<CartCustomization[]>([]);
     const [customizationTotalPrice, setCustomizationTotalPrice] = useState<number>(0);
     const { isAuthenticated } = useAuth();
@@ -423,12 +424,12 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
         return originalTotal * (DISCOUNT_PERCENTAGE / 100);
     };
 
-    // Calculate shipping fee (if base price < $500, add $100)
+    // Calculate shipping fee (if discounted price < $500, add $100)
     const calculateShippingFee = (): number => {
-        const originalTotal = calculateTotalPrice();
-        if (!originalTotal || isNaN(originalTotal)) return 0;
-        // Check if base price (before discount) is below $500
-        if (originalTotal < 500) {
+        const discountedTotal = calculateDiscountedPrice();
+        if (!discountedTotal || isNaN(discountedTotal)) return 0;
+        // Check if discounted price is below $500
+        if (discountedTotal < 500) {
             return 100;
         }
         return 0;
@@ -436,9 +437,9 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
 
     // Check if order qualifies for free shipping
     const hasFreeShipping = (): boolean => {
-        const originalTotal = calculateTotalPrice();
-        if (!originalTotal || isNaN(originalTotal)) return false;
-        return originalTotal >= 500;
+        const discountedTotal = calculateDiscountedPrice();
+        if (!discountedTotal || isNaN(discountedTotal)) return false;
+        return discountedTotal >= 500;
     };
 
     // Get category slug for breadcrumb
@@ -495,6 +496,9 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
             // Dispatch event to update cart in header
             window.dispatchEvent(new Event('cartUpdated'));
             
+            // Mark as added to cart
+            setAddedToCart(true);
+            
             addToast({
                 type: 'success',
                 title: 'Added to Cart',
@@ -511,6 +515,16 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
             setIsAddingToCart(false);
         }
     };
+
+    // Handle View Cart button click
+    const handleViewCart = () => {
+        router.push('/cart');
+    };
+
+    // Reset addedToCart when quantity or selections change
+    useEffect(() => {
+        setAddedToCart(false);
+    }, [selectedQuantity, selectedPart, selectedSize, selectedCustomizations]);
 
     // Check if user has both billing and shipping addresses
     const checkAddresses = async (): Promise<boolean> => {
@@ -720,16 +734,6 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             </div>
                         )}
 
-                        {/* AI Subcategory */}
-                        {product.ai_subcategory && (
-                        <div className="mt-6">
-                                    <h3 className="font-bold text-[20px] leading-[20px] mb-[10px]">Subcategory</h3>
-                                    <p className="sm:text-[16px] text-[14px] leading-[24px]">
-                                        {typeof product.ai_subcategory === 'object' ? product.ai_subcategory.name : String(product.ai_subcategory)}
-                                    </p>
-                            </div>
-                        )}
-
                         {/* Distributor Info - Below Marketing Points */}
                         {product.distributor_only_info && (
                         <div className="mt-6">
@@ -763,6 +767,15 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                 <h3 className="font-bold text-[18px] leading-[20px] mb-[5px] text-yellow-800">Caution</h3>
                                 <p className="sm:text-[16px] text-[14px] leading-[24px] text-yellow-700">
                                     {product.caution_comment}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* In Stock Info - Bottom Left */}
+                        {!hasNoPricing && (
+                            <div className="mt-6">
+                                <p className="text-[16px]">
+                                    <span className="font-semibold text-accent">✓ In Stock</span> • Customized with Your Logo • Fast Turnaround • Price Beat Guarantee
                                 </p>
                             </div>
                         )}
@@ -824,9 +837,6 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                 <p className="text-[14px] text-accent font-semibold mb-0">
                                     You Save ${((minPrice || 0) * 0.2).toFixed(2)}!
                                     {maxPrice !== minPrice && ` - Save up to $${((maxPrice || 0) * 0.2).toFixed(2)}!`}
-                                </p>
-                                <p className="text-[16px] mb-[10px]">
-                                    <span className="font-semibold text-accent">✓ In Stock</span> • Customized with Your Logo • Fast Turnaround • Price Beat Guarantee
                                 </p>
                             </>
                         )}
@@ -971,12 +981,6 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         {/* Quantity Selection */}
                         {!hasNoPricing && basePriceGroup && basePricingOptions.length > 0 && (
                         <div className="xl:mb-6 mb-4">
-                                <label className="block font-semibold mb-[8px] text-[16px] mb-1">
-                                    Quantity <span className="text-red-500">*</span>
-                                </label>
-                                <p className="text-[14px] text-[#666] mb-2">
-                                    Select quantity (price tier will be automatically selected)
-                                </p>
                                 <div className="mb-2">
                                     <span className="bg-red-500 text-white px-2 py-1 rounded text-[12px] font-bold">
                                         {DISCOUNT_PERCENTAGE}% OFF Applied!
@@ -1060,7 +1064,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                     
                                     return (
                                         <div className="mt-6">
-                                            <label className="block font-semibold mb-2 text-[14px]">Enter Quantity</label>
+                                            <label className="block font-semibold mb-2 text-[14px]">Quantity <span className="text-red-500">*</span></label>
                                             <div className="flex items-center gap-4 mb-4">
                                                 <div className="flex-1">
                                                     <input
@@ -1120,7 +1124,6 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                             {/* Quantity Range Slider - Below Input (only show if maxQty is reasonable) */}
                                             {maxQty <= 10000 && (
                                                 <div className="mt-4">
-                                                    <label className="block font-semibold mb-2 text-[14px]">Adjust Quantity</label>
                                                     <input
                                                         type="range"
                                                         min={inputMin}
@@ -1293,7 +1296,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                     {!hasFreeShipping() && (
                                         <div className="bg-blue-50 px-3 py-2 rounded border border-blue-200">
                                             <p className="text-[13px] text-blue-800 text-center">
-                                                💡 <strong>Free Shipping:</strong> Add ${(500 - calculateTotalPrice()).toFixed(2)} more to qualify for free shipping!
+                                                💡 <strong>Free Shipping:</strong> Add ${(500 - calculateDiscountedPrice()).toFixed(2)} more to qualify for free shipping!
                                             </p>
                                         </div>
                                     )}
@@ -1337,11 +1340,11 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                         {!hasNoPricing && (
                             <div className="flex gap-3 xl:mb-6 mb-4">
                                 <Button
-                                    onClick={handleAddToCart}
+                                    onClick={addedToCart ? handleViewCart : handleAddToCart}
                                     disabled={isAddingToCart}
                                     className="flex-1 bg-foreground md:text-[16px] text-[14px] font-bold rounded-[12px] h-auto xl:py-[14px] sm:py-[10px] py-[8px] cursor-pointer disabled:opacity-50"
                                     variant="secondary">
-                                    {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+                                    {isAddingToCart ? 'Adding...' : addedToCart ? 'View Cart' : 'Add to Cart'}
                                 </Button>
                                 <Button 
                                     onClick={handleBuyNow}

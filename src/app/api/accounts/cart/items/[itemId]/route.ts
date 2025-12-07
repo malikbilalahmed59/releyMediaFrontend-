@@ -19,9 +19,9 @@ export async function PUT(
     const { itemId } = await params;
     const body = await request.json();
     
-    // Try PUT with trailing slash first
-    let url = `${API_BASE_URL}/accounts/cart/items/${itemId}/`;
-    let response = await fetch(url, {
+    // Use the correct endpoint with trailing slash (as per Postman working URL)
+    const url = `${API_BASE_URL}/accounts/cart/items/${itemId}/`;
+    const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -29,19 +29,6 @@ export async function PUT(
       },
       body: JSON.stringify(body),
     });
-    
-    // If 404, try without trailing slash
-    if (response.status === 404) {
-      url = `${API_BASE_URL}/accounts/cart/items/${itemId}`;
-      response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader,
-        },
-        body: JSON.stringify(body),
-      });
-    }
     
     if (!response.ok) {
       const errorText = await response.text();

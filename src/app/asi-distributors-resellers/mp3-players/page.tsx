@@ -3,11 +3,23 @@ import React, { Suspense } from 'react';
 import Header from "@/components/Site/Header";
 import Footer from "@/components/Site/Footer";
 import Client_Logo from "@/components/Site/Client_Logo";
-import Signup_Form from "@/components/Site/Signup_Form";
+import Customer_Feedback from "@/components/Site/Customer_Feedback";
+import MainBanner from "@/components/Site/Main_Banner";
+import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function SignupContent() {
+function MP3PlayersContent() {
+    const portfolioData = {
+        title: "MP3 Players",
+        fullContent: `
+            <p>We carry a wide range of styles, colors, and packaging with MP3 players starting at 64MB up to 256GB. From promotional MP3 players printed with your logo, to retail ready players personalized to your specifications, we have the solutions to meet any need.</p>
+            <p>Our MP3 players are made with the highest quality components including high speed single level cell flash chips. Rush service is available on most models at wholesale prices other companies simply cannot match. We also offer data services preloading, content locking, and serialization.</p>
+        `,
+        buttonText: "",
+        buttonLink: "#",
+    };
+
     return (
         <>
             <Suspense fallback={
@@ -17,22 +29,14 @@ function SignupContent() {
                     </div>
                 </div>
             }>
-                <Header/>
+                <Header />
             </Suspense>
-            <section className="relative banner_layers w-[calc(100%-40px)] bg-no-repeat  bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[82px] xl:py-[64px] py-[54px] bg-[url(/images/contact-banner.jpg)]">
-                <div className="wrapper relative z-10">
-                    <div className="text-center text-white">
-                        <h1 className="font-bold 2xl:text-[55px] 2xl:leading-[65px] xl:text-[48px] xl:leading-[54px] lg:text-[42px] sm:text-[36px] text-[30px] leading-[38px] sm:leading-[42px] lg:leading-[48px] mb-[11px]">Create an Account</h1>
-                    </div>
-                </div>
-            </section>
-            <Signup_Form/>
-            <div className="bg-gradient">
-                <Client_Logo/>
-            </div>
-            <Footer/>
+            <MainBanner />
+            <PortfolioDataSection data={portfolioData} />
+            <Customer_Feedback />
+            <Client_Logo />
+            <Footer />
         </>
-
     );
 }
 
@@ -45,15 +49,16 @@ function Page() {
                         <div className="text-center">Loading header...</div>
                     </div>
                 </div>
+                <MainBanner />
                 <div className="py-[50px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">
                         <div className="text-center">Loading...</div>
                     </div>
                 </div>
-                <Footer/>
+                <Footer />
             </>
         }>
-            <SignupContent />
+            <MP3PlayersContent />
         </Suspense>
     );
 }

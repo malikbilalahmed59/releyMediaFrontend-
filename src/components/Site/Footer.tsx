@@ -2,7 +2,8 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import footer_logo from "../../../public/images/footer_logo.svg";
 import {
     Facebook,
@@ -13,6 +14,12 @@ import {
     PhoneCall,
     Timer,
     Twitter,
+    ShoppingCart,
+    CreditCard,
+    UserCircle,
+    LogIn,
+    LogOut,
+    UserPlus,
 } from "lucide-react";
 
 const footerData = {
@@ -29,6 +36,7 @@ const footerData = {
             links: [
                 { label: "About Us", url: "/about-us" },
                 { label: "Contact Us", url: "/contact-us" },
+                { label: "Payment", url: "/payment" },
                 { label: "Terms of Use", url: "/terms-of-use" },
                 { label: "Privacy Policy", url: "/privacy-policy" },
                 { label: "Sitemap", url: "/site-map" },
@@ -37,7 +45,7 @@ const footerData = {
         {
             title: "Services",
             links: [
-                { label: "ASI Distributors & Other Resellers", url: "/asi-distributors-resellers" },
+                { label: "ASI Distributors", url: "/asi-distributors-resellers" },
                 { label: "Custom Colors", url: "/custom-colors" },
                 { label: "Custom Flash Drives", url: "/custom-flash-drives" },
                 { label: "Data Services", url: "/custom-data-services" },
@@ -102,6 +110,16 @@ const footerData = {
 
 function Footer() {
     const pathname = usePathname();
+    const router = useRouter();
+    const { isAuthenticated, logout } = useAuth();
+    
+    const handleLogout = async () => {
+        try {
+            await logout();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
     
     return (
         <footer className="bg-[url(/images/footer_bg.jpg)] bg-center bg-cover bg-no-repeat xl:pt-[68px] pt-[58px] relative black_layers">
@@ -117,7 +135,7 @@ function Footer() {
                             </figure>
                         </Link>
                         <span className="block text-[15px] leading-[15px] text-[#FFFFFFCC] lg:mb-[33px] sm:mb-[20px] mb-[10px]">{footerData.tagline}</span>
-                        <ul className="flex gap-[8px] lg:justify-start justify-center">
+                        <ul className="flex gap-[8px] lg:justify-start justify-center mb-[20px]">
                             {footerData.socialLinks.map((social, index) => (
                                 <li key={index}>
                                     <a
@@ -132,6 +150,49 @@ function Footer() {
                                 </li>
                             ))}
                         </ul>
+                        <div className="grid grid-cols-[auto_auto] gap-x-0 gap-y-[10px] plusJakarta-font lg:text-left text-center">
+                            <Link href="/cart" className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors">
+                                <ShoppingCart size={20} />
+                                <span>View Cart</span>
+                            </Link>
+                            <Link href="/checkout" className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors">
+                                <CreditCard size={20} />
+                                <span>Proceed to Checkout</span>
+                            </Link>
+                            <Link 
+                                href="/profile" 
+                                onClick={(e) => {
+                                    if (!isAuthenticated) {
+                                        e.preventDefault();
+                                        router.push(`/signin?returnUrl=${encodeURIComponent('/profile')}`);
+                                    }
+                                }}
+                                className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors"
+                            >
+                                <UserCircle size={20} />
+                                <span>My Account</span>
+                            </Link>
+                            {isAuthenticated ? (
+                                <button 
+                                    onClick={handleLogout}
+                                    className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors lg:text-left text-center"
+                                >
+                                    <LogOut size={20} />
+                                    <span>Sign Out</span>
+                                </button>
+                            ) : (
+                                <Link href="/signin" className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors">
+                                    <LogIn size={20} />
+                                    <span>Sign In</span>
+                                </Link>
+                            )}
+                            {!isAuthenticated && (
+                                <Link href="/signup" className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors col-span-2">
+                                    <UserPlus size={20} />
+                                    <span>Create an Account</span>
+                                </Link>
+                            )}
+                        </div>
                     </div>
 
                     {/* Sections */}

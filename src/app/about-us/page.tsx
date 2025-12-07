@@ -12,12 +12,13 @@ export const dynamic = 'force-dynamic';
 function AboutContent() {
     const portfolioData = {
         title: "About Us",
-        descriptionLeft:
-            "RELYmedia provides a wide variety of products and services to help organizations communicate information and build their brands. Our philosophy has always been to focus first and foremost on service and quality. What truly separates RELYmedia from the competition is our industry-leading customer service and attention to detail. Every company promises great service but no company can match the service ",
-        descriptionRight:
-            "RELYmedia delivers. We guarantee to meet any deadline, provide unmatched turnaround times, and have a responsive and knowledgeable staff. In addition to providing exceptional service, our commitment to quality is never-ending and we guarantee your complete satisfaction. Choose RELYmedia and experience the difference. No company works harder to earn your business..",
+        fullContent: `
+            <p>RELYmedia provides a wide variety of products and services to help organizations communicate information and build their brands. Our philosophy has always been to focus first and foremost on service and quality.</p>
+            <p>What truly separates RELYmedia from the competition is our industry-leading customer service and attention to detail. Every company promises great service but no company can match the service RELYmedia delivers. We guarantee to meet any deadline, provide unmatched turnaround times, and have a responsive and knowledgeable staff.</p>
+            <p>In addition to providing exceptional service, our commitment to quality is never-ending and we guarantee your complete satisfaction. Choose RELYmedia and experience the difference. No company works harder to earn your business.</p>
+        `,
         buttonText: "",
-        buttonLink: "#", // Replace with your portfolio URL
+        buttonLink: "#",
     };
 
     return (

@@ -6,18 +6,31 @@ import Client_Logo from "@/components/Site/Client_Logo";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import MainBanner from "@/components/Site/Main_Banner";
 import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export const dynamic = 'force-dynamic';
 
 function ResellersContent() {
     const portfolioData = {
         title: "ASI Distributors & Other Resellers",
-        fullContent: "RELYmedia is a manufacturer servicing promotional products distributors, CD/DVD replicators/brokers, and other resellers across the globe. We have very aggressive reseller pricing and a simple, streamlined ordering process. We make quoting easy by providing resellers with a comprehensive price grid and blind PDF catalog that can be sent to customers. Orders can be placed via email and there are no cumbersome forms to fill out. To learn more about being a reseller for our products, please contact us.",
+        fullContent: `
+            <p>RELYmedia is a manufacturer servicing promotional products distributors, CD/DVD replicators/brokers, and other resellers across the globe. We have very aggressive reseller pricing and a simple, streamlined ordering process.</p>
+            <p>We make quoting easy by providing resellers with a comprehensive price grid and blind PDF catalog that can be sent to customers. Orders can be placed via email and there are no cumbersome forms to fill out. To learn more about being a reseller for our products, please contact us.</p>
+        `,
         descriptionLeft: "",
         descriptionRight: "",
         buttonText: "",
         buttonLink: "#",
     };
+
+    const productPages = [
+        { name: "USB Flash Drives", url: "/asi-distributors-resellers/usb-flash-drives" },
+        { name: "Stainless Tumblers", url: "/asi-distributors-resellers/stainless-tumblers" },
+        { name: "Stainless Bottles", url: "/asi-distributors-resellers/stainless-bottles" },
+        { name: "MP3 Players", url: "/asi-distributors-resellers/mp3-players" },
+        { name: "Digital Photo Frames", url: "/asi-distributors-resellers/digital-photo-frames" },
+    ];
 
     return (
         <>
@@ -33,6 +46,27 @@ function ResellersContent() {
             <MainBanner />
             {/* ✅ pass the data here */}
             <PortfolioDataSection data={portfolioData} />
+            {/* Product Links Section */}
+            <section className="py-[40px] pb-[60px]">
+                <div className="wrapper 2xl:px-0 px-[15px]">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="flex flex-wrap justify-center gap-4">
+                            {productPages.map((page, index) => (
+                                <Button
+                                    key={index}
+                                    asChild
+                                    variant="secondary"
+                                    className="h-auto font-semibold text-[16px] py-[12px] px-[24px] rounded-[12px] transition"
+                                >
+                                    <Link href={page.url}>
+                                        {page.name}
+                                    </Link>
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
             <Customer_Feedback />
             <Client_Logo />
             <Footer />

@@ -9,12 +9,12 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function CustomColorsContent() {
+function StainlessTumblersContent() {
     const portfolioData = {
-        title: "USB Custom Colors",
+        title: "Stainless Tumblers",
         fullContent: `
-            <p>While most styles have a broad range of standard colors, we have the ability to custom color match nearly all of our flash drives. All we need is the Pantone number for your logo and we will create a custom drive to match that color exactly.</p>
-            <p>In addition to custom colored flash drives, we also offer color print matching on nearly all orders for no additional cost. We can even provide a free picture of the first completed unit or a physical sample beforehand to make sure the color match is accurate.</p>
+            <p>We carry an endless range of tumbler styles, colors, and packaging with sizes ranging from 10 oz to 40 oz. From promotional coffee mugs printed with your logo, to personalized engraved tumblers, we have the solutions to meet any need at wholesale prices other companies cannot match. Our stainless steel tumblers are double wall copper vacuum insulated and made from the highest quality components, making these the ideal travel cups to keep your drinks hot or cold.</p>
+            <p>Most tumbler suppliers buy from importers, adding an unnecessary third party to the supply chain. This results in higher costs, longer lead times, and lower quality control. At RELYmedia, we directly manufacture all of the tumblers we sell, enabling us to offer lower bulk prices, higher quality, and faster turnaround times.</p>
         `,
         buttonText: "",
         buttonLink: "#",
@@ -32,7 +32,6 @@ function CustomColorsContent() {
                 <Header />
             </Suspense>
             <MainBanner />
-            {/* ✅ pass the data here */}
             <PortfolioDataSection data={portfolioData} />
             <Customer_Feedback />
             <Client_Logo />
@@ -59,7 +58,7 @@ function Page() {
                 <Footer />
             </>
         }>
-            <CustomColorsContent />
+            <StainlessTumblersContent />
         </Suspense>
     );
 }

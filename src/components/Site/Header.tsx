@@ -2,7 +2,7 @@
 import React, { useState, FormEvent, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {Mail, Phone, Search, ShoppingBasket, User} from "lucide-react";
+import {Mail, Phone, Search, ShoppingBasket, User, Settings, LogOut} from "lucide-react";
 import Image from "next/image";
 import relymedia_logo from "../../../public/images/relymedia-logo.svg";
 import { ArrowRight,ChevronDown } from 'lucide-react';
@@ -28,7 +28,8 @@ function Header() {
     const [searchQuery, setSearchQuery] = useState('');
     const [cart, setCart] = useState<Cart | null>(null);
     const [cartLoading, setCartLoading] = useState(false);
-    const { isAuthenticated } = useAuth();
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+    const { isAuthenticated, logout } = useAuth();
     
     // Check which filters are active
     const isUsaMade = searchParams.get('usa_made') === 'true';
@@ -232,18 +233,54 @@ function Header() {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link 
-                                        href="/profile" 
-                                        onClick={(e) => {
-                                            if (!isAuthenticated) {
+                                    {isAuthenticated ? (
+                                        <div 
+                                            className="relative"
+                                            onMouseEnter={() => setProfileDropdownOpen(true)}
+                                            onMouseLeave={() => setProfileDropdownOpen(false)}
+                                        >
+                                            <DropdownMenu open={profileDropdownOpen} onOpenChange={setProfileDropdownOpen}>
+                                                <DropdownMenuTrigger asChild>
+                                                    <button className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px] hover:bg-[#E5E5E5] transition-colors">
+                                                        <User />
+                                                    </button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-[180px]">
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/profile" className="cursor-pointer flex items-center gap-2">
+                                                            <Settings className="h-4 w-4" />
+                                                            Profile Settings
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem 
+                                                        onClick={async () => {
+                                                            try {
+                                                                await logout();
+                                                            } catch (error) {
+                                                                console.error('Logout error:', error);
+                                                            }
+                                                        }}
+                                                        className="cursor-pointer text-red-600 focus:text-red-600 flex items-center gap-2"
+                                                    >
+                                                        <LogOut className="h-4 w-4" />
+                                                        Logout
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    ) : (
+                                        <Link 
+                                            href="/profile" 
+                                            onClick={(e) => {
                                                 e.preventDefault();
                                                 router.push(`/signin?returnUrl=${encodeURIComponent('/profile')}`);
-                                            }
-                                        }}
-                                        className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"
-                                    >
-                                        <User />
-                                    </Link>
+                                            }}
+                                            className="bg-[#F5F5F5] lg:w-[48px] lg:h-[48px] w-[40px] h-[40px] flex items-center justify-center rounded-[10px]"
+                                        >
+                                            <User />
+                                        </Link>
+                                    )}
                                 </li>
                             </ul>
                         </div>

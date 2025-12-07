@@ -72,6 +72,11 @@ function CartContent() {
         try {
             const updatedCart = await accountsAPI.updateCartItem(itemId, { quantity: newQuantity });
             setCart(updatedCart);
+            addToast({
+                type: 'success',
+                title: 'Cart Updated',
+                description: 'Cart updated successfully!',
+            });
         } catch (error: any) {
             console.error('Error updating cart item:', error);
             addToast({
@@ -172,7 +177,7 @@ function CartContent() {
     const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
     const finalSubtotal = originalSubtotal - discountAmount;
     
-    // Calculate shipping fee per product (if base price * quantity < $500, add $100 per product)
+    // Calculate shipping fee per product (if discounted price * quantity < $500, add $100 per product)
     const calculateShippingFee = (): number => {
         if (!cart || !cart.items || cart.items.length === 0) {
             return 0;
@@ -186,11 +191,12 @@ function CartContent() {
                 ? parseFloat(item.price_per_unit) 
                 : (item.price_per_unit || 0);
             
-            // Calculate base price * quantity for this product
+            // Calculate discounted price * quantity for this product
             const productTotal = pricePerUnit * item.quantity;
+            const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
             
-            // If product total is less than $500, add $100 fee for this product
-            if (productTotal < 500) {
+            // If discounted product total is less than $500, add $100 fee for this product
+            if (discountedProductTotal < 500) {
                 totalFee += 100;
             }
         });
@@ -199,12 +205,14 @@ function CartContent() {
     };
     
     const shippingFee = calculateShippingFee();
-    // Check if all products have free shipping (each product >= $500)
+    // Check if all products have free shipping (each discounted product >= $500)
     const hasFreeShipping = cart.items.every((item) => {
         const pricePerUnit = typeof item.price_per_unit === 'string' 
             ? parseFloat(item.price_per_unit) 
             : (item.price_per_unit || 0);
-        return (pricePerUnit * item.quantity) >= 500;
+        const productTotal = pricePerUnit * item.quantity;
+        const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
+        return discountedProductTotal >= 500;
     });
     const grandTotal = finalSubtotal + shippingFee;
     
@@ -265,20 +273,24 @@ function CartContent() {
                                                             {/* Product */}
                                                             <td className="py-[20px] px-[12px]">
                                                                 <div className="flex items-center gap-[12px]">
-                                                                    <figure className="relative w-[70px] h-[70px] bg-gradient rounded-[10px] p-[6px] flex-shrink-0">
-                                                                        <img
-                                                                            src={getProductImage(item)}
-                                                                            alt={item.product_name}
-                                                                            className="w-full h-full object-contain"
-                                                                            onError={(e) => {
-                                                                                (e.target as HTMLImageElement).src = pen.src;
-                                                                            }}
-                                                                        />
-                                                                    </figure>
+                                                                    <Link href={`/single-products/${item.product}`} className="flex-shrink-0">
+                                                                        <figure className="relative w-[70px] h-[70px] bg-gradient rounded-[10px] p-[6px] flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                                            <img
+                                                                                src={getProductImage(item)}
+                                                                                alt={item.product_name}
+                                                                                className="w-full h-full object-contain"
+                                                                                onError={(e) => {
+                                                                                    (e.target as HTMLImageElement).src = pen.src;
+                                                                                }}
+                                                                            />
+                                                                        </figure>
+                                                                    </Link>
                                                                     <div className="flex-1 min-w-0">
-                                                                        <h3 className="text-[16px] font-semibold text-foreground line-clamp-2 mb-1">
-                                                                            {item.product_name}
-                                                                        </h3>
+                                                                        <Link href={`/single-products/${item.product}`}>
+                                                                            <h3 className="text-[16px] font-semibold text-foreground line-clamp-2 mb-1 hover:text-accent transition-colors cursor-pointer">
+                                                                                {item.product_name}
+                                                                            </h3>
+                                                                        </Link>
                                                                         {/* Customizations */}
                                                                         {item.customizations && item.customizations.length > 0 && (
                                                                             <div className="mt-2 space-y-1">

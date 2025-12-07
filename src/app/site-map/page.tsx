@@ -42,7 +42,7 @@ function SiteMapContent() {
         {
             title: "Services",
             links: [
-                { label: "ASI Distributors & Other Resellers", url: "/asi-distributors-resellers" },
+                { label: "ASI Distributors", url: "/asi-distributors-resellers" },
                 { label: "Custom Colors", url: "/custom-colors" },
                 { label: "Custom Flash Drives", url: "/custom-flash-drives" },
                 { label: "Data Services", url: "/custom-data-services" },
@@ -71,6 +71,7 @@ function SiteMapContent() {
                 { label: "Profile", url: "/profile" },
                 { label: "Cart", url: "/cart" },
                 { label: "Checkout", url: "/checkout" },
+                { label: "Payment", url: "/payment" },
                 { label: "Orders", url: "/accounts/orders" },
             ],
         },

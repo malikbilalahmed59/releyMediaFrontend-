@@ -440,7 +440,7 @@ function CheckoutFormContent() {
     const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
     const subtotal = originalSubtotal - discountAmount;
     
-    // Calculate shipping fee per product (if base price * quantity < $500, add $100 per product)
+    // Calculate shipping fee per product (if discounted price * quantity < $500, add $100 per product)
     const calculateShippingFee = (): number => {
         if (!cart || !cart.items || cart.items.length === 0) {
             return 0;
@@ -454,11 +454,12 @@ function CheckoutFormContent() {
                 ? parseFloat(item.price_per_unit) 
                 : (item.price_per_unit || 0);
             
-            // Calculate base price * quantity for this product
+            // Calculate discounted price * quantity for this product
             const productTotal = pricePerUnit * item.quantity;
+            const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
             
-            // If product total is less than $500, add $100 fee for this product
-            if (productTotal < 500) {
+            // If discounted product total is less than $500, add $100 fee for this product
+            if (discountedProductTotal < 500) {
                 totalFee += 100;
             }
         });
@@ -467,12 +468,14 @@ function CheckoutFormContent() {
     };
     
     const shippingFee = calculateShippingFee();
-    // Check if all products have free shipping (each product >= $500)
+    // Check if all products have free shipping (each discounted product >= $500)
     const hasFreeShipping = cart.items.every((item) => {
         const pricePerUnit = typeof item.price_per_unit === 'string' 
             ? parseFloat(item.price_per_unit) 
             : (item.price_per_unit || 0);
-        return (pricePerUnit * item.quantity) >= 500;
+        const productTotal = pricePerUnit * item.quantity;
+        const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
+        return discountedProductTotal >= 500;
     });
     const total = subtotal + shippingFee;
     
@@ -636,7 +639,7 @@ function CheckoutFormContent() {
                                         <textarea
                                             value={notes}
                                             onChange={(e) => setNotes(e.target.value)}
-                                            placeholder="Any special instructions for your order..."
+                                            placeholder="Please provide any additional information such as imprint instructions."
                                             className="w-full min-h-[100px] px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-accent"
                                         />
                                     </div>
@@ -665,7 +668,7 @@ function CheckoutFormContent() {
                                             type="text"
                                             value={dateOrderNeeded}
                                             onChange={(e) => setDateOrderNeeded(e.target.value)}
-                                            placeholder="e.g., 2024-12-25 or ASAP"
+                                            placeholder="Please enter a date"
                                             className="form-input"
                                         />
                                     </div>
@@ -680,16 +683,20 @@ function CheckoutFormContent() {
                                 <CardContent className="px-[20px] space-y-4">
                                     {cart.items.map((item) => (
                                         <div key={item.id} className="flex items-center gap-4 pb-4 border-b">
-                                            <img
-                                                src={getProductImage(item)}
-                                                alt={item.product_name}
-                                                className="w-16 h-16 object-contain rounded"
-                                                onError={(e) => {
-                                                    (e.target as HTMLImageElement).src = pen.src;
-                                                }}
-                                            />
+                                            <Link href={`/single-products/${item.product}`}>
+                                                <img
+                                                    src={getProductImage(item)}
+                                                    alt={item.product_name}
+                                                    className="w-16 h-16 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                                                    onError={(e) => {
+                                                        (e.target as HTMLImageElement).src = pen.src;
+                                                    }}
+                                                />
+                                            </Link>
                                             <div className="flex-1">
-                                                <p className="font-semibold">{item.product_name}</p>
+                                                <Link href={`/single-products/${item.product}`}>
+                                                    <p className="font-semibold hover:text-accent transition-colors cursor-pointer">{item.product_name}</p>
+                                                </Link>
                                                 {item.part_name && (
                                                     <p className="text-sm text-gray-600">{item.part_name}</p>
                                                 )}

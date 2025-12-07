@@ -72,11 +72,7 @@ function ContactForm() {
             errors.push('Phone number must be exactly 10 digits');
         }
         
-        if (!form.quantity || !form.quantity.trim()) {
-            errors.push('Quantity is required');
-        }
-        
-        // Specifications is optional, no validation needed
+        // Quantity and specifications are optional, no validation needed
         
         if (errors.length > 0) {
             addToast({
@@ -170,7 +166,6 @@ function ContactForm() {
                                 type="number"
                                 name="quantity"
                                 placeholder="Quantity"
-                                min="10"
                                 value={form.quantity}
                                 onChange={handleChange}
                                 className="bg-transparent outline-none text-white placeholder-white placeholder:text-[16px] text-[16px] w-full"
@@ -183,7 +178,7 @@ function ContactForm() {
                             <input
                                 type="text"
                                 name="specifications"
-                                placeholder="Specifications ( product ID, etc )"
+                                placeholder="Product ID"
                                 value={form.specifications}
                                 onChange={handleChange}
                                 className="bg-transparent outline-none text-white placeholder-white placeholder:text-[16px] text-[16px] w-full"

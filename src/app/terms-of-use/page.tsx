@@ -12,10 +12,13 @@ export const dynamic = 'force-dynamic';
 function TermsContent() {
     const termsData = {
         title: "Terms of Use",
-        descriptionLeft:
-            "Welcome to RELYmedia. By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.",
-        descriptionRight:
-            "RELYmedia reserves the right to modify these terms at any time. We will notify users of any changes by posting the new Terms of Use on this page. Your continued use of the service after any such changes constitutes your acceptance of the new Terms of Use.",
+        fullContent: `
+            <p>Certain restrictions apply to our product warranty, price match guarantee, and rush turnaround. Please contact us for specific details regarding these polices as they vary from product to product.</p>
+            <p>The following terms apply to your use of this website:</p>
+            <p>The information contained on this website is provided "as is," without any warranties or representations, express or implied, including that the information provided is complete, correct or up-to-date. RELYmedia may review this website and make changes or deletions at any time without advance notice. Under no circumstances does the information on this website, including, but not limited to, any pricing, constitute an offer to sell a product or service.</p>
+            <p>To the maximum extent permitted by law, RELYmedia disclaims liability for any and all costs and damages resulting directly or indirectly from your use of or reliance on this website, including but not limited to direct or consequential, special, indirect, or incidental damages.</p>
+            <p>Certain elements (including but not limited to trademarks, service marks, logos and copyrighted material) shown on this website are protected by the intellectual property rights of RELYmedia. You agree to use this website only for your personal, non-commercial use and not to copy, modify, or retransmit in any form the contents of this website to any third party without RELYmedia express advance written permission.</p>
+        `,
         buttonText: "",
         buttonLink: "#",
     };

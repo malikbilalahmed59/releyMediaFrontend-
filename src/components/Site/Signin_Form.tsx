@@ -139,7 +139,7 @@ function Signin_Form() {
                     </form>
 
                 </div>
-                <div className="text-center mt-[27px] text-[16px]">Don't have an account yet?  <Link href="/signup" className="font-bold hover:text-accent">Sign Up</Link></div>
+                <div className="text-center mt-[27px] text-[16px]">Don't have an account yet?  <Link href="/signup" className="font-bold hover:text-accent">Create an Account</Link></div>
             </div>
             <figure className="absolute bottom-[-18px] right-0">
                 <Image src={contact_shape} alt="contact shape" />

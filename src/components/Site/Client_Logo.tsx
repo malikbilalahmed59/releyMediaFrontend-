@@ -6,18 +6,18 @@ import {Autoplay} from "swiper/modules";
 
 function ClientLogo() {
     const slides = [
-        { src: '/images/trusted-by/verizon-wireless.png', width: '150px', alt: 'Verizon Wireless' },
-        { src: '/images/trusted-by/toyota.png', width: '94px', alt: 'Toyota' },
-        { src: '/images/trusted-by/hp.png', width: '67px', alt: 'Hewlett-Packard' },
-        { src: '/images/trusted-by/microsoft.png', width: '150px', alt: 'Microsoft' },
-        { src: '/images/trusted-by/alcoa.png', width: '150px', alt: 'Alcoa' },
-        { src: '/images/trusted-by/ebay.png', width: '200px', alt: 'eBay' },
-        { src: '/images/trusted-by/best-buy.png', width: '150px', alt: 'Best Buy' },
-        { src: '/images/trusted-by/procter-gamble.png', width: '128px', alt: 'Procter & Gamble' },
-        { src: '/images/trusted-by/coca-cola.png', width: '150px', alt: 'Coca-Cola' },
-        { src: '/images/trusted-by/dell.png', width: '150px', alt: 'Dell' },
-        { src: '/images/trusted-by/kroger.png', width: '150px', alt: 'Kroger' },
-        { src: '/images/trusted-by/mcdonalds.png', width: '150px', alt: 'McDonalds' },
+        { src: '/images/trusted-by/verizon-wireless.png', alt: 'Verizon Wireless' },
+        { src: '/images/trusted-by/toyota.png', alt: 'Toyota' },
+        { src: '/images/trusted-by/hp.png', alt: 'Hewlett-Packard' },
+        { src: '/images/trusted-by/microsoft.png', alt: 'Microsoft' },
+        { src: '/images/trusted-by/alcoa.png', alt: 'Alcoa' },
+        { src: '/images/trusted-by/ebay.png', alt: 'eBay' },
+        { src: '/images/trusted-by/best-buy.png', alt: 'Best Buy' },
+        { src: '/images/trusted-by/procter-gamble.png', alt: 'Procter & Gamble' },
+        { src: '/images/trusted-by/coca-cola.png', alt: 'Coca-Cola' },
+        { src: '/images/trusted-by/dell.png', alt: 'Dell' },
+        { src: '/images/trusted-by/kroger.png', alt: 'Kroger' },
+        { src: '/images/trusted-by/mcdonalds.png', alt: 'McDonalds' },
     ];
     return (
         <section className="sm:py-[36px] pb-[36px] bg-[#E8E8E8]">
@@ -32,40 +32,46 @@ function ClientLogo() {
                         }}
                         speed={3000} // Smooth transition speed (ms)
                         slidesPerView={8}
-                        spaceBetween={48}
+                        spaceBetween={64}
                         breakpoints={{
                             320: {
                                 slidesPerView: 5,
-                                spaceBetween: 16,
+                                spaceBetween: 24,
                             },
                             480: {
                                 slidesPerView: 4,
-                                spaceBetween: 20,
+                                spaceBetween: 32,
                             },
                             640: {
                                 slidesPerView: 6,
-                                spaceBetween: 24,
+                                spaceBetween: 40,
                             },
                             768: {
                                 slidesPerView: 6,
-                                spaceBetween: 30,
+                                spaceBetween: 48,
                             },
                             1024: {
                                 slidesPerView: 6,
-                                spaceBetween: 36,
+                                spaceBetween: 56,
                             },
                             1280: {
                                 slidesPerView: 8,
-                                spaceBetween: 48,
+                                spaceBetween: 64,
                             },
                         }}
                         allowTouchMove={false} // Disable dragging (optional)
                 >
-                    {slides.map((slide, i) => (
-                        <SwiperSlide key={i}>
-                            <img src={slide.src} alt={slide.alt || `Client logo ${i + 1}`} className="mx-auto" style={{ width: slide.width }}/>
-                        </SwiperSlide>
-                    ))}
+                    {slides.map((slide, i) => {
+                        // Microsoft logo gets a larger container
+                        const isMicrosoft = slide.alt === 'Microsoft';
+                        return (
+                            <SwiperSlide key={i} className="flex items-center justify-center">
+                                <div className={`${isMicrosoft ? 'w-[220px] h-[120px]' : 'w-[180px] h-[100px]'} flex items-center justify-center`}>
+                                    <img src={slide.src} alt={slide.alt || `Client logo ${i + 1}`} className="max-w-full max-h-full w-auto h-auto object-contain" />
+                                </div>
+                            </SwiperSlide>
+                        );
+                    })}
                 </Swiper>
             </div>
         </section>

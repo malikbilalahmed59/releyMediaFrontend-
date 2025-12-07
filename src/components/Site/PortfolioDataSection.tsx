@@ -23,7 +23,7 @@ const PortfolioDataSection: React.FC<PortfolioSectionProps> = ({ data }) => {
                         {data.title}
                     </h2>
 
-                    <div className="max-w-4xl mx-auto text-[16px] leading-[24px] text-[#151515cc]">
+                    <div className="max-w-4xl mx-auto text-[16px] leading-[24px] text-[#151515cc] [&>div>p]:mb-4 [&>div>p:last-child]:mb-0">
                         {/* ✅ Render HTML safely - single column */}
                         <div dangerouslySetInnerHTML={{ __html: data.fullContent || (data.descriptionLeft + (data.descriptionRight ? ' ' + data.descriptionRight : '')) }} />
                     </div>

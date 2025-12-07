@@ -9,12 +9,12 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function CustomColorsContent() {
+function USBFlashDrivesContent() {
     const portfolioData = {
-        title: "USB Custom Colors",
+        title: "USB Flash Drives",
         fullContent: `
-            <p>While most styles have a broad range of standard colors, we have the ability to custom color match nearly all of our flash drives. All we need is the Pantone number for your logo and we will create a custom drive to match that color exactly.</p>
-            <p>In addition to custom colored flash drives, we also offer color print matching on nearly all orders for no additional cost. We can even provide a free picture of the first completed unit or a physical sample beforehand to make sure the color match is accurate.</p>
+            <p>We carry an endless range of styles, colors, and packaging with branded flash drives starting at 64MB up to 256GB. From promotional thumb drives printed with your logo, to personalized jump drives custom molded to your specifications, we have the solutions to meet any need. At RELYmedia, we have over 600+ unique models including a wide variety of swivel, business card, pen, wristband, wood, and leather designs.</p>
+            <p>Our bulk USB flash drives are made from the highest quality components including grade A flash chips. Same day and 2-day service are available at prices cheaper than our competition can match. We also offer data services including autorun creation, password protection, serialization, and secure partitions for all wholesale USB drives.</p>
         `,
         buttonText: "",
         buttonLink: "#",
@@ -32,7 +32,6 @@ function CustomColorsContent() {
                 <Header />
             </Suspense>
             <MainBanner />
-            {/* ✅ pass the data here */}
             <PortfolioDataSection data={portfolioData} />
             <Customer_Feedback />
             <Client_Logo />
@@ -59,7 +58,7 @@ function Page() {
                 <Footer />
             </>
         }>
-            <CustomColorsContent />
+            <USBFlashDrivesContent />
         </Suspense>
     );
 }
