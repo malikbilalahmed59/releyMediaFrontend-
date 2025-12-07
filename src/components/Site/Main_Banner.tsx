@@ -73,10 +73,10 @@ function MainBanner({ productCount, categoryName }: MainBannerProps) {
     const getBannerText = (): string => {
         if (categoryName && categoryBannerTextMap[categoryName]) {
             const categoryText = categoryBannerTextMap[categoryName];
-            return `<strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> ${categoryText} <br/> Prices <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%+</span> Below the Competition`;
+            return `<strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> ${categoryText} <br/> Prices <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%</span> Below the Competition`;
         }
         // Default heading for home page or when no category
-        return `Promotional Items: <strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> Products <br/> at Prices <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%+</span> Below the Competition`;
+        return `<strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> Promotional Items at <br/> Prices <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%</span> Below the Competition`;
     };
 
     const heading = getBannerText();

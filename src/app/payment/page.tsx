@@ -19,6 +19,15 @@ function PaymentContent() {
     const [invoiceNumber, setInvoiceNumber] = useState("");
     const [amount, setAmount] = useState("");
     const [agreedToTerms, setAgreedToTerms] = useState(false);
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [company, setCompany] = useState("");
+    const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [address, setAddress] = useState("");
+    const [city, setCity] = useState("");
+    const [state, setState] = useState("");
+    const [zipCode, setZipCode] = useState("");
     const [cardholderName, setCardholderName] = useState("");
     const [cardNumber, setCardNumber] = useState("");
     const [cardExpMonth, setCardExpMonth] = useState("");
@@ -94,6 +103,80 @@ function PaymentContent() {
                 type: 'error',
                 title: 'Validation Error',
                 description: 'You must agree to the terms and conditions to proceed',
+            });
+            return false;
+        }
+
+        if (!firstName.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your first name',
+            });
+            return false;
+        }
+
+        if (!lastName.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your last name',
+            });
+            return false;
+        }
+
+        if (!email.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your email address',
+            });
+            return false;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter a valid email address',
+            });
+            return false;
+        }
+
+        if (!address.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your address',
+            });
+            return false;
+        }
+
+        if (!city.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your city',
+            });
+            return false;
+        }
+
+        if (!state.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your state',
+            });
+            return false;
+        }
+
+        if (!zipCode.trim()) {
+            addToast({
+                type: 'error',
+                title: 'Validation Error',
+                description: 'Please enter your ZIP code',
             });
             return false;
         }
@@ -198,8 +281,15 @@ function PaymentContent() {
                     amountShipping: '0.00',
                     amountTax: '0.00',
                     billingAddress: {
-                        first_name: cardholderName.split(' ')[0] || cardholderName,
-                        last_name: cardholderName.split(' ').slice(1).join(' ') || '',
+                        first_name: firstName,
+                        last_name: lastName,
+                        company_name: company,
+                        phone: phone,
+                        email: email,
+                        address: address,
+                        city: city,
+                        state: state,
+                        zip: zipCode,
                     },
                 }),
             });
@@ -286,6 +376,135 @@ function PaymentContent() {
                                         required
                                         disabled={processing}
                                     />
+                                </div>
+
+                                {/* Personal Information Section */}
+                                <div className="space-y-4 pt-4 border-t">
+                                    <h3 className="text-lg font-semibold">Billing Information</h3>
+                                    
+                                    {/* First Name */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="firstName">First Name *</Label>
+                                        <Input
+                                            id="firstName"
+                                            type="text"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                            placeholder="First Name"
+                                            required
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* Last Name */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="lastName">Last Name *</Label>
+                                        <Input
+                                            id="lastName"
+                                            type="text"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                            placeholder="Last Name"
+                                            required
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* Company */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="company">Company</Label>
+                                        <Input
+                                            id="company"
+                                            type="text"
+                                            value={company}
+                                            onChange={(e) => setCompany(e.target.value)}
+                                            placeholder="Company"
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone">Phone</Label>
+                                        <Input
+                                            id="phone"
+                                            type="tel"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value)}
+                                            placeholder="Phone"
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* Email Address */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email Address *</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="Email Address"
+                                            required
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* Address */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="address">Address *</Label>
+                                        <Input
+                                            id="address"
+                                            type="text"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            placeholder="Address"
+                                            required
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* City */}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="city">City *</Label>
+                                        <Input
+                                            id="city"
+                                            type="text"
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                            placeholder="City"
+                                            required
+                                            disabled={processing}
+                                        />
+                                    </div>
+
+                                    {/* State and ZIP Code */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="state">State *</Label>
+                                            <Input
+                                                id="state"
+                                                type="text"
+                                                value={state}
+                                                onChange={(e) => setState(e.target.value)}
+                                                placeholder="State"
+                                                required
+                                                disabled={processing}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="zipCode">ZIP Code *</Label>
+                                            <Input
+                                                id="zipCode"
+                                                type="text"
+                                                value={zipCode}
+                                                onChange={(e) => setZipCode(e.target.value)}
+                                                placeholder="ZIP Code"
+                                                required
+                                                disabled={processing}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Terms and Conditions */}

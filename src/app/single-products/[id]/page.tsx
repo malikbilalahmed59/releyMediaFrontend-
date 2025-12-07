@@ -10,7 +10,7 @@ import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import ProductSection from "@/components/Site/ProductSection";
 import RelatedProducts from "@/components/Site/RelatedProducts";
 import SEOHead from "@/components/Site/SEOHead";
-import { getProductDetail, type ProductDetail } from '@/lib/api/catalog';
+import { getProductDetail, getProductsByCategory, type ProductDetail } from '@/lib/api/catalog';
 import { stripHtmlTags } from '@/lib/utils';
 
 function ProductDetailContent() {
@@ -18,6 +18,7 @@ function ProductDetailContent() {
     const pathname = usePathname();
     const idParam = params.id as string;
     const [product, setProduct] = useState<ProductDetail | null>(null);
+    const [categoryCount, setCategoryCount] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +41,20 @@ function ProductDetailContent() {
                 console.log('Product detail API response:', productData);
                 console.log('Available fields:', Object.keys(productData));
                 setProduct(productData);
+                
+                // Fetch category count if product has a category
+                if (productData.ai_category?.id) {
+                    try {
+                        const categoryResults = await getProductsByCategory(productData.ai_category.id, {
+                            page: 1,
+                            page_size: 1, // We only need the count
+                        });
+                        setCategoryCount(categoryResults.count);
+                    } catch (categoryError) {
+                        console.error('Error fetching category count:', categoryError);
+                        // Don't fail the whole page if category count fails
+                    }
+                }
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch product');
                 console.error('Error fetching product:', err);
@@ -83,7 +98,10 @@ function ProductDetailContent() {
             }>
                 <Header/>
             </Suspense>
-            <MainBanner/>
+            <MainBanner 
+                productCount={categoryCount} 
+                categoryName={product?.ai_category?.name} 
+            />
             {loading && (
                 <div className="py-[50px] pb-[75px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

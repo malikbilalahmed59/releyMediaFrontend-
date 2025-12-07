@@ -84,11 +84,13 @@ export async function POST(request: NextRequest) {
       if (billingAddress) {
         paymentRequest.billingFirstName = billingAddress.first_name || billingAddress.firstName;
         paymentRequest.billingLastName = billingAddress.last_name || billingAddress.lastName;
-        paymentRequest.billingCompanyName = billingAddress.company_name || billingAddress.companyName;
+        paymentRequest.billingCompanyName = billingAddress.company_name || billingAddress.companyName || billingAddress.company;
         paymentRequest.billingAddress = billingAddress.address_line1 || billingAddress.addressLine1 || billingAddress.address;
         paymentRequest.billingCity = billingAddress.city;
         paymentRequest.billingState = billingAddress.state;
-        paymentRequest.billingZip = billingAddress.postal_code || billingAddress.postalCode || billingAddress.zip;
+        paymentRequest.billingZip = billingAddress.postal_code || billingAddress.postalCode || billingAddress.zip || billingAddress.zipCode;
+        // Note: Phone and email are stored in billingAddress but PayJunction may not support them directly
+        // They are included in the request for potential future use or logging
       }
 
       // Add shipping address if provided
