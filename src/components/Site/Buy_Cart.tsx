@@ -6,12 +6,13 @@ import { useRouter } from 'next/navigation';
 import pen from "../../../public/images/pen.png";
 import { Button } from "@/components/ui/button";
 import { MoveRight, ShoppingCart } from "lucide-react";
-import { type Product } from '@/lib/api/catalog';
+import { type Product, type Category } from '@/lib/api/catalog';
 import { stripHtmlTags } from '@/lib/utils';
 
 interface BuyCartProps {
     products?: Product[];
     totalCount?: number;
+    category?: Category | null;
 }
 
 // Helper function to truncate description
@@ -52,13 +53,33 @@ const isExternalImage = (image: string | any): boolean => {
 };
 
 // Helper to check if product has no pricing (requires custom quote)
-const hasNoPricing = (product: Product): boolean => {
+// Also hide pricing for Technology & Flash Drives category
+const hasNoPricing = (product: Product, category?: Category | null): boolean => {
+    // Check if we're on the Technology & Flash Drives category page
+    const categoryName = category?.name || '';
+    const isTechnologyFlashDrivesCategory = categoryName === 'Technology & Flash Drives' || 
+                                           categoryName === 'Technology Items & Flash Drives';
+    
+    if (isTechnologyFlashDrivesCategory) {
+        return true;
+    }
+    
+    // Check if product is in Technology & Flash Drives category
+    // ai_category is a string in Product interface
+    const productCategoryName = typeof product.ai_category === 'string' ? product.ai_category : '';
+    const isTechnologyFlashDrives = productCategoryName === 'Technology & Flash Drives' || 
+                                   productCategoryName === 'Technology Items & Flash Drives';
+    
+    if (isTechnologyFlashDrives) {
+        return true;
+    }
+    
     const minPrice = product.min_price != null ? Number(product.min_price) : null;
     const maxPrice = product.max_price != null ? Number(product.max_price) : null;
     return (minPrice === 0 || minPrice === null) && (maxPrice === 0 || maxPrice === null);
 };
 
-function BuyCart({ products = [], totalCount = 0 }: BuyCartProps) {
+function BuyCart({ products = [], totalCount = 0, category }: BuyCartProps) {
     const router = useRouter();
 
     // Handle Add to Cart - Redirect to detail page
@@ -79,7 +100,7 @@ function BuyCart({ products = [], totalCount = 0 }: BuyCartProps) {
         const productImage = getProductImage(product);
         
         // Format price with null checks - hide price if product has no pricing
-        const productHasNoPricing = hasNoPricing(product);
+        const productHasNoPricing = hasNoPricing(product, category);
         let priceDisplay = 'Price on request';
         
         if (!productHasNoPricing) {

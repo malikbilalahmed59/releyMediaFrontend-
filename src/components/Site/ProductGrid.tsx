@@ -39,7 +39,7 @@ function ProductGrid({ searchResults, loading, error, category }: ProductGridPro
                         )}
                         {!loading && !error && (
                             <>
-                                <BuyCart products={searchResults?.results || []} totalCount={searchResults?.count || 0} />
+                                <BuyCart products={searchResults?.results || []} totalCount={searchResults?.count || 0} category={categoryData} />
                                 {searchResults && searchResults.total_pages > 1 && (
                                     <Pagination
                                         currentPage={searchResults.current_page}

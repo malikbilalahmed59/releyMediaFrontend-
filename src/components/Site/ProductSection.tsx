@@ -446,6 +446,14 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     const categorySlug = product.ai_category ? createSlug(product.ai_category.name) : null;
     const categoryName = product.ai_category?.name || 'Products';
     
+    // Check if product is in Technology & Flash Drives category (hide pricing for this category)
+    const isTechnologyFlashDrives = categoryName === 'Technology & Flash Drives' || 
+                                   categoryName === 'Technology Items & Flash Drives' ||
+                                   product.categories?.some(cat => {
+                                       const catName = typeof cat === 'string' ? cat : (cat?.name || '');
+                                       return catName === 'Technology & Flash Drives' || catName === 'Technology Items & Flash Drives';
+                                   }) || false;
+    
     // Check if product is in Apparel category
     const isApparel = categoryName.toLowerCase() === 'apparel' || 
                      product.categories?.some(cat => {
@@ -458,9 +466,11 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
     const maxPrice = basePriceGroup?.max_price ?? product.max_price ?? minPrice ?? 0;
     
     // Check if product has no pricing (requires custom quote)
-    const hasNoPricing = (minPrice === 0 || minPrice === null || minPrice === undefined) && 
+    // Also hide pricing for Technology & Flash Drives category
+    const hasNoPricing = isTechnologyFlashDrives || 
+                         ((minPrice === 0 || minPrice === null || minPrice === undefined) && 
                          (maxPrice === 0 || maxPrice === null || maxPrice === undefined) &&
-                         (!basePriceGroup || !basePriceGroup.prices || basePriceGroup.prices.length === 0);
+                         (!basePriceGroup || !basePriceGroup.prices || basePriceGroup.prices.length === 0));
 
     // Handle Add to Cart
     const handleAddToCart = async () => {

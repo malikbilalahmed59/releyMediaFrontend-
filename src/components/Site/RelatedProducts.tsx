@@ -43,7 +43,18 @@ const isExternalImage = (image: string | any): boolean => {
 };
 
 // Helper to check if product has no pricing (requires custom quote)
+// Also hide pricing for Technology & Flash Drives category
 const hasNoPricing = (product: RelevantProduct): boolean => {
+    // Check if product is in Technology & Flash Drives category
+    // ai_category is a string in Product interface (RelevantProduct extends Product)
+    const categoryName = typeof product.ai_category === 'string' ? product.ai_category : '';
+    const isTechnologyFlashDrives = categoryName === 'Technology & Flash Drives' || 
+                                   categoryName === 'Technology Items & Flash Drives';
+    
+    if (isTechnologyFlashDrives) {
+        return true;
+    }
+    
     const minPrice = product.min_price != null ? Number(product.min_price) : null;
     const maxPrice = product.max_price != null ? Number(product.max_price) : null;
     return (minPrice === 0 || minPrice === null) && (maxPrice === 0 || maxPrice === null);
