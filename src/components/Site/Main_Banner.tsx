@@ -66,7 +66,7 @@ function MainBanner({ productCount, categoryName }: MainBannerProps) {
             const path = categoryBannerImageMap[categoryName];
             return path.replace(/\s/g, '%20');
         }
-        return "/images/home_banner_img.png"; // Default home banner
+        return "/images/home_banner_img.jpg"; // Default home banner
     };
 
     // Get banner text based on category
@@ -107,13 +107,11 @@ function MainBanner({ productCount, categoryName }: MainBannerProps) {
     return (
         <section 
             ref={sectionRef}
-            className={`w-[calc(100%-40px)] bg-no-repeat bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px] ${isCategoryBanner ? 'relative' : ''}`}
+            className="w-[calc(100%-40px)] bg-no-repeat bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px] relative"
         >
-            {/* Gradient overlay for category banners only - darker on left, lighter on right */}
-            {isCategoryBanner && (
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 rounded-[25px]"></div>
-            )}
-            <div className={`wrapper 2xl:px-0 px-[15px] ${isCategoryBanner ? 'relative z-10' : ''}`}>
+            {/* Gradient overlay - darker on left, lighter on right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 rounded-[25px]"></div>
+            <div className="wrapper 2xl:px-0 px-[15px] relative z-10">
                 <div className="grid lg:grid-cols-[52%_48%] gap-y-6 lg:gap-x-8 justify-between">
                     <div className="text-white">
                         <h1

@@ -16,15 +16,17 @@ function Products_Banner() {
             price: "$1.95",
             description: "Bulk Flash Drives",
         },
-        backgroundImage: "/images/home_banner_img.png",
+        backgroundImage: "/images/home_banner_img.jpg",
     };
 
     return (
         <section
-            className="w-[calc(100%-40px)] bg-no-repeat bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px]"
+            className="w-[calc(100%-40px)] bg-no-repeat bg-cover bg-center mx-[20px] rounded-[25px] 2xl:py-[74px] xl:py-[64px] md:py-[54px] py-[44px] relative"
             style={{ backgroundImage: `url(${bannerData.backgroundImage})` }}
         >
-            <div className="wrapper 2xl:px-0 px-[15px]">
+            {/* Gradient overlay - darker on left, lighter on right */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40 rounded-[25px]"></div>
+            <div className="wrapper 2xl:px-0 px-[15px] relative z-10">
                 <div className="grid xl:grid-cols-[45%_44.75%] lg:grid-cols-[36%_49.75%] gap-y-6  justify-between items-center">
                     <div className="text-white">
                         <ul className="flex gap-[5px] items-center text-white md:mb-[11px] mb-[6px]">
