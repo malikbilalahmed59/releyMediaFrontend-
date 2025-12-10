@@ -45,7 +45,7 @@ function ContactSuccessContent() {
                             Thank you.
                             </h2>
                             <p className="text-[16px] leading-[24px] text-muted-foreground mb-8">
-                                We will contact you shortly. Most quotes will be emailed within 10 minutes.
+                            We will contact you shortly.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Button
