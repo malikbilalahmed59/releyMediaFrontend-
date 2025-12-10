@@ -72,7 +72,17 @@ function ContactForm() {
             errors.push('Phone number must be exactly 10 digits');
         }
         
-        // Quantity and specifications are optional, no validation needed
+        if (!form.quantity || !form.quantity.trim()) {
+            errors.push('Quantity is required');
+        } else {
+            // Validate that quantity is a valid positive number
+            const quantityNum = parseInt(form.quantity.trim(), 10);
+            if (isNaN(quantityNum) || quantityNum <= 0) {
+                errors.push('Quantity must be a valid positive number');
+            }
+        }
+        
+        // Specifications is optional, no validation needed
         
         if (errors.length > 0) {
             addToast({
@@ -90,20 +100,16 @@ function ContactForm() {
             const firstName = nameParts[0] || '';
             const lastName = nameParts.slice(1).join(' ') || '';
 
-            // Build payload, only including quantity if it has a valid value
+            // Build payload - quantity is now required
             const payload: any = {
                 name: form.name,
                 first_name: firstName,
                 last_name: lastName,
                 email: form.email,
                 phone: form.phone,
+                quantity: parseInt(form.quantity.trim(), 10), // Quantity is required, convert to integer
                 referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
             };
-            
-            // Only include quantity if it's a valid non-empty value
-            if (form.quantity && form.quantity.trim() !== '') {
-                payload.quantity = form.quantity.trim();
-            }
             
             // Only include specifications if it has a valid value
             if (form.specifications && form.specifications.trim() !== '') {
@@ -176,9 +182,11 @@ function ContactForm() {
                             <input
                                 type="number"
                                 name="quantity"
-                                placeholder="Quantity"
+                                placeholder="Quantity *"
                                 value={form.quantity}
                                 onChange={handleChange}
+                                required
+                                min="1"
                                 className="bg-transparent outline-none text-white placeholder-white placeholder:text-[16px] text-[16px] w-full"
                             />
                         </div>

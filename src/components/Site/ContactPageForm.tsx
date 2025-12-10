@@ -7,7 +7,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import {Mail, User ,PhoneCall } from "lucide-react";
 import Image from "next/image";
-import contact_shape from "../../../public/images/contact_shape_img.png";
 import { useAuth } from "@/contexts/AuthContext";
 import * as accountsAPI from '@/lib/api/accounts';
 import { useToast } from "@/components/ui/toast";
@@ -242,9 +241,7 @@ function ContactPageForm() {
                     </form>
                 </div>
             </div>
-            <figure className="absolute bottom-[-18px] right-0">
-                <Image src={contact_shape} alt="contact_shape"/>
-            </figure>
+
         </div>
     )
 }

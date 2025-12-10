@@ -713,6 +713,28 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             </p>
                         </div>
 
+                        {/* Product ID, Part ID, Brand, and Materials - Left Side */}
+                        <div className="mt-6 space-y-1">
+                            {product.product_id && (
+                                <p className="text-[14px] text-[#666]">
+                                    Product ID: <span className="font-semibold text-foreground">{product.product_id}</span>
+                                </p>
+                            )}
+                            <p className="text-[14px] text-[#666]">
+                                Part ID: <span className="font-semibold text-foreground">{product.id}</span>
+                            </p>
+                            {product.product_brand && product.product_brand.trim() && (
+                                <p className="text-[14px] text-[#666]">
+                                    Brand: <span className="font-semibold text-foreground">{product.product_brand}</span>
+                                </p>
+                            )}
+                            {product.materials && Array.isArray(product.materials) && product.materials.length > 0 && (
+                                <p className="text-[14px] text-[#666]">
+                                    Material: <span className="font-semibold text-foreground">{product.materials.join(', ')}</span>
+                                </p>
+                            )}
+                        </div>
+
                         {/* Marketing Points */}
                         {product.marketing_points && product.marketing_points.length > 0 && (
                         <div className="mt-6">
@@ -813,19 +835,18 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             {product.product_name}
                         </h1>
 
-                        {/* Custom Quote Request Message - Continuously Moving */}
+                        {/* Custom Quote Request Message - Static */}
                         {hasNoPricing && (
-                            <div className="mb-4 overflow-hidden bg-red-50 border-2 border-red-500 rounded-lg">
-                                <div className="relative py-3">
-                                    <div className="flex animate-scroll whitespace-nowrap" style={{ width: '200%' }}>
-                                        <span className="text-red-600 font-bold text-[16px] md:text-[18px] px-4 inline-block">
-                                            📋 Product ID: {product.id || product.product_id} — To order this product, please send us a custom quote request. Our team will provide you with pricing and availability information.
-                                        </span>
-                                        <span className="text-red-600 font-bold text-[16px] md:text-[18px] px-4 inline-block">
-                                            📋 Product ID: {product.id || product.product_id} — To order this product, please send us a custom quote request. Our team will provide you with pricing and availability information.
-                                        </span>
-                                    </div>
-                                </div>
+                            <div className="mb-4 bg-red-50 border-2 border-red-500 rounded-lg p-4 flex items-center justify-between gap-4 flex-wrap">
+                                <p className="text-red-600 font-bold text-[16px] md:text-[18px]">
+                                Please contact us for pricing on this item.                                </p>
+                                <Link href="/contact-us">
+                                    <Button 
+                                        className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg transition-colors whitespace-nowrap"
+                                    >
+                                        Contact Us
+                                    </Button>
+                                </Link>
                             </div>
                         )}
                         

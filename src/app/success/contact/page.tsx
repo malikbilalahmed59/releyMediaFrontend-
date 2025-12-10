@@ -3,7 +3,9 @@ import React, { Suspense } from 'react';
 import Header from "@/components/Site/Header";
 import Footer from "@/components/Site/Footer";
 import Client_Logo from "@/components/Site/Client_Logo";
-
+import Link from "next/link";
+import { CheckCircle2, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 export const dynamic = 'force-dynamic';
 
 function ContactSuccessContent() {
@@ -27,20 +29,51 @@ function ContactSuccessContent() {
                     </div>
                 </div>
             </section>
+
+
+
             <div className="py-[50px] relative">
                 <div className="wrapper 2xl:px-0 px-[15px]">
                     <div className="flex justify-center items-center">
                         <div className="w-full max-w-[821px] border-[#2525251A] rounded-[12px] sm:px-[24px] px-[18px] md:py-[36px] py-[26px] border text-center">
-                            <p className="text-[16px] leading-[24px] text-muted-foreground">
-                                Thank you.
+                            <div className="flex justify-center mb-6">
+                                <div className="rounded-full bg-accent/10 p-6">
+                                    <CheckCircle2 className="h-16 w-16 text-accent" />
+                                </div>
+                            </div>
+                            <h2 className="lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold mb-4">
+                            Thank you.
+                            </h2>
+                            <p className="text-[16px] leading-[24px] text-muted-foreground mb-8">
+                                We will contact you shortly. Most quotes will be emailed within 10 minutes.
                             </p>
-                            <p className="text-[16px] leading-[24px] text-muted-foreground">
-                                We will contact you shortly.
-                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <Button
+                                    asChild
+                                    variant="secondary"
+                                    className="h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] px-8 cursor-pointer text-foreground"
+                                >
+                                    <Link href="/">
+                                        <ArrowLeft className="mr-2 h-4 w-4" />
+                                        Back to Home
+                                    </Link>
+                                </Button>
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] px-8 cursor-pointer"
+                                >
+                                    <Link href="/contact-us">
+                                        Submit Another Request
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+
             <div className="bg-gradient">
                 <Client_Logo/>
             </div>
