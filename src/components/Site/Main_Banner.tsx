@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import Image from "next/image";
 import check from "../../../public/images/check.svg";
 import Contact_Form from "@/components/Site/Contact_Form";
@@ -49,39 +49,43 @@ const categoryBannerTextMap: Record<string, string> = {
 };
 
 function MainBanner({ productCount, categoryName }: MainBannerProps) {
+    const sectionRef = useRef<HTMLElement>(null);
+
     // Format number with commas
     const formatNumber = (num: number): string => {
         return num.toLocaleString('en-US');
     };
 
-    // Use provided product count if available, otherwise use default
-    const displayCount = productCount && productCount > 0 
-        ? formatNumber(productCount) 
-        : '774,044';
+    // Memoize display count to prevent unnecessary recalculations
+    const displayCount = useMemo(() => {
+        return productCount && productCount > 0 
+            ? formatNumber(productCount) 
+            : '774,044';
+    }, [productCount]);
 
-    // Get banner image based on category
-    const getBannerImage = (): string => {
+    // Memoize banner image path to prevent flashing
+    const bannerImgPath = useMemo(() => {
         if (categoryName && categoryBannerImageMap[categoryName]) {
             // Return the path - encode spaces for URL
             const path = categoryBannerImageMap[categoryName];
             return path.replace(/\s/g, '%20');
         }
         return "/images/home_banner_img.jpg"; // Default home banner
-    };
+    }, [categoryName]);
 
-    // Get banner text based on category
-    const getBannerText = (): string => {
+    // Memoize banner text to prevent flashing
+    const heading = useMemo(() => {
         if (categoryName && categoryBannerTextMap[categoryName]) {
             const categoryText = categoryBannerTextMap[categoryName];
+            // Special layout for "Bags" category - Prices on first line
+            if (categoryName === "Bags") {
+                return `<strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> ${categoryText} Prices <br/> <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%</span> Below the Competition`;
+            }
             return `<strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> ${categoryText} <br/> Prices <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%</span> Below the Competition`;
         }
         // Default heading for home page or when no category
         return `<strong class="font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">${displayCount}</strong> Promotional Items at <br/> Prices <span class="text-accent font-black 2xl:text-[38px] xl:text-[34px] md:text-[30px] sm:text-[26px] text-[24px]">25%</span> Below the Competition`;
-    };
-
-    const heading = getBannerText();
-    const bannerImgPath = getBannerImage();
-    const sectionRef = useRef<HTMLElement>(null);
+    }, [categoryName, displayCount]);
 
     const cont = {
         heading: heading,

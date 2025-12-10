@@ -71,7 +71,7 @@ function SiteMapContent() {
                 { label: "Profile", url: "/profile" },
                 { label: "Cart", url: "/cart" },
                 { label: "Checkout", url: "/checkout" },
-                { label: "Payment", url: "/payment" },
+                { label: "Invoice Payment", url: "/invoice-payment" },
                 { label: "Orders", url: "/accounts/orders" },
             ],
         },

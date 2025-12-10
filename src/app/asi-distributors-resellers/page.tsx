@@ -25,11 +25,11 @@ function ResellersContent() {
     };
 
     const productPages = [
-        { name: "USB Flash Drives", url: "/asi-distributors-resellers/usb-flash-drives" },
-        { name: "Stainless Tumblers", url: "/asi-distributors-resellers/stainless-tumblers" },
-        { name: "Stainless Bottles", url: "/asi-distributors-resellers/stainless-bottles" },
-        { name: "MP3 Players", url: "/asi-distributors-resellers/mp3-players" },
-        { name: "Digital Photo Frames", url: "/asi-distributors-resellers/digital-photo-frames" },
+        { name: "USB Flash Drives", url: "/products/usb-flash-drives-2" },
+        { name: "Stainless Tumblers", url: "/products/tumblers" },
+        { name: "Stainless Bottles", url: "/products/bottles" },
+        { name: "MP3 Players", url: "/products/mp3-players" },
+        { name: "Digital Photo Frames", url: "/products/digital-photo-frames" },
     ];
 
     return (

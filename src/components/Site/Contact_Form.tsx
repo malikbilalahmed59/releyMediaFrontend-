@@ -90,16 +90,27 @@ function ContactForm() {
             const firstName = nameParts[0] || '';
             const lastName = nameParts.slice(1).join(' ') || '';
 
-            await accountsAPI.submitQuoteRequest({
+            // Build payload, only including quantity if it has a valid value
+            const payload: any = {
                 name: form.name,
                 first_name: firstName,
                 last_name: lastName,
                 email: form.email,
                 phone: form.phone,
-                quantity: form.quantity,
-                specifications: form.specifications,
                 referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
-            });
+            };
+            
+            // Only include quantity if it's a valid non-empty value
+            if (form.quantity && form.quantity.trim() !== '') {
+                payload.quantity = form.quantity.trim();
+            }
+            
+            // Only include specifications if it has a valid value
+            if (form.specifications && form.specifications.trim() !== '') {
+                payload.specifications = form.specifications.trim();
+            }
+            
+            await accountsAPI.submitQuoteRequest(payload);
 
             // Redirect to success page
             router.push('/success/quote-request');

@@ -9,12 +9,13 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function PackagingContent() {
+function DigitalPhotoFramesContent() {
     const portfolioData = {
-        title: "Packaging and Distribution",
-        fullContent: "We offer a full range of graphic design and prepress services and guarantee your project will be professional and unique. RELYmedia offers a wide range of packaging options including custom packaging solutions. You can provide us your specifications or we can do the designing for you.<br/><br/>From bulk mailing services to fulfillment, RELYmedia can also handle all your shipping needs. We can ship orders directly to your customers or hold your project in our warehouse for shipping at a later time. Whether your project needs to be shipped to one address or 1,000, we guarantee that all packages will arrive intact and on time.",
-        descriptionLeft: "",
-        descriptionRight: "",
+        title: "Digital Photo Frames",
+        fullContent: `
+            <p>We carry an endless range of styles and sizes with LCD panels from 1.1 inch to 32 inches. All of our digital photo frames are available in a wide range of colors and packaging. We also offer multiple logo imprint options including color printing, laser engraving, and embossing. Custom color matching is also available on some models.</p>
+            <p>Whether you are marketing to customers or providing gifts to employees, give them something they actually want and will keep for years to come. Our digital frames are built to last and made from only the highest quality components. Same day and 2-day service are available on most models at wholesale prices other companies cannot match.</p>
+        `,
         buttonText: "",
         buttonLink: "#",
     };
@@ -57,20 +58,10 @@ function Page() {
                 <Footer />
             </>
         }>
-            <PackagingContent />
+            <DigitalPhotoFramesContent />
         </Suspense>
     );
 }
 
 export default Page;
-
-
-
-
-
-
-
-
-
-
 

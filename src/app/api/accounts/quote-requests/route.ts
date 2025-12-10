@@ -11,6 +11,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const authHeader = getAuthHeader(request);
     
+    // Clean up the payload: remove empty strings and only include valid values
+    const cleanedBody: any = {};
+    
+    // Copy all fields, but skip empty strings
+    Object.keys(body).forEach(key => {
+      const value = body[key];
+      // Only include if value is not an empty string
+      // Allow null, undefined, 0, false, but not empty strings
+      if (value !== '' && value !== undefined) {
+        cleanedBody[key] = value;
+      }
+    });
+    
     let url = `${API_BASE_URL}/accounts/quote-requests/`;
     
     const headers: HeadersInit = {
@@ -25,7 +38,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(url, {
       method: 'POST',
       headers,
-      body: JSON.stringify(body),
+      body: JSON.stringify(cleanedBody),
     });
     
     // If 404, try without trailing slash
@@ -34,7 +47,7 @@ export async function POST(request: NextRequest) {
       const retryResponse = await fetch(url, {
         method: 'POST',
         headers,
-        body: JSON.stringify(body),
+        body: JSON.stringify(cleanedBody),
       });
       
       if (!retryResponse.ok) {

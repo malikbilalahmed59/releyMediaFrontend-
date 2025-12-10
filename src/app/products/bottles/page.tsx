@@ -9,12 +9,13 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function PackagingContent() {
+function StainlessBottlesContent() {
     const portfolioData = {
-        title: "Packaging and Distribution",
-        fullContent: "We offer a full range of graphic design and prepress services and guarantee your project will be professional and unique. RELYmedia offers a wide range of packaging options including custom packaging solutions. You can provide us your specifications or we can do the designing for you.<br/><br/>From bulk mailing services to fulfillment, RELYmedia can also handle all your shipping needs. We can ship orders directly to your customers or hold your project in our warehouse for shipping at a later time. Whether your project needs to be shipped to one address or 1,000, we guarantee that all packages will arrive intact and on time.",
-        descriptionLeft: "",
-        descriptionRight: "",
+        title: "Stainless Bottles",
+        fullContent: `
+            <p>We carry a wide range of bottle styles, colors, and packaging with sizes ranging from 12 oz to 34 oz. From promotional water bottles printed with your logo, to personalized engraved stainless bottles, we have the solutions to meet any need at wholesale prices other companies cannot match. Our stainless steel bottles are double wall vacuum insulated and made from the highest quality components.</p>
+            <p>Most bottle suppliers buy from importers, adding an unnecessary third party to the supply chain. This results in higher costs, longer lead times, and lower quality control. At RELYmedia, we directly manufacture all of the tumblers we sell, enabling us to offer lower bulk prices, higher quality, and faster turnaround times.</p>
+        `,
         buttonText: "",
         buttonLink: "#",
     };
@@ -57,20 +58,10 @@ function Page() {
                 <Footer />
             </>
         }>
-            <PackagingContent />
+            <StainlessBottlesContent />
         </Suspense>
     );
 }
 
 export default Page;
-
-
-
-
-
-
-
-
-
-
 

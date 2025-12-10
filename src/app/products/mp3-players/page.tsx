@@ -9,12 +9,13 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function PackagingContent() {
+function MP3PlayersContent() {
     const portfolioData = {
-        title: "Packaging and Distribution",
-        fullContent: "We offer a full range of graphic design and prepress services and guarantee your project will be professional and unique. RELYmedia offers a wide range of packaging options including custom packaging solutions. You can provide us your specifications or we can do the designing for you.<br/><br/>From bulk mailing services to fulfillment, RELYmedia can also handle all your shipping needs. We can ship orders directly to your customers or hold your project in our warehouse for shipping at a later time. Whether your project needs to be shipped to one address or 1,000, we guarantee that all packages will arrive intact and on time.",
-        descriptionLeft: "",
-        descriptionRight: "",
+        title: "MP3 Players",
+        fullContent: `
+            <p>We carry a wide range of styles, colors, and packaging with MP3 players starting at 64MB up to 256GB. From promotional MP3 players printed with your logo, to retail ready players personalized to your specifications, we have the solutions to meet any need.</p>
+            <p>Our MP3 players are made with the highest quality components including high speed single level cell flash chips. Rush service is available on most models at wholesale prices other companies simply cannot match. We also offer data services preloading, content locking, and serialization.</p>
+        `,
         buttonText: "",
         buttonLink: "#",
     };
@@ -57,20 +58,10 @@ function Page() {
                 <Footer />
             </>
         }>
-            <PackagingContent />
+            <MP3PlayersContent />
         </Suspense>
     );
 }
 
 export default Page;
-
-
-
-
-
-
-
-
-
-
 

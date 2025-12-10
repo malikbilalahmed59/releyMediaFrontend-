@@ -22,8 +22,9 @@ function ClientLogo() {
     return (
         <section className="sm:py-[36px] pb-[36px] bg-[#E8E8E8]">
             <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold  2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">Trusted By</h2>
-            <div className="2xl:w-[calc(100vw-((100vw-1238px)/2))] ml-auto 2xl:px-0 px-[15px]">
-                <Swiper className="client_logo"
+            <div className="w-full overflow-hidden">
+                <div className="w-full px-[15px] 2xl:px-0">
+                    <Swiper className="client_logo"
                         modules={[Autoplay]}
                         loop={true}
                         autoplay={{
@@ -72,7 +73,8 @@ function ClientLogo() {
                             </SwiperSlide>
                         );
                     })}
-                </Swiper>
+                    </Swiper>
+                </div>
             </div>
         </section>
     );

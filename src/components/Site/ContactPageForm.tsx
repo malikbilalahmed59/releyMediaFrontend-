@@ -100,18 +100,29 @@ function ContactPageForm() {
             const firstName = nameParts[0] || '';
             const lastName = nameParts.slice(1).join(' ') || '';
             
-            await accountsAPI.submitQuoteRequest({
+            // Build payload, only including quantity if it has a valid value
+            const payload: any = {
                 name: form.name,
                 first_name: firstName,
                 last_name: lastName,
                 email: form.email,
                 phone: form.phone,
-                quantity: form.quantity || '',
-                product_id: form.productId || '',
                 specifications: form.message,
                 message: form.message,
                 referred_url: typeof window !== 'undefined' ? window.location.href : undefined,
-            });
+            };
+            
+            // Only include quantity if it's a valid non-empty value
+            if (form.quantity && form.quantity.trim() !== '') {
+                payload.quantity = form.quantity.trim();
+            }
+            
+            // Only include product_id if it has a valid value
+            if (form.productId && form.productId.trim() !== '') {
+                payload.product_id = form.productId.trim();
+            }
+            
+            await accountsAPI.submitQuoteRequest(payload);
 
             // Redirect to success page
             router.push('/success/contact');

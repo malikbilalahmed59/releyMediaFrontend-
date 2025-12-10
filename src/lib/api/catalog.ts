@@ -4,7 +4,7 @@
  * Base URL can be easily updated here for different environments
  * For client-side calls, we use Next.js API routes as proxy to avoid CORS issues
  */
-import { cachedFetch, parallelFetch } from './cache';
+import { cachedFetch, parallelFetch, apiCache } from './cache';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://backend.relymedia.com';
 // Use Next.js API routes as proxy for client-side calls to avoid CORS issues
@@ -86,9 +86,18 @@ export interface Category {
   }>;
 }
 
+export interface CategoryWithCount extends Category {
+  product_count: number;
+}
+
 export interface CategoriesResponse {
   count: number;
   categories: Category[];
+}
+
+export interface CategoriesWithCountsResponse {
+  count: number;
+  categories: CategoryWithCount[];
 }
 
 export interface CategoryProductsResponse extends SearchResponse {
@@ -334,6 +343,61 @@ export async function getCategories(): Promise<CategoriesResponse> {
     };
   } catch (error) {
     console.error('Error fetching categories:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get Categories with Product Counts
+ * 
+ * @param forceFresh - If true, bypasses API cache to get exact results from endpoint
+ * @returns Promise with all categories including product counts
+ */
+export async function getCategoriesWithCounts(forceFresh: boolean = false): Promise<CategoriesWithCountsResponse> {
+  // Use Next.js API route as proxy for client-side calls to avoid CORS
+  const url = USE_PROXY 
+    ? `/api/catalog/categories/with-counts`
+    : `${API_BASE_URL}/api/catalog/categories/with-counts/`;
+  
+  try {
+    // On first load, bypass cache to get exact results from endpoint
+    // Otherwise use cached fetch for better performance
+    const useCache = !forceFresh;
+    
+    if (forceFresh) {
+      // Invalidate cache first to ensure fresh data
+      apiCache.invalidate(url);
+      console.log('Fetching fresh categories with counts from endpoint...');
+    }
+    
+    const data = await cachedFetch<any>(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, useCache);
+    
+    // Validate response structure
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid response format from categories with counts API');
+    }
+    
+    // Ensure response has the expected structure
+    if (!data.categories && !Array.isArray(data.categories)) {
+      console.warn('Categories with counts API response missing categories array:', data);
+      return { count: 0, categories: [] };
+    }
+    
+    if (forceFresh) {
+      console.log(`Received ${data.categories?.length || 0} categories with exact counts from endpoint`);
+    }
+    
+    return {
+      count: data.count ?? data.categories?.length ?? 0,
+      categories: data.categories || []
+    };
+  } catch (error) {
+    console.error('Error fetching categories with counts:', error);
     throw error;
   }
 }

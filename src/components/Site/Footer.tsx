@@ -36,7 +36,7 @@ const footerData = {
             links: [
                 { label: "About Us", url: "/about-us" },
                 { label: "Contact Us", url: "/contact-us" },
-                { label: "Payment", url: "/payment" },
+                { label: "Invoice Payment", url: "/invoice-payment" },
                 { label: "Terms of Use", url: "/terms-of-use" },
                 { label: "Privacy Policy", url: "/privacy-policy" },
                 { label: "Sitemap", url: "/site-map" },

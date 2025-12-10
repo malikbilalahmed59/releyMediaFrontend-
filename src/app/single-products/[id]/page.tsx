@@ -12,6 +12,7 @@ import RelatedProducts from "@/components/Site/RelatedProducts";
 import SEOHead from "@/components/Site/SEOHead";
 import { getProductDetail, getProductsByCategory, type ProductDetail } from '@/lib/api/catalog';
 import { stripHtmlTags } from '@/lib/utils';
+import { getCategoryCountByName } from '@/lib/utils/categoryCache';
 
 function ProductDetailContent() {
     const params = useParams();
@@ -21,8 +22,23 @@ function ProductDetailContent() {
     const [categoryCount, setCategoryCount] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Preserve category name from sessionStorage to prevent banner flashing
+    const [preservedCategoryName, setPreservedCategoryName] = useState<string | null>(null);
 
     useEffect(() => {
+        // Get preserved category name from sessionStorage on mount (synchronously to prevent flash)
+        if (typeof window !== 'undefined') {
+            const storedCategoryName = sessionStorage.getItem('currentCategoryName');
+            if (storedCategoryName) {
+                setPreservedCategoryName(storedCategoryName);
+                // Try to get count from cache immediately
+                const cachedCount = getCategoryCountByName(storedCategoryName);
+                if (cachedCount !== null) {
+                    setCategoryCount(cachedCount);
+                }
+            }
+        }
+
         const fetchProduct = async () => {
             if (!idParam) return;
             
@@ -44,15 +60,42 @@ function ProductDetailContent() {
                 
                 // Fetch category count if product has a category
                 if (productData.ai_category?.id) {
-                    try {
-                        const categoryResults = await getProductsByCategory(productData.ai_category.id, {
-                            page: 1,
-                            page_size: 1, // We only need the count
-                        });
-                        setCategoryCount(categoryResults.count);
-                    } catch (categoryError) {
-                        console.error('Error fetching category count:', categoryError);
-                        // Don't fail the whole page if category count fails
+                    // First try cache
+                    const cachedCount = getCategoryCountByName(productData.ai_category.name);
+                    if (cachedCount !== null) {
+                        setCategoryCount(cachedCount);
+                    } else {
+                        // Fallback to API if not in cache
+                        try {
+                            const categoryResults = await getProductsByCategory(productData.ai_category.id, {
+                                page: 1,
+                                page_size: 1, // We only need the count
+                            });
+                            setCategoryCount(categoryResults.count);
+                        } catch (categoryError) {
+                            console.error('Error fetching category count:', categoryError);
+                            // Don't fail the whole page if category count fails
+                        }
+                    }
+                }
+                
+                // Update preserved category name if product has a category
+                // This ensures banner stays consistent with the product's actual category
+                if (productData.ai_category?.name) {
+                    // If product category matches preserved, keep it
+                    // If it doesn't match, use product category (more accurate)
+                    if (preservedCategoryName && productData.ai_category.name !== preservedCategoryName) {
+                        // Product category is more accurate, update sessionStorage
+                        if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('currentCategoryName', productData.ai_category.name);
+                        }
+                        setPreservedCategoryName(productData.ai_category.name);
+                    } else if (!preservedCategoryName) {
+                        // No preserved category, set product category
+                        if (typeof window !== 'undefined') {
+                            sessionStorage.setItem('currentCategoryName', productData.ai_category.name);
+                        }
+                        setPreservedCategoryName(productData.ai_category.name);
                     }
                 }
             } catch (err) {
@@ -64,7 +107,7 @@ function ProductDetailContent() {
         };
 
         fetchProduct();
-    }, [idParam]);
+    }, [idParam, preservedCategoryName]);
 
     // Generate SEO metadata
     const keywords = product?.keywords?.map(k => k.keyword).join(', ') || '';
@@ -100,7 +143,7 @@ function ProductDetailContent() {
             </Suspense>
             <MainBanner 
                 productCount={categoryCount} 
-                categoryName={product?.ai_category?.name} 
+                categoryName={preservedCategoryName || product?.ai_category?.name} 
             />
             {loading && (
                 <div className="py-[50px] pb-[75px]">

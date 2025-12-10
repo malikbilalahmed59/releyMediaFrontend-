@@ -9,6 +9,7 @@ import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import ProductGrid from "@/components/Site/ProductGrid";
 import SEOHead from "@/components/Site/SEOHead";
 import { getCategoryBySlug, getProductsByCategory, type SearchResponse, type Category } from '@/lib/api/catalog';
+import { getCategoryCountById, getCategoryCountBySlug } from '@/lib/utils/categoryCache';
 
 function CategoryProductsContent() {
     const params = useParams();
@@ -17,9 +18,22 @@ function CategoryProductsContent() {
     
     const [category, setCategory] = useState<Category | null>(null);
     const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
+    // Start with null to ensure server/client hydration match
     const [mainCategoryCount, setMainCategoryCount] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Preserve category name to prevent banner flashing during loading
+    const [categoryName, setCategoryName] = useState<string | null>(null);
+    
+    // Initialize count from cache after mount (client-side only) to prevent banner text change
+    useEffect(() => {
+        if (categorySlug && typeof window !== 'undefined') {
+            const cachedCount = getCategoryCountBySlug(categorySlug);
+            if (cachedCount !== null) {
+                setMainCategoryCount(cachedCount);
+            }
+        }
+    }, [categorySlug]);
 
     // Memoize search params to prevent unnecessary refetches
     const searchParamsMemo = useMemo(() => {
@@ -77,6 +91,7 @@ function CategoryProductsContent() {
             
             setLoading(true);
             setError(null);
+            // Don't clear categoryName immediately - keep it until new category loads
             
             try {
                 // First, find the category by slug
@@ -87,41 +102,73 @@ function CategoryProductsContent() {
                 if (!foundCategory) {
                     setError('Category not found');
                     setLoading(false);
+                    // Clear category name if category not found
+                    setCategoryName(null);
+                    if (typeof window !== 'undefined') {
+                        sessionStorage.removeItem('currentCategoryName');
+                    }
                     return;
                 }
                 
                 setCategory(foundCategory);
+                // Set category name immediately to prevent banner flashing
+                setCategoryName(foundCategory.name);
                 
-                // Parallelize: Fetch main category count and products simultaneously
-                const [mainCategoryResults, productResults] = await Promise.all([
-                    getProductsByCategory(foundCategory.id, {
-                        page: 1,
-                        page_size: 1, // We only need the count
-                    }),
-                    getProductsByCategory(foundCategory.id, {
-                        q: searchParamsMemo.query,
-                        page: searchParamsMemo.page,
-                        ordering: searchParamsMemo.ordering,
-                        min_price: searchParamsMemo.minPrice,
-                        max_price: searchParamsMemo.maxPrice,
-                        min_quantity: searchParamsMemo.minQuantity,
-                        max_quantity: searchParamsMemo.maxQuantity,
-                        material: searchParamsMemo.material,
-                        brand: searchParamsMemo.brand,
-                        color: searchParamsMemo.color,
-                        closeout: searchParamsMemo.closeout,
-                        usa_made: searchParamsMemo.usaMade,
-                        best_selling: searchParamsMemo.bestSelling,
-                        rush_service: searchParamsMemo.rushService,
-                        eco_friendly: searchParamsMemo.ecoFriendly,
-                        subcategory_id: searchParamsMemo.subcategoryId,
-                        page_size: 24,
-                    }),
-                ]);
+                // Store category name in sessionStorage for banner preservation when navigating to product pages
+                if (typeof window !== 'undefined' && foundCategory.name) {
+                    sessionStorage.setItem('currentCategoryName', foundCategory.name);
+                }
+                
+                // Get count from cache IMMEDIATELY and set it synchronously to prevent banner text change
+                const cachedCount = getCategoryCountById(foundCategory.id);
+                if (cachedCount !== null) {
+                    // Set count immediately from cache - this prevents the banner from showing default count
+                    setMainCategoryCount(cachedCount);
+                }
+                
+                // Fetch products (always needed)
+                const productResults = await getProductsByCategory(foundCategory.id, {
+                    q: searchParamsMemo.query,
+                    page: searchParamsMemo.page,
+                    ordering: searchParamsMemo.ordering,
+                    min_price: searchParamsMemo.minPrice,
+                    max_price: searchParamsMemo.maxPrice,
+                    min_quantity: searchParamsMemo.minQuantity,
+                    max_quantity: searchParamsMemo.maxQuantity,
+                    material: searchParamsMemo.material,
+                    brand: searchParamsMemo.brand,
+                    color: searchParamsMemo.color,
+                    closeout: searchParamsMemo.closeout,
+                    usa_made: searchParamsMemo.usaMade,
+                    best_selling: searchParamsMemo.bestSelling,
+                    rush_service: searchParamsMemo.rushService,
+                    eco_friendly: searchParamsMemo.ecoFriendly,
+                    subcategory_id: searchParamsMemo.subcategoryId,
+                    page_size: 24,
+                });
                 
                 if (signal.aborted) return;
                 
-                setMainCategoryCount(mainCategoryResults.count);
+                // If we didn't have cached count, fetch it now (but don't update if we already set it from cache)
+                if (cachedCount === null) {
+                    // If no cached count, fetch it separately (for banner display)
+                    try {
+                        const countResults = await getProductsByCategory(foundCategory.id, {
+                            page: 1,
+                            page_size: 1, // We only need the count
+                        });
+                        if (!signal.aborted) {
+                            setMainCategoryCount(countResults.count);
+                        }
+                    } catch (countError) {
+                        // Use count from product results as fallback
+                        if (!signal.aborted) {
+                            setMainCategoryCount(productResults.count);
+                        }
+                    }
+                }
+                // If cachedCount was not null, we already set it above, so no need to update again
+                
                 setSearchResults(productResults);
             } catch (err) {
                 if (signal.aborted) return;
@@ -145,13 +192,37 @@ function CategoryProductsContent() {
         };
     }, [categorySlug, searchParamsMemo]);
 
+    // Cleanup: Clear sessionStorage when navigating away from category page
+    useEffect(() => {
+        return () => {
+            // Only clear if we're actually leaving (component unmounting)
+            // This will be called when navigating to a different route
+            if (typeof window !== 'undefined') {
+                // Use a small delay to allow navigation to complete, then check if we're still on category page
+                const timer = setTimeout(() => {
+                    // Check if we're still on a category page
+                    const currentPath = window.location.pathname;
+                    if (!currentPath.startsWith('/products/category/')) {
+                        sessionStorage.removeItem('currentCategoryName');
+                    }
+                }, 100);
+                
+                // Store timer reference for cleanup
+                // Note: This cleanup runs when component unmounts, so we need to clear the timer
+                // But since we're in cleanup already, we'll let the timer run
+                // The check inside will prevent clearing if we're still on a category page
+            }
+        };
+    }, []);
+
     const page = parseInt(searchParams.get('page') || '1');
-    const categoryName = category?.name || categorySlug;
+    // Use state categoryName if available, otherwise fall back to category?.name or slug
+    const displayCategoryName = categoryName || category?.name || categorySlug;
     const seoTitle = searchResults?.meta?.seo?.title || 
-        `${categoryName} Products` + 
+        `${displayCategoryName} Products` + 
         (page > 1 ? ` - Page ${page}` : '');
     const seoDescription = searchResults?.meta?.seo?.description || 
-        (searchResults ? `Browse ${searchResults.count.toLocaleString('en-US')} ${categoryName} products` : `Browse our ${categoryName} product catalog`);
+        (searchResults ? `Browse ${searchResults.count.toLocaleString('en-US')} ${displayCategoryName} products` : `Browse our ${displayCategoryName} product catalog`);
     const canonicalUrl = searchResults?.meta?.seo?.canonical_url || '';
 
     return (
@@ -172,7 +243,7 @@ function CategoryProductsContent() {
             }>
                 <Header/>
             </Suspense>
-            <MainBanner productCount={mainCategoryCount} categoryName={category?.name} />
+            <MainBanner productCount={mainCategoryCount} categoryName={categoryName || category?.name} />
             {loading && (
                 <div className="py-[50px] pb-[75px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

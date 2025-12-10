@@ -9,10 +9,14 @@ import Search_Terms from "@/components/Site/Search_Terms";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import Client_Logo from "@/components/Site/Client_Logo";
 import Footer from "@/components/Site/Footer";
+import { useCategoryCache } from "@/hooks/useCategoryCache";
 
 export const dynamic = 'force-dynamic';
 
 function HomeContent() {
+  // Fetch and cache categories with counts on first page load
+  useCategoryCache();
+
   return (
       <>
           <Suspense fallback={

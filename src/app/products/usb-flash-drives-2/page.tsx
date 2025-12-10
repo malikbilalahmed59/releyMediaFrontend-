@@ -9,12 +9,13 @@ import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 
 export const dynamic = 'force-dynamic';
 
-function PackagingContent() {
+function USBFlashDrivesContent() {
     const portfolioData = {
-        title: "Packaging and Distribution",
-        fullContent: "We offer a full range of graphic design and prepress services and guarantee your project will be professional and unique. RELYmedia offers a wide range of packaging options including custom packaging solutions. You can provide us your specifications or we can do the designing for you.<br/><br/>From bulk mailing services to fulfillment, RELYmedia can also handle all your shipping needs. We can ship orders directly to your customers or hold your project in our warehouse for shipping at a later time. Whether your project needs to be shipped to one address or 1,000, we guarantee that all packages will arrive intact and on time.",
-        descriptionLeft: "",
-        descriptionRight: "",
+        title: "USB Flash Drives",
+        fullContent: `
+            <p>We carry an endless range of styles, colors, and packaging with branded flash drives starting at 64MB up to 256GB. From promotional thumb drives printed with your logo, to personalized jump drives custom molded to your specifications, we have the solutions to meet any need. At RELYmedia, we have over 600+ unique models including a wide variety of swivel, business card, pen, wristband, wood, and leather designs.</p>
+            <p>Our bulk USB flash drives are made from the highest quality components including grade A flash chips. Same day and 2-day service are available at prices cheaper than our competition can match. We also offer data services including autorun creation, password protection, serialization, and secure partitions for all wholesale USB drives.</p>
+        `,
         buttonText: "",
         buttonLink: "#",
     };
@@ -57,20 +58,10 @@ function Page() {
                 <Footer />
             </>
         }>
-            <PackagingContent />
+            <USBFlashDrivesContent />
         </Suspense>
     );
 }
 
 export default Page;
-
-
-
-
-
-
-
-
-
-
 
