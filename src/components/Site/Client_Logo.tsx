@@ -23,7 +23,7 @@ function ClientLogo() {
         <section className="sm:py-[36px] pb-[36px] bg-[#E8E8E8]">
             <h2 className="2xl:text-[36px] xl:text-[32px] lg:text-[30px] sm:text-[28px] text-[24px] leading-[30px] lg:leading-[34px] xl:leading-[36px] font-bold  2xl:mb-[40px] lg:mb-[36px] sm:mb-[30px] mb-[20px] text-center">Trusted By</h2>
             <div className="w-full overflow-hidden">
-                <div className="w-full px-[15px] 2xl:px-0">
+                <div className="w-full pl-0 pr-[15px] sm:px-[15px] 2xl:px-0">
                     <Swiper className="client_logo"
                         modules={[Autoplay]}
                         loop={true}
