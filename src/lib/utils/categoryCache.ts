@@ -54,13 +54,13 @@ export function getCachedCategoryCounts(): CategoryWithCount[] | null {
 export function setCachedCategoryCounts(categories: CategoryWithCount[]): void {
   if (typeof window === 'undefined') return;
   
+  const data: CachedData = {
+    version: CACHE_VERSION,
+    timestamp: Date.now(),
+    categories,
+  };
+  
   try {
-    const data: CachedData = {
-      version: CACHE_VERSION,
-      timestamp: Date.now(),
-      categories,
-    };
-    
     localStorage.setItem(CACHE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error('Error saving category cache:', error);
