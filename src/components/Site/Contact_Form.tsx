@@ -182,7 +182,7 @@ function ContactForm() {
                             <input
                                 type="number"
                                 name="quantity"
-                                placeholder="Quantity *"
+                                placeholder="Quantity"
                                 value={form.quantity}
                                 onChange={handleChange}
                                 required
