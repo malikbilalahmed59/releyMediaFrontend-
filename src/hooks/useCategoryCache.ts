@@ -36,7 +36,7 @@ export function useCategoryCache() {
       fetchPromise
         .then(() => {
           setIsLoading(false);
-          setHasFetched(true);
+          hasFetchedInSession = true;
         })
         .catch((err) => {
           setError(err);
