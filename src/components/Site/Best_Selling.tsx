@@ -9,7 +9,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { Button } from "@/components/ui/button";
 import { MoveRight, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
-import { searchProducts, type Product } from '@/lib/api/catalog';
+import { type Product } from '@/lib/api/catalog';
 import { stripHtmlTags } from '@/lib/utils';
 import pen from "../../../public/images/pen.png";
 
@@ -74,12 +74,41 @@ function BestSelling() {
             setLoading(true);
             setError(null);
             try {
-                const results = await searchProducts({
-                    best_selling: true,
-                    page_size: 12, // Fetch 12 best selling products
-                    ordering: 'most_popular',
+                // Use dedicated best-selling endpoint for faster performance on main page
+                const response = await fetch('/api/catalog/products/best-selling', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    redirect: 'follow', // Follow redirects automatically
                 });
-                setProducts(results.results || []);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Best-selling API error:', response.status, errorText);
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                // Best-selling endpoint returns a direct array of products
+                const data = await response.json();
+                console.log('Best-selling API response:', data);
+                
+                // Handle both array response and SearchResponse format for compatibility
+                let productsArray: Product[] = [];
+                if (Array.isArray(data)) {
+                    productsArray = data;
+                } else if (data && typeof data === 'object') {
+                    // Check for various possible response formats
+                    productsArray = data.results || data.products || data.data || [];
+                }
+                
+                console.log('Parsed products array length:', productsArray.length);
+                
+                if (productsArray.length === 0) {
+                    console.warn('Best-selling products array is empty. Raw response:', data);
+                }
+                
+                setProducts(productsArray);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to fetch best selling products');
                 console.error('Error fetching best selling products:', err);
@@ -117,7 +146,10 @@ function BestSelling() {
         );
     }
 
-    if (products.length === 0) {
+    // Don't hide the section if we're still loading or if there was an error
+    // Only hide if we've finished loading and have no products
+    if (!loading && products.length === 0 && !error) {
+        console.log('No products to display, hiding section');
         return null;
     }
 
@@ -155,20 +187,17 @@ function BestSelling() {
                     </figure>
                 </Link>
                 <Link href={`/single-products/${product.id}`} className="block flex-shrink-0">
-                    <h3 className="text-[18px] leading-[18px] mb-[10px] font-semibold hover:text-accent cursor-pointer line-clamp-2 min-h-[36px]">
+                    <h3 className="text-[18px] leading-[18px] mb-[10px] font-semibold hover:text-accent cursor-pointer line-clamp-2 min-h-[36px] h-[36px]">
                         {product.product_name}
                     </h3>
-                    <span className={`text-[15px] leading-[20px] block text-[#666] ${productHasNoPricing ? 'line-clamp-4 min-h-[60px] mb-[8px]' : 'line-clamp-2 min-h-[40px] mb-[10px]'}`}>
+                    <span className="text-[15px] leading-[20px] block text-[#666] line-clamp-2 min-h-[40px] h-[40px] mb-[10px]">
                         {truncateDescription(fullDescription, 100, productHasNoPricing)}
                     </span>
                 </Link>
-                {/* Hide price for products without pricing */}
-                {!productHasNoPricing && price && (
-                    <div className="font-black text-[22px] leading-[22px] mb-[28px] flex-shrink-0">{price}</div>
-                )}
-                {productHasNoPricing && (
-                    <div className="mb-[8px] flex-shrink-0"></div>
-                )}
+                {/* Hide price for products without pricing - fixed height for consistency */}
+                <div className="font-black text-[22px] leading-[22px] mb-[28px] flex-shrink-0 min-h-[22px] h-[22px]">
+                    {!productHasNoPricing && price ? price : ''}
+                </div>
                 <div className="flex gap-[10px] mt-auto flex-shrink-0">
                     {productHasNoPricing ? (
                         // For products without pricing, redirect to detail page
@@ -239,7 +268,7 @@ function BestSelling() {
                         className="best-selling-swiper"
                     >
                         {products.map((product) => (
-                            <SwiperSlide key={product.id || product.product_id} className="h-auto">
+                            <SwiperSlide key={product.id || product.product_id} className="!h-auto">
                                 <ProductCard product={product} />
                             </SwiperSlide>
                         ))}

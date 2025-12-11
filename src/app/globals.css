@@ -236,6 +236,23 @@
   align-items: center;
 }
 
+/* Best Selling Swiper - Equal height cards */
+.best-selling-swiper .swiper-wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+.best-selling-swiper .swiper-slide {
+    height: auto;
+    display: flex;
+}
+
+.best-selling-swiper .swiper-slide > div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 .swiper-button-prev svg ,.swiper-button-next svg{
   width: 14px !important;
   height: 14px !important;
