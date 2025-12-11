@@ -5,13 +5,16 @@
  * Supports credit card and ACH payments with billing/shipping addresses
  */
 
-const PAYJUNCTION_BASE_URL = process.env.PAYJUNCTION_USE_SANDBOX === 'false'
-  ? 'https://api.payjunction.com'
-  : 'https://api.payjunctionlabs.com';
+// Production API endpoint (use sandbox only if explicitly set to 'true')
+const PAYJUNCTION_BASE_URL = process.env.PAYJUNCTION_USE_SANDBOX === 'true'
+  ? 'https://api.payjunctionlabs.com'
+  : 'https://api.payjunction.com';
 
 const PAYJUNCTION_USERNAME = process.env.PAYJUNCTION_USERNAME || '';
 const PAYJUNCTION_PASSWORD = process.env.PAYJUNCTION_PASSWORD || '';
-const PAYJUNCTION_APP_KEY = process.env.PAYJUNCTION_APP_KEY || '';
+// Production API Key: ccf3f9f4-8c42-4bbe-924c-7176d163cd10
+// Development API Key: 83ef9f5a-b3da-43ba-97fd-2044c45751d5
+const PAYJUNCTION_APP_KEY = process.env.PAYJUNCTION_APP_KEY || 'ccf3f9f4-8c42-4bbe-924c-7176d163cd10';
 
 export interface CreditCardPaymentRequest {
   cardNumber: string;

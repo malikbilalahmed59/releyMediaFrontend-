@@ -1,14 +1,17 @@
 # PayJunction API Test Script (PowerShell)
 # Tests the PayJunction API with provided credentials
 
-$PAYJUNCTION_SANDBOX_URL = "https://api.payjunctionlabs.com"
+# NOTE: This is a test script. Update these values for testing.
+# Production API Key: ccf3f9f4-8c42-4bbe-924c-7176d163cd10
+# Development API Key: 83ef9f5a-b3da-43ba-97fd-2044c45751d5
+$PAYJUNCTION_SANDBOX_URL = "https://api.payjunction.com"  # Production URL
 $PAYJUNCTION_USERNAME = "relymedia"
 $PAYJUNCTION_PASSWORD = "Bilal(00)Ahmed"
-$PAYJUNCTION_APP_KEY = "83ef9f5a-b3da-43ba-97fd-2044c45751d5"
+$PAYJUNCTION_APP_KEY = "ccf3f9f4-8c42-4bbe-924c-7176d163cd10"  # Production key
 
 Write-Host "========================================"
 Write-Host "PayJunction API Integration Tests"
-Write-Host "Sandbox Environment"
+Write-Host "Production Environment"
 Write-Host "========================================"
 Write-Host ""
 Write-Host "Using Credentials:"

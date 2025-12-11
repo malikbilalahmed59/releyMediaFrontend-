@@ -1,14 +1,16 @@
 /**
  * Test script for PayJunction API integration
  * 
- * This script tests the PayJunction API endpoints using sandbox credentials
+ * NOTE: This is a test script. Update these values for testing.
+ * Production API Key: ccf3f9f4-8c42-4bbe-924c-7176d163cd10
+ * Development API Key: 83ef9f5a-b3da-43ba-97fd-2044c45751d5
  * Run with: node test-payjunction.js
  */
 
-const PAYJUNCTION_SANDBOX_URL = 'https://api.payjunctionlabs.com';
+const PAYJUNCTION_SANDBOX_URL = 'https://api.payjunction.com'; // Production URL
 const PAYJUNCTION_USERNAME = 'relymedia';
 const PAYJUNCTION_PASSWORD = 'Bilal(00)Ahmed';
-const PAYJUNCTION_APP_KEY = '83ef9f5a-b3da-43ba-97fd-2044c45751d5';
+const PAYJUNCTION_APP_KEY = 'ccf3f9f4-8c42-4bbe-924c-7176d163cd10'; // Production key
 
 console.log('Using Credentials:');
 console.log('Username:', PAYJUNCTION_USERNAME);
@@ -141,7 +143,7 @@ async function testRefundACH() {
 async function runTests() {
   console.log('========================================');
   console.log('PayJunction API Integration Tests');
-  console.log('Sandbox Environment');
+  console.log('Production Environment');
   console.log('========================================');
 
   const results = [];
