@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Mail, LockKeyhole } from "lucide-react"
-import Image from "next/image"
-import contact_shape from "../../../public/images/contact_shape_img.png"
 import Link from "next/link"
 import { useAuth } from "@/contexts/AuthContext"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -140,10 +138,8 @@ function Signin_Form() {
 
                 </div>
                 <div className="text-center mt-[27px] text-[16px]">Don't have an account yet?  <Link href="/signup" className="font-bold hover:text-accent">Create an Account</Link></div>
+                <div className="text-center mt-[10px] text-[16px]">Trouble signing in? <Link href="/contact-us" className="font-bold hover:text-accent">Contact Us</Link></div>
             </div>
-            <figure className="absolute bottom-[-18px] right-0">
-                <Image src={contact_shape} alt="contact shape" />
-            </figure>
         </div>
     )
 }

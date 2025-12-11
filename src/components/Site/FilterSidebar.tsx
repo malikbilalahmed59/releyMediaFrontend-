@@ -695,7 +695,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
             {/* Materials Filter */}
             {(materials.length > 0 || loadingMaterials) && (
                 <div className="mb-[20px]">
-                    <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Materials</h4>
+                    <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Material</h4>
                     {loadingMaterials ? (
                         <div className="text-[14px] text-[#919191]">Loading materials...</div>
                     ) : materials.length > 0 ? (
@@ -760,7 +760,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
             {/* Brands Filter */}
             {(brands.length > 0 || loadingBrands) && (
                 <div className="mb-[20px]">
-                    <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Brands</h4>
+                    <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Brand</h4>
                     {loadingBrands ? (
                         <div className="text-[14px] text-[#919191]">Loading brands...</div>
                     ) : brands.length > 0 ? (
@@ -824,7 +824,7 @@ function FilterSidebar({ categoryData }: FilterSidebarProps) {
 
             {/* Colors Filter - Static List in 2 Columns */}
             <div className="mb-[20px]">
-                <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Colors</h4>
+                <h4 className="text-[16px] font-bold leading-[16px] mb-[10px]">Color</h4>
                 <div className="grid grid-cols-2 gap-2">
                     {(showAllColors ? staticColors : staticColors.slice(0, 15)).map((color) => {
                         const handleColorChange = () => {

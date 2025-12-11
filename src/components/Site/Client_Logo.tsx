@@ -36,20 +36,20 @@ function ClientLogo() {
                         spaceBetween={64}
                         breakpoints={{
                             320: {
-                                slidesPerView: 5,
-                                spaceBetween: 24,
+                                slidesPerView: 2.5,
+                                spaceBetween: 20,
                             },
                             480: {
+                                slidesPerView: 3,
+                                spaceBetween: 24,
+                            },
+                            640: {
                                 slidesPerView: 4,
                                 spaceBetween: 32,
                             },
-                            640: {
-                                slidesPerView: 6,
-                                spaceBetween: 40,
-                            },
                             768: {
-                                slidesPerView: 6,
-                                spaceBetween: 48,
+                                slidesPerView: 5,
+                                spaceBetween: 40,
                             },
                             1024: {
                                 slidesPerView: 6,
@@ -67,7 +67,7 @@ function ClientLogo() {
                         const isMicrosoft = slide.alt === 'Microsoft';
                         return (
                             <SwiperSlide key={i} className="flex items-center justify-center">
-                                <div className={`${isMicrosoft ? 'w-[220px] h-[120px]' : 'w-[180px] h-[100px]'} flex items-center justify-center`}>
+                                <div className={`${isMicrosoft ? 'w-[100px] h-[60px] sm:w-[150px] sm:h-[90px] md:w-[180px] md:h-[100px] lg:w-[220px] lg:h-[120px]' : 'w-[80px] h-[50px] sm:w-[120px] sm:h-[70px] md:w-[150px] md:h-[80px] lg:w-[180px] lg:h-[100px]'} flex items-center justify-center`}>
                                     <img src={slide.src} alt={slide.alt || `Client logo ${i + 1}`} className="max-w-full max-h-full w-auto h-auto object-contain" />
                                 </div>
                             </SwiperSlide>

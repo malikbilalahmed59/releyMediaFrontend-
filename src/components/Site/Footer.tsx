@@ -88,7 +88,7 @@ const footerData = {
                                             RELYmedia <br />
                                             1170 Eagan Industrial Road <br />
                                             Suite 1 <br />
-                                            Eagan MN 55121
+                                            Eagan, MN 55121
                                         </>
                                     ),
                                     url: null,
