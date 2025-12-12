@@ -18,6 +18,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "RELYmedia - Promotional Products",
   description: "RELYmedia offers innovative promotional products and exceptional service. Browse our catalog of custom promotional items.",
+  icons: {
+    icon: '/images/favicon.ico',
+    shortcut: '/images/favicon.ico',
+    apple: '/images/favicon.ico',
+  },
 };
 
 export default function RootLayout({
