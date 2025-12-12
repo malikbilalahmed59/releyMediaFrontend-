@@ -6,6 +6,7 @@ import Client_Logo from "@/components/Site/Client_Logo";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import MainBanner from "@/components/Site/Main_Banner";
 import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
+import SEOHead from "@/components/Site/SEOHead";
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,10 @@ function ImprintOptionsContent() {
 
     return (
         <>
+            <SEOHead
+                title="Imprint Options - RELYmedia - Promotional Products"
+                description="Choose from multiple imprint options including screen printing, pad printing, laser engraving, heat stamping, and embossing for your promotional products."
+            />
             <Suspense fallback={
                 <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

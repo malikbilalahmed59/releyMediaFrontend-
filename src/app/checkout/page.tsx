@@ -7,12 +7,17 @@ import Client_Logo from "@/components/Site/Client_Logo";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import Checkout from "@/components/Site/Checkout";
 import CheckoutForm from "@/components/Site/CheckoutForm";
+import SEOHead from "@/components/Site/SEOHead";
 
 export const dynamic = 'force-dynamic';
 
 function CheckoutContent() {
     return (
         <>
+            <SEOHead
+                title="Checkout - RELYmedia - Promotional Products"
+                description="Complete your promotional products order at RELYmedia checkout."
+            />
             <Suspense fallback={
                 <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

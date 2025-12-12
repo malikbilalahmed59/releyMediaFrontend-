@@ -6,12 +6,17 @@ import MainBanner from "@/components/Site/Main_Banner";
 import Client_Logo from "@/components/Site/Client_Logo";
 import Customer_Feedback from "@/components/Site/Customer_Feedback";
 import Cart from "@/components/Site/Cart";
+import SEOHead from "@/components/Site/SEOHead";
 
 export const dynamic = 'force-dynamic';
 
 function CartContent() {
     return (
         <>
+            <SEOHead
+                title="Shopping Cart - RELYmedia - Promotional Products"
+                description="Review your selected promotional products in your shopping cart at RELYmedia."
+            />
             <Suspense fallback={
                 <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

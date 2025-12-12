@@ -4,12 +4,17 @@ import Header from "@/components/Site/Header";
 import Footer from "@/components/Site/Footer";
 import ProfilePage from "@/components/Site/ProfilePage";
 import { ProtectedRoute } from "@/contexts/AuthContext";
+import SEOHead from "@/components/Site/SEOHead";
 
 export const dynamic = 'force-dynamic';
 
 function ProfileContent() {
     return (
         <ProtectedRoute>
+            <SEOHead
+                title="My Account - RELYmedia - Promotional Products"
+                description="Manage your RELYmedia account, view orders, and update your profile information."
+            />
             <Suspense fallback={
                 <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

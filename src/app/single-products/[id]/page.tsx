@@ -118,8 +118,8 @@ function ProductDetailContent() {
     
     // Enhanced title with brand/category if available
     const seoTitle = product?.product_name 
-        ? `${product.product_name}${product.product_brand ? ` by ${product.product_brand}` : ''} | RELYmedia`
-        : 'Product Details | RELYmedia';
+        ? `${product.product_name}${product.product_brand ? ` by ${product.product_brand}` : ''} - RELYmedia - Promotional Products`
+        : 'Product Details - RELYmedia - Promotional Products';
 
     return (
         <>

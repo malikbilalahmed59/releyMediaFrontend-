@@ -5,12 +5,17 @@ import Footer from "@/components/Site/Footer";
 import Client_Logo from "@/components/Site/Client_Logo";
 import Link from "next/link";
 import ContactPageForm from "@/components/Site/ContactPageForm";
+import SEOHead from "@/components/Site/SEOHead";
 
 export const dynamic = 'force-dynamic';
 
 function ContactContent() {
     return (
         <>
+            <SEOHead
+                title="Contact Us - RELYmedia - Promotional Products"
+                description="Contact RELYmedia for promotional products, custom solutions, and exceptional service. Get in touch with our team today."
+            />
             <Suspense fallback={
                 <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

@@ -8,6 +8,7 @@ import MainBanner from "@/components/Site/Main_Banner";
 import PortfolioDataSection from "@/components/Site/PortfolioDataSection";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import SEOHead from "@/components/Site/SEOHead";
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +35,10 @@ function ResellersContent() {
 
     return (
         <>
+            <SEOHead
+                title="ASI Distributors & Other Resellers - RELYmedia - Promotional Products"
+                description="RELYmedia offers aggressive reseller pricing and streamlined ordering for ASI distributors and other resellers. Get comprehensive price grids and blind PDF catalogs."
+            />
             <Suspense fallback={
                 <div className="border-b border-[#2525251A] rounded-bl-[50px] rounded-br-[50px] py-[14px]">
                     <div className="wrapper 2xl:px-0 px-[15px]">

@@ -181,7 +181,7 @@ function ProductsContent() {
     return (
         <>
             <SEOHead
-                title={`${seoTitle} | RELYmedia`}
+                title={`${seoTitle} - RELYmedia - Promotional Products`}
                 description={seoDescription}
                 canonicalUrl={canonicalUrl}
                 nextUrl={searchResults?.next}
