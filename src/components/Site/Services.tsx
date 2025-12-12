@@ -27,14 +27,14 @@ function Services() {
     return (
         <section className="2xl:pb-[80px] xl:pb-[60px] sm:pb-[50px] pb-[40px]">
             <div className="wrapper 2xl:px-0 px-[15px]">
-                <div className="grid md:grid-cols-3 sm:grid-cols-2 gap-[20px]">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-[20px]">
                     {content.map((item, index) => (
                         <Link
                             key={index}
                             href="/contact-us"
-                            className="border border-[#25252533] py-[10px] pl-[12px] pr-[18px] flex xl:flex-row flex-col gap-[18px] rounded-[12px] hover:border-accent transition-colors cursor-pointer"
+                            className="border border-[#25252533] py-[10px] pl-[12px] pr-[18px] flex lg:flex-row flex-col gap-[18px] rounded-[12px] hover:border-accent transition-colors cursor-pointer"
                         >
-                            <figure className="rounded-[8px] overflow-hidden xl:w-[180px] shrink-0">
+                            <figure className="rounded-[8px] overflow-hidden lg:w-[180px] w-full sm:w-auto shrink-0">
                                 <Image src={item.image} alt={item.title} className="w-full h-full object-cover" />
                             </figure>
                             <div>

@@ -196,43 +196,117 @@ function Footer() {
                     </div>
 
                     {/* Sections */}
-                    {footerData.sections.map((section, index) => (
-                        <div key={index} className="text-white">
-                            <h5 className="sm:text-[20px] text-[18px] leading-[20px] font-bold mb-[15px]">
-                                {section.title}
-                            </h5>
-                            <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font">
-                                {section.links.map((link, i) => {
-                                    const Icon = 'icon' in link ? link.icon : null;
-                                    const isActive = link.url && pathname === link.url;
-                                    const hasUrl = link.url && link.url !== '#';
-                                    
-                                    return (
-                                        <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
-                                            {hasUrl ? (
-                                                <Link 
-                                                    href={link.url} 
-                                                    className={`flex gap-[10px] transition-colors ${
-                                                        isActive 
-                                                            ? 'font-bold text-accent' 
-                                                            : 'hover:text-accent'
-                                                    }`}
-                                                >
-                                                    {Icon && <Icon size={20} />}
-                                                    {link.label}
-                                                </Link>
-                                            ) : (
-                                                <span className="flex gap-[10px]">
-                                                    {Icon && <Icon size={20} />}
-                                                    {link.label}
-                                                </span>
-                                            )}
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </div>
-                    ))}
+                    {footerData.sections.map((section, index) => {
+                        // For Contact section on mobile, split into two columns
+                        const isContactSection = section.title === "Contact";
+                        const contactLeftLinks = isContactSection ? section.links.slice(0, 3) : []; // Phone numbers and hours
+                        const contactRightLinks = isContactSection ? section.links.slice(3) : []; // Email and address
+                        
+                        return (
+                            <div key={index} className="text-white">
+                                <h5 className="sm:text-[20px] text-[18px] leading-[20px] font-bold mb-[15px]">
+                                    {section.title}
+                                </h5>
+                                {isContactSection ? (
+                                    <div className="lg:block flex gap-[20px]">
+                                        {/* Left column - Phone numbers and hours */}
+                                        <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font flex-1">
+                                            {contactLeftLinks.map((link, i) => {
+                                                const Icon = 'icon' in link ? link.icon : null;
+                                                const isActive = link.url && pathname === link.url;
+                                                const hasUrl = link.url && link.url !== '#';
+                                                
+                                                return (
+                                                    <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
+                                                        {hasUrl ? (
+                                                            <Link 
+                                                                href={link.url} 
+                                                                className={`flex gap-[10px] transition-colors ${
+                                                                    isActive 
+                                                                        ? 'font-bold text-accent' 
+                                                                        : 'hover:text-accent'
+                                                                }`}
+                                                            >
+                                                                {Icon && <Icon size={20} />}
+                                                                {link.label}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="flex gap-[10px]">
+                                                                {Icon && <Icon size={20} />}
+                                                                {link.label}
+                                                            </span>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                        {/* Right column - Email and address */}
+                                        <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font flex-1 lg:mt-[19px] mt-0">
+                                            {contactRightLinks.map((link, i) => {
+                                                const Icon = 'icon' in link ? link.icon : null;
+                                                const isActive = link.url && pathname === link.url;
+                                                const hasUrl = link.url && link.url !== '#';
+                                                
+                                                return (
+                                                    <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
+                                                        {hasUrl ? (
+                                                            <Link 
+                                                                href={link.url} 
+                                                                className={`flex gap-[10px] transition-colors ${
+                                                                    isActive 
+                                                                        ? 'font-bold text-accent' 
+                                                                        : 'hover:text-accent'
+                                                                }`}
+                                                            >
+                                                                {Icon && <Icon size={20} />}
+                                                                {link.label}
+                                                            </Link>
+                                                        ) : (
+                                                            <span className="flex gap-[10px]">
+                                                                {Icon && <Icon size={20} />}
+                                                                {link.label}
+                                                            </span>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font">
+                                        {section.links.map((link, i) => {
+                                            const Icon = 'icon' in link ? link.icon : null;
+                                            const isActive = link.url && pathname === link.url;
+                                            const hasUrl = link.url && link.url !== '#';
+                                            
+                                            return (
+                                                <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
+                                                    {hasUrl ? (
+                                                        <Link 
+                                                            href={link.url} 
+                                                            className={`flex gap-[10px] transition-colors ${
+                                                                isActive 
+                                                                    ? 'font-bold text-accent' 
+                                                                    : 'hover:text-accent'
+                                                            }`}
+                                                        >
+                                                            {Icon && <Icon size={20} />}
+                                                            {link.label}
+                                                        </Link>
+                                                    ) : (
+                                                        <span className="flex gap-[10px]">
+                                                            {Icon && <Icon size={20} />}
+                                                            {link.label}
+                                                        </span>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
 
                 {/* Bottom Bar */}
