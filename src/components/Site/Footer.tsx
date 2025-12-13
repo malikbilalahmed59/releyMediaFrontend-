@@ -94,7 +94,7 @@ const footerData = {
                                             Eagan, MN 55121
                                         </>
                                     ),
-                                    url: null,
+                                    url: "https://maps.app.goo.gl/5c5DXyDJN4BqW3sV9",
                                 },
             ],
         },
@@ -249,21 +249,38 @@ function Footer() {
                                                 const Icon = 'icon' in link ? link.icon : null;
                                                 const isActive = link.url && pathname === link.url;
                                                 const hasUrl = link.url && link.url !== '#';
+                                                const isExternal = hasUrl && (link.url.startsWith('http://') || link.url.startsWith('https://'));
                                                 
                                                 return (
                                                     <li key={i} className="lg:text-[15px] text-[12px] leading-[18px]">
                                                         {hasUrl ? (
-                                                            <Link 
-                                                                href={link.url} 
-                                                                className={`flex gap-[10px] transition-colors ${
-                                                                    isActive 
-                                                                        ? 'font-bold text-accent' 
-                                                                        : 'hover:text-accent'
-                                                                }`}
-                                                            >
-                                                                {Icon && <Icon size={20} />}
-                                                                {link.label}
-                                                            </Link>
+                                                            isExternal ? (
+                                                                <a 
+                                                                    href={link.url} 
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className={`flex gap-[10px] transition-colors ${
+                                                                        isActive 
+                                                                            ? 'font-bold text-accent' 
+                                                                            : 'hover:text-accent'
+                                                                    }`}
+                                                                >
+                                                                    {Icon && <Icon size={20} />}
+                                                                    {link.label}
+                                                                </a>
+                                                            ) : (
+                                                                <Link 
+                                                                    href={link.url} 
+                                                                    className={`flex gap-[10px] transition-colors ${
+                                                                        isActive 
+                                                                            ? 'font-bold text-accent' 
+                                                                            : 'hover:text-accent'
+                                                                    }`}
+                                                                >
+                                                                    {Icon && <Icon size={20} />}
+                                                                    {link.label}
+                                                                </Link>
+                                                            )
                                                         ) : (
                                                             <span className="flex gap-[10px] sm:w-auto w-[165px]">
                                                                 {Icon && <Icon size={20} />}
