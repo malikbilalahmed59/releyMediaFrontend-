@@ -71,7 +71,10 @@ const footerData = {
                                     icon: Timer,
                                     label: (
                                         <>
-                                            8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>
+                                            {/*8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>*/}
+                                            <div className="flex flex-col lg:flex-row">
+                                                8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>
+                                            </div>
                                         </>
                                     ),
                                     url: null,
@@ -125,8 +128,8 @@ function Footer() {
         <footer className="bg-[url(/images/footer_bg.jpg)] bg-center bg-cover bg-no-repeat xl:pt-[68px] pt-[58px] relative black_layers">
             <div className="wrapper relative z-10 2xl:px-0 px-[15px]">
                 <div className="mb-[35px] grid 2xl:[grid-template-columns:33%_17%_18%_31.9%] xl:[grid-template-columns:26%_17%_18%_33.9%] gap-y-[20px] lg:[grid-template-columns:24%_11%_16%_39.9%]
-                 sm:[grid-template-columns:14%_24%_34%] [grid-template-columns:50%_50%]
-                 justify-between">
+                 sm:[grid-template-columns:14%_24%_34%] [grid-template-columns:35%_43%]
+                 sm:justify-between justify-around gird_items_con">
                     {/* Logo + tagline + social */}
                     <div className="lg:col-auto col-span-full lg:text-left text-center lg:mb-0 mb-[20px]">
                         <Link href="/" className="sm:mb-[20px] mb-[10px] inline-block">
@@ -150,7 +153,7 @@ function Footer() {
                                 </li>
                             ))}
                         </ul>
-                        <div className="grid grid-cols-[auto_auto] gap-x-0 gap-y-[10px] plusJakarta-font lg:text-left text-center">
+                        <div className="grid [grid-template-columns:50%_50%] gap-x-0 gap-y-[10px] plusJakarta-font lg:text-left text-center">
                             <Link href="/cart" className="flex gap-[10px] items-center text-white lg:text-[15px] text-[12px] leading-[18px] hover:text-accent transition-colors">
                                 <ShoppingCart size={20} />
                                 <span>View Cart</span>
@@ -203,12 +206,12 @@ function Footer() {
                         const contactRightLinks = isContactSection ? section.links.slice(3) : []; // Email and address
                         
                         return (
-                            <div key={index} className="text-white">
+                            <div key={index} className="text-white last:sm:col-auto last:col-span-full">
                                 <h5 className="sm:text-[20px] text-[18px] leading-[20px] font-bold mb-[15px]">
                                     {section.title}
                                 </h5>
                                 {isContactSection ? (
-                                    <div className="lg:block flex gap-[20px]">
+                                    <div className="sm:block flex gap-[20px]">
                                         {/* Left column - Phone numbers and hours */}
                                         <ul className="lg:space-y-[19px] space-y-[10px] plusJakarta-font flex-1">
                                             {contactLeftLinks.map((link, i) => {
