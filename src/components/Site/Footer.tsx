@@ -73,7 +73,7 @@ const footerData = {
                                         <>
                                             {/*8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>*/}
                                             <div className="flex flex-col lg:flex-row">
-                                                8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>
+                                                8am - 5pm CST <strong>Mon - Fri</strong>
                                             </div>
                                         </>
                                     ),
@@ -89,7 +89,7 @@ const footerData = {
                                     label: (
                                         <>
                                             RELYmedia <br />
-                                            1170 Eagan Industrial Road <br />
+                                            1170 Eagan Industrial Rd <br />
                                             Suite 1 <br />
                                             Eagan, MN 55121
                                         </>
@@ -128,7 +128,7 @@ function Footer() {
         <footer className="bg-[url(/images/footer_bg.jpg)] bg-center bg-cover bg-no-repeat xl:pt-[68px] pt-[58px] relative black_layers">
             <div className="wrapper relative z-10 2xl:px-0 px-[15px]">
                 <div className="mb-[35px] grid 2xl:[grid-template-columns:33%_17%_18%_31.9%] xl:[grid-template-columns:26%_17%_18%_33.9%] gap-y-[20px] lg:[grid-template-columns:24%_11%_16%_39.9%]
-                 sm:[grid-template-columns:14%_24%_34%] [grid-template-columns:35%_43%]
+                 sm:[grid-template-columns:14%_24%_34%] [grid-template-columns:38%_43%]
                  sm:justify-between justify-around gird_items_con">
                     {/* Logo + tagline + social */}
                     <div className="lg:col-auto col-span-full lg:text-left text-center lg:mb-0 mb-[20px]">
@@ -265,7 +265,7 @@ function Footer() {
                                                                 {link.label}
                                                             </Link>
                                                         ) : (
-                                                            <span className="flex gap-[10px]">
+                                                            <span className="flex gap-[10px] sm:w-auto w-[165px]">
                                                                 {Icon && <Icon size={20} />}
                                                                 {link.label}
                                                             </span>
