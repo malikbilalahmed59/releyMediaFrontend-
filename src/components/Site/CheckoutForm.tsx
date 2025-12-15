@@ -186,23 +186,13 @@ function CheckoutFormContent() {
         }
     };
 
-    // Sync shipping with billing when "same as billing" is checked
-    useEffect(() => {
-        if (sameAsBilling && billingAddressId) {
-            // When checkbox is checked, set shipping to use billing ID
-            // User can click "Sync Now" button to actually create/update the shipping address via API
-            setShippingAddressId(billingAddressId);
-        } else if (!sameAsBilling && shippingAddressId === billingAddressId) {
-            // When unchecked, if they were the same, clear shipping selection
-            // User will need to select a different shipping address
-            setShippingAddressId(null);
-        }
-    }, [sameAsBilling, billingAddressId]);
+    // Note: We don't auto-sync in useEffect to avoid infinite loops
+    // Sync happens when checkbox is checked via onCheckedChange handler
 
     const handleCheckout = async () => {
-        const finalShippingAddressId = sameAsBilling ? billingAddressId : shippingAddressId;
-        
-        if (!billingAddressId || !finalShippingAddressId) {
+        // Always use the actual shipping address ID (which should be different from billing ID even if same data)
+        // If sameAsBilling is true, handleSyncAddresses should have already created a separate shipping address
+        if (!billingAddressId || !shippingAddressId) {
             addToast({
                 type: 'warning',
                 title: 'Address Required',
@@ -210,6 +200,38 @@ function CheckoutFormContent() {
             });
             return;
         }
+        
+        // Ensure billing and shipping have different IDs (even if same data)
+        if (billingAddressId === shippingAddressId) {
+            // If they're the same ID, we need to sync to create separate shipping address
+            if (sameAsBilling) {
+                addToast({
+                    type: 'warning',
+                    title: 'Syncing Addresses',
+                    description: 'Please wait while we sync your addresses...',
+                });
+                await handleSyncAddresses();
+                // Reload addresses to get the new shipping address ID
+                await loadData();
+                if (!shippingAddressId || billingAddressId === shippingAddressId) {
+                    addToast({
+                        type: 'error',
+                        title: 'Address Sync Required',
+                        description: 'Please ensure shipping address is synced. Shipping and billing must have different IDs.',
+                    });
+                    return;
+                }
+            } else {
+                addToast({
+                    type: 'error',
+                    title: 'Invalid Address',
+                    description: 'Billing and shipping addresses must be different. Please select different addresses.',
+                });
+                return;
+            }
+        }
+        
+        const finalShippingAddressId = shippingAddressId;
 
         if (!cart || cart.items.length === 0) {
             addToast({
@@ -586,9 +608,14 @@ function CheckoutFormContent() {
                                                 onCheckedChange={async (checked) => {
                                                     const isChecked = checked as boolean;
                                                     setSameAsBilling(isChecked);
-                                                    // Automatically sync when checkbox is checked
+                                                    // Automatically sync when checkbox is checked to create separate shipping address
                                                     if (isChecked && billingAddressId) {
                                                         await handleSyncAddresses();
+                                                        // Reload to get the new shipping address ID
+                                                        await loadData();
+                                                    } else if (!isChecked) {
+                                                        // When unchecked, clear shipping selection so user can choose different address
+                                                        setShippingAddressId(null);
                                                     }
                                                 }}
                                             />
