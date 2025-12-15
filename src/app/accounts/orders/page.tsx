@@ -161,9 +161,6 @@ function OrdersListContent() {
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-2">
                           <h3 className="text-[20px] font-bold">Order #{order.order_number}</h3>
-                          <span className={`px-3 py-1 rounded-full text-[12px] font-semibold ${getStatusColor(order.status)}`}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
                           <span className={`px-3 py-1 rounded-full text-[12px] font-semibold ${getPaymentStatusColor(order.payment_status)}`}>
                             Payment: {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
                           </span>
