@@ -690,31 +690,33 @@ function CheckoutFormContent() {
                                     </div>
                                     <div>
                                         <Label htmlFor="uploadArtwork" className="form-label">Upload Artwork (Optional)</Label>
-                                        <div className="relative">
-                                            <Input
-                                                id="uploadArtwork"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => {
-                                                    const file = e.target.files?.[0] || null;
-                                                    setUploadArtwork(file);
-                                                }}
-                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                            />
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="w-full border-2 border-accent bg-accent/10 hover:bg-accent/20 text-accent font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
-                                                onClick={() => document.getElementById('uploadArtwork')?.click()}
-                                            >
-                                                Browse
-                                            </Button>
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative inline-block">
+                                                <Input
+                                                    id="uploadArtwork"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0] || null;
+                                                        setUploadArtwork(file);
+                                                    }}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    className="border-2 border-accent bg-accent/10 hover:bg-accent/20 text-accent font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
+                                                    onClick={() => document.getElementById('uploadArtwork')?.click()}
+                                                >
+                                                    Browse
+                                                </Button>
+                                            </div>
+                                            {uploadArtwork && (
+                                                <span className="text-[14px] text-foreground font-medium">
+                                                    {uploadArtwork.name}
+                                                </span>
+                                            )}
                                         </div>
-                                        {uploadArtwork && (
-                                            <p className="text-[12px] text-muted-foreground mt-2">
-                                                Selected: {uploadArtwork.name}
-                                            </p>
-                                        )}
                                     </div>
                                     <div>
                                         <Label htmlFor="dateOrderNeeded" className="form-label">Date Order Needed By (Optional)</Label>
