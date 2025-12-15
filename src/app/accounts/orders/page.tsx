@@ -5,26 +5,55 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ProtectedRoute, useAuth } from '@/contexts/AuthContext';
 import * as accountsAPI from '@/lib/api/accounts';
+import type { Order } from '@/lib/api/accounts';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/toast';
 import Header from '@/components/Site/Header';
 import Footer from '@/components/Site/Footer';
 
-interface OrderSummary {
-  id: number;
-  order_number: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  payment_status: string;
-  total: string;
-  created_at: string;
-}
-
 function OrdersListContent() {
-  const [orders, setOrders] = useState<OrderSummary[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
   const router = useRouter();
+
+  const DISCOUNT_PERCENTAGE = 20;
+
+  // Calculate discount and shipping fee for display
+  const calculateOrderTotals = (order: Order) => {
+    // Calculate original subtotal from items
+    const originalSubtotal = order.items.reduce((sum, item) => {
+      const itemTotal = parseFloat(item.total_price) || (parseFloat(item.price_per_unit) * item.quantity);
+      return sum + itemTotal;
+    }, 0);
+
+    const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
+    const discountedSubtotal = originalSubtotal - discountAmount;
+
+    // Calculate shipping fee per product (same logic as CheckoutForm)
+    let shippingFee = 0;
+    order.items.forEach((item) => {
+      const pricePerUnit = parseFloat(item.price_per_unit) || 0;
+      const productTotal = pricePerUnit * item.quantity;
+      const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
+      
+      if (discountedProductTotal < 500) {
+        shippingFee += 100;
+      }
+    });
+
+    const finalTotal = discountedSubtotal + shippingFee + parseFloat(order.tax || '0');
+
+    return {
+      originalSubtotal,
+      discountAmount,
+      discountedSubtotal,
+      shippingFee,
+      tax: parseFloat(order.tax || '0'),
+      finalTotal,
+    };
+  };
 
   useEffect(() => {
     loadOrders();
@@ -142,9 +171,35 @@ function OrdersListContent() {
                         <p className="text-[14px] text-[#666] mb-2">
                           Placed on {formatDate(order.created_at)}
                         </p>
-                        <p className="text-[18px] font-bold text-accent">
-                          Total: ${parseFloat(order.total).toFixed(2)}
-                        </p>
+                        {(() => {
+                          const totals = calculateOrderTotals(order);
+                          return (
+                            <div className="space-y-1">
+                              <p className="text-[14px] text-[#666]">
+                                Original Price: <span className="line-through">${totals.originalSubtotal.toFixed(2)}</span>
+                              </p>
+                              <p className="text-[14px] text-[#666]">
+                                Discount (20%): <span className="text-green-600">-${totals.discountAmount.toFixed(2)}</span>
+                              </p>
+                              <p className="text-[14px] text-[#666]">
+                                Subtotal: ${totals.discountedSubtotal.toFixed(2)}
+                              </p>
+                              {totals.shippingFee > 0 && (
+                                <p className="text-[14px] text-[#666]">
+                                  Less than Minimum Fee: <span className="text-orange-600">+${totals.shippingFee.toFixed(2)}</span>
+                                </p>
+                              )}
+                              {totals.tax > 0 && (
+                                <p className="text-[14px] text-[#666]">
+                                  Tax: ${totals.tax.toFixed(2)}
+                                </p>
+                              )}
+                              <p className="text-[18px] font-bold text-accent mt-2">
+                                Total: ${totals.finalTotal.toFixed(2)}
+                              </p>
+                            </div>
+                          );
+                        })()}
                       </div>
                       <div className="flex gap-3">
                         <Link href={`/accounts/orders/${order.order_number}`}>

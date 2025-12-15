@@ -2,7 +2,7 @@
 import React, { useState, FormEvent, useEffect, useCallback } from 'react';
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {Mail, Phone, Search, ShoppingBasket, User, Settings, LogOut} from "lucide-react";
+import {Mail, Phone, Search, ShoppingBasket, User, Settings, LogOut, Package} from "lucide-react";
 import Image from "next/image";
 import relymedia_logo from "../../../public/images/relymedia-logo.svg";
 import { ArrowRight,ChevronDown } from 'lucide-react';
@@ -250,6 +250,12 @@ function Header() {
                                                         <Link href="/profile" className="cursor-pointer flex items-center gap-2">
                                                             <Settings className="h-4 w-4" />
                                                             Profile Settings
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/accounts/orders" className="cursor-pointer flex items-center gap-2">
+                                                            <Package className="h-4 w-4" />
+                                                            My Orders
                                                         </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />

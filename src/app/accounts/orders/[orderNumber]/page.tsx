@@ -20,6 +20,43 @@ function OrderDetailContent() {
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
 
+  const DISCOUNT_PERCENTAGE = 20;
+
+  // Calculate discount and shipping fee for display
+  const calculateOrderTotals = (order: Order) => {
+    // Calculate original subtotal from items
+    const originalSubtotal = order.items.reduce((sum, item) => {
+      const itemTotal = parseFloat(item.total_price) || (parseFloat(item.price_per_unit) * item.quantity);
+      return sum + itemTotal;
+    }, 0);
+
+    const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
+    const discountedSubtotal = originalSubtotal - discountAmount;
+
+    // Calculate shipping fee per product (same logic as CheckoutForm)
+    let shippingFee = 0;
+    order.items.forEach((item) => {
+      const pricePerUnit = parseFloat(item.price_per_unit) || 0;
+      const productTotal = pricePerUnit * item.quantity;
+      const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
+      
+      if (discountedProductTotal < 500) {
+        shippingFee += 100;
+      }
+    });
+
+    const finalTotal = discountedSubtotal + shippingFee + parseFloat(order.tax || '0');
+
+    return {
+      originalSubtotal,
+      discountAmount,
+      discountedSubtotal,
+      shippingFee,
+      tax: parseFloat(order.tax || '0'),
+      finalTotal,
+    };
+  };
+
   useEffect(() => {
     if (orderNumber) {
       loadOrder();
@@ -162,10 +199,15 @@ function OrderDetailContent() {
                             <p className="text-[14px] text-[#666] mb-1">Part: {item.part_name}</p>
                           )}
                           <p className="text-[14px] text-[#666]">Quantity: {item.quantity}</p>
-                          <p className="text-[14px] text-[#666]">Price per unit: ${parseFloat(item.price_per_unit).toFixed(2)}</p>
+                          <p className="text-[14px] text-[#666]">
+                            Price per unit: <span className="line-through">${parseFloat(item.price_per_unit).toFixed(2)}</span>
+                            {' '}
+                            <span className="text-green-600 font-semibold">${(parseFloat(item.price_per_unit) * 0.8).toFixed(2)}</span>
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-[18px]">${parseFloat(item.total_price).toFixed(2)}</p>
+                          <p className="text-[14px] text-[#666] line-through">${parseFloat(item.total_price).toFixed(2)}</p>
+                          <p className="font-bold text-[18px]">${(parseFloat(item.total_price) * 0.8).toFixed(2)}</p>
                         </div>
                       </div>
                     ))}
@@ -181,22 +223,41 @@ function OrderDetailContent() {
                   <CardTitle className="text-white font-bold text-[18px]">Order Summary</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-[14px] text-[#666]">Subtotal:</span>
-                    <span className="font-semibold">${parseFloat(order.subtotal).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[14px] text-[#666]">Shipping:</span>
-                    <span className="font-semibold">${parseFloat(order.shipping).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[14px] text-[#666]">Tax:</span>
-                    <span className="font-semibold">${parseFloat(order.tax).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between pt-3 border-t-2 border-accent">
-                    <span className="font-bold text-[18px]">Total:</span>
-                    <span className="font-bold text-[20px] text-accent">${parseFloat(order.total).toFixed(2)}</span>
-                  </div>
+                  {(() => {
+                    const totals = calculateOrderTotals(order);
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-[14px] text-[#666]">Original Price:</span>
+                          <span className="font-semibold line-through">${totals.originalSubtotal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[14px] text-[#666]">Discount (20%):</span>
+                          <span className="font-semibold text-green-600">-${totals.discountAmount.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-[14px] text-[#666]">Subtotal:</span>
+                          <span className="font-semibold">${totals.discountedSubtotal.toFixed(2)}</span>
+                        </div>
+                        {totals.shippingFee > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-[14px] text-[#666]">Less than Minimum Fee:</span>
+                            <span className="font-semibold text-orange-600">+${totals.shippingFee.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {totals.tax > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-[14px] text-[#666]">Tax:</span>
+                            <span className="font-semibold">${totals.tax.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between pt-3 border-t-2 border-accent">
+                          <span className="font-bold text-[18px]">Total:</span>
+                          <span className="font-bold text-[20px] text-accent">${totals.finalTotal.toFixed(2)}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 

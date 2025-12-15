@@ -276,12 +276,38 @@ function CheckoutFormContent() {
         let paymentResult: any = null;
 
         try {
-            // Get billing and shipping address objects
-            const billingAddress = addresses.find(a => a.id === billingAddressId);
-            const shippingAddress = addresses.find(a => a.id === finalShippingAddressId);
+            // Ensure we have separate IDs for billing and shipping (even if same data)
+            if (billingAddressId === shippingAddressId) {
+                throw new Error('Billing and shipping addresses must have different IDs. Please sync addresses if using same address.');
+            }
+
+            // Get billing and shipping address objects from API to ensure we have the correct IDs
+            const allAddresses = await accountsAPI.getAddresses();
+            let addressesArray: UserAddress[] = [];
+            
+            if (Array.isArray(allAddresses)) {
+                addressesArray = allAddresses;
+            } else if (allAddresses && typeof allAddresses === 'object') {
+                const addressesObj = allAddresses as any;
+                if ('results' in addressesObj && Array.isArray(addressesObj.results)) {
+                    addressesArray = addressesObj.results;
+                } else if ('data' in addressesObj && Array.isArray(addressesObj.data)) {
+                    addressesArray = addressesObj.data;
+                } else if ('addresses' in addressesObj && Array.isArray(addressesObj.addresses)) {
+                    addressesArray = addressesObj.addresses;
+                }
+            }
+
+            const billingAddress = addressesArray.find(a => a.id === billingAddressId);
+            const shippingAddress = addressesArray.find(a => a.id === shippingAddressId);
 
             if (!billingAddress || !shippingAddress) {
                 throw new Error('Billing or shipping address not found');
+            }
+
+            // Verify they have different IDs
+            if (billingAddress.id === shippingAddress.id) {
+                throw new Error('Billing and shipping addresses must have different IDs. Please sync your addresses.');
             }
 
             // Calculate totals
