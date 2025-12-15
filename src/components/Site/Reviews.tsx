@@ -83,17 +83,21 @@ function Reviews() {
                             key={index}
                             className="bg-white border border-[#0000001A] rounded-[24px] sm:px-[30px] px-[20px] py-[36px] text-center flex flex-col items-center h-full"
                         >
-                            <img
+                            <Image
                                 src={item.image}
                                 alt={item.name}
+                                width={80}
+                                height={80}
                                 className="w-[80px] h-[80px] mt-[-80px] rounded-full mb-[11px] object-cover"
                             />
                             <h3 className="font-bold text-[16px]">{item.name}</h3>
                             <p className="sm:text-[15px] text-[14px]">{item.title}</p>
                             <div className="flex items-center justify-center mt-2">
-                                <img
+                                <Image
                                     src="/images/stars-5.svg"
                                     alt="Rating"
+                                    width={106}
+                                    height={20}
                                     className="w-[106px] h-[20px]"
                                 />
                                 <span className="ml-2 text-[16px]">({item.rating})</span>

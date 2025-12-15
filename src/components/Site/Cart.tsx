@@ -117,6 +117,10 @@ function CartContent() {
         return item.primary_image || pen.src;
     };
 
+    const isExternalImage = (image: string): boolean => {
+        return image.startsWith('http://') || image.startsWith('https://') || image.startsWith('//');
+    };
+
     if (loading) {
         return (
             <div className="py-[50px]">
@@ -275,10 +279,14 @@ function CartContent() {
                                                                 <div className="flex items-center gap-[12px]">
                                                                     <Link href={`/single-products/${item.product}`} className="flex-shrink-0">
                                                                         <figure className="relative w-[70px] h-[70px] bg-gradient rounded-[10px] p-[6px] flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                                            <img
+                                                                            <Image
                                                                                 src={getProductImage(item)}
                                                                                 alt={item.product_name}
+                                                                                width={70}
+                                                                                height={70}
                                                                                 className="w-full h-full object-contain"
+                                                                                style={isExternalImage(getProductImage(item)) ? { width: "auto", height: "auto" } : undefined}
+                                                                                unoptimized={isExternalImage(getProductImage(item))}
                                                                                 onError={(e) => {
                                                                                     (e.target as HTMLImageElement).src = pen.src;
                                                                                 }}

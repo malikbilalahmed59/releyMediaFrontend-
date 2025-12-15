@@ -136,9 +136,11 @@ function CustomerFeedback() {
                                     <h3 className="font-bold text-[16px] line-clamp-1">{item.name}</h3>
                                     {item.title && <p className="sm:text-[15px] text-[14px] line-clamp-1">{item.title}</p>}
                                     <div className="flex items-center justify-center mt-2">
-                                        <img
+                                        <Image
                                             src="/images/stars-5.svg"
                                             alt="Rating"
+                                            width={106}
+                                            height={20}
                                             className="w-[106px] h-[20px]"
                                         />
                                         <span className="ml-2 text-[16px]">({item.rating})</span>
