@@ -347,7 +347,7 @@ function CartContent() {
                                                             {/* Price */}
                                                             <td className="py-[20px] px-[10px] text-center">
                                                                 <div className="text-[15px] md:text-[16px] font-semibold text-foreground">
-                                                                    ${pricePerUnit.toFixed(2)}
+                                                                    ${(pricePerUnit * 0.8).toFixed(2)}
                                                                 </div>
                                                             </td>
                                                             
