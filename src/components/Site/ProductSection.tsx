@@ -1,5 +1,6 @@
 'use client'
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -657,16 +658,20 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                             {images.map((src, i) => (
                                 <SwiperSlide key={i} className="!flex items-center justify-center bg-white">
                                     {src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//') ? (
-                                        <img 
+                                        <Image 
                                             src={src} 
                                             alt={`${product.product_name} ${i + 1}`} 
+                                            width={598}
+                                            height={598}
                                             className="w-full h-full object-contain"
-                                            onError={(e) => {
+                                            style={{ width: "auto", height: "auto" }}
+                                            unoptimized
+                                            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                                                 (e.target as HTMLImageElement).src = pen.src;
                                             }}
                                         />
                                     ) : (
-                                        <img src={src} alt={`${product.product_name} ${i + 1}`} className="w-full h-full object-contain" />
+                                        <Image src={src} alt={`${product.product_name} ${i + 1}`} width={598} height={598} className="w-full h-full object-contain" />
                                     )}
                                 </SwiperSlide>
                             ))}
@@ -685,18 +690,24 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                 <SwiperSlide key={i}
                                                  className="border border-[#E1E1E1] sm:rounded-[20px] rounded-[10px] lg:!h-[101px] !h-[80px] !flex items-center justify-center bg-white">
                                         {src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//') ? (
-                                            <img
+                                            <Image
                                                 src={src}
                                                 alt={`thumb ${i}`}
+                                                width={101}
+                                                height={101}
                                                 className="cursor-pointer w-[80px] h-full object-contain"
-                                                onError={(e) => {
+                                                style={{ width: "auto", height: "auto" }}
+                                                unoptimized
+                                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                                                     (e.target as HTMLImageElement).src = pen.src;
                                                 }}
                                             />
                                         ) : (
-                                    <img
+                                    <Image
                                         src={src}
                                         alt={`thumb ${i}`}
+                                        width={101}
+                                        height={101}
                                                 className="cursor-pointer w-[80px] h-full object-contain"
                                     />
                                         )}
