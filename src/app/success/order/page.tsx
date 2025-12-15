@@ -68,7 +68,7 @@ function OrderSuccessContent() {
                                     variant="outline"
                                     className="h-auto font-bold text-[16px] 2xl:py-[18px] lg:py-[16px] py-[14px] px-8 cursor-pointer"
                                 >
-                                    <Link href="/profile?tab=orders">
+                                    <Link href="/accounts/orders">
                                         <Package className="mr-2 h-4 w-4" />
                                         View My Orders
                                     </Link>
