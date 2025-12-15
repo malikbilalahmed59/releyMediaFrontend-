@@ -705,7 +705,7 @@ function CheckoutFormContent() {
                                                 <Button
                                                     type="button"
                                                     variant="outline"
-                                                    className="border-2 border-accent bg-accent/10 hover:bg-accent/20 text-accent font-semibold py-2 px-4 rounded-lg cursor-pointer transition-colors"
+                                                    className="border-2 border-accent bg-accent/10 hover:bg-accent/20 text-accent font-semibold py-6 px-12 rounded-lg cursor-pointer transition-colors text-[18px]"
                                                     onClick={() => document.getElementById('uploadArtwork')?.click()}
                                                 >
                                                     Browse
