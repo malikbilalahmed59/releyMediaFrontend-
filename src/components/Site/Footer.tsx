@@ -100,12 +100,12 @@ const footerData = {
                                 {
                                     icon: MapPin,
                                     label: (
-                                        <>
+                                        <span className="block">
                                             RELYmedia <br />
                                             <span className="whitespace-nowrap">1170 Eagan Industrial Rd</span> <br />
                                             Suite 1 <br />
                                             Eagan, MN 55121
-                                        </>
+                                        </span>
                                     ),
                                     url: "https://maps.app.goo.gl/5c5DXyDJN4BqW3sV9",
                                 },
@@ -301,7 +301,7 @@ function Footer() {
                                                         ) : (
                                                             <span className="flex items-start gap-[10px] sm:w-auto min-w-[180px]">
                                                                 {Icon && <Icon size={20} className="mt-0.5 flex-shrink-0" />}
-                                                                <span className="block">{link.label}</span>
+                                                                <span className="block text-left">{link.label}</span>
                                                             </span>
                                                         )}
                                                     </li>
