@@ -437,13 +437,15 @@ function CheckoutFormContent() {
                 }
             }
 
+            // Create order with payment_status='paid' since payment was successful
+            // Backend defaults to 'pending' if not provided, so we explicitly set it to 'paid'
             const order = await accountsAPI.checkout({
                 billing_address_id: billingAddressId,
                 shipping_address_id: finalShippingAddressId,
                 notes: notes || undefined,
                 upload_artwork: artworkBase64 || undefined,
                 date_order_needed: dateOrderNeeded || undefined,
-                payment_status: 'paid',
+                payment_status: 'paid', // Explicitly set to 'paid' since payment succeeded
                 transaction_id: paymentResult?.transactionId || undefined,
             });
             
