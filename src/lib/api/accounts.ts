@@ -683,6 +683,17 @@ export async function getOrder(orderNumber: string): Promise<Order> {
   return authFetch<Order>(url, { method: 'GET' });
 }
 
+export async function updateOrder(orderId: string | number, data: Partial<Order>): Promise<Order> {
+  const url = USE_PROXY 
+    ? `/api/accounts/orders/${orderId}`
+    : `${API_BASE_URL}/accounts/orders/${orderId}/`;
+  
+  return authFetch<Order>(url, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
 /**
  * Helper function to check if user is authenticated
  */

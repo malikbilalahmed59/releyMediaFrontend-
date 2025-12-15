@@ -267,10 +267,67 @@ function CheckoutFormContent() {
             const DISCOUNT_PERCENTAGE = 20;
             const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
             const subtotal = originalSubtotal - discountAmount;
-            const shippingFee = originalSubtotal < 500 ? 100 : 0;
+            
+            // Calculate shipping fee per product (if discounted price * quantity < $500, add $100 per product)
+            const calculateShippingFee = (): number => {
+                if (!cart || !cart.items || cart.items.length === 0) {
+                    return 0;
+                }
+                
+                let totalFee = 0;
+                
+                // Check each product individually
+                cart.items.forEach((item) => {
+                    const pricePerUnit = typeof item.price_per_unit === 'string' 
+                        ? parseFloat(item.price_per_unit) 
+                        : (item.price_per_unit || 0);
+                    
+                    // Calculate discounted price * quantity for this product
+                    const productTotal = pricePerUnit * item.quantity;
+                    const discountedProductTotal = productTotal * (1 - DISCOUNT_PERCENTAGE / 100);
+                    
+                    // If discounted product total is less than $500, add $100 fee for this product
+                    if (discountedProductTotal < 500) {
+                        totalFee += 100;
+                    }
+                });
+                
+                return totalFee;
+            };
+            
+            const shippingFee = calculateShippingFee();
             const total = subtotal + shippingFee;
 
-            // Process payment via PayJunction
+            // Convert file to base64 if present (before creating order)
+            let artworkBase64: string | undefined = undefined;
+            if (uploadArtwork) {
+                try {
+                    artworkBase64 = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const base64String = reader.result as string;
+                            resolve(base64String);
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(uploadArtwork);
+                    });
+                } catch (error) {
+                    console.error('Error converting artwork to base64:', error);
+                }
+            }
+
+            // Step 1: Create order in Django first with payment_status='pending'
+            const order = await accountsAPI.checkout({
+                billing_address_id: billingAddressId,
+                shipping_address_id: finalShippingAddressId,
+                notes: notes || undefined,
+                upload_artwork: artworkBase64 || undefined,
+                date_order_needed: dateOrderNeeded || undefined,
+                payment_status: 'pending',
+                transaction_id: undefined,
+            });
+
+            // Step 2: Process payment via PayJunction
             try {
                 const paymentResponse = await fetch('/api/payments/process', {
                     method: 'POST',
@@ -337,37 +394,21 @@ function CheckoutFormContent() {
                     description: paymentError.message || 'Failed to process payment. Please check your card details and try again.',
                 });
                 setProcessing(false);
-                return; // Stop here - don't proceed to Django checkout
+                return; // Stop here - order already created but payment failed
             }
 
-            // Convert file to base64 if present
-            let artworkBase64: string | undefined = undefined;
-            if (uploadArtwork) {
+            // Step 3: Update order with payment status and transaction ID on payment success
+            if (paymentResult && paymentResult.transactionId && order.id) {
                 try {
-                    artworkBase64 = await new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            const base64String = reader.result as string;
-                            resolve(base64String);
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(uploadArtwork);
-                    });
-                } catch (error) {
-                    console.error('Error converting artwork to base64:', error);
+                    await accountsAPI.updateOrder(order.id, {
+                        payment_status: 'paid',
+                        transaction_id: paymentResult.transactionId,
+                    } as any);
+                } catch (updateError: any) {
+                    console.error('Failed to update order payment status:', updateError);
+                    // Don't fail the checkout if update fails - order is already created
                 }
             }
-
-            // Create order in Django ONLY after successful payment confirmation
-            const order = await accountsAPI.checkout({
-                billing_address_id: billingAddressId,
-                shipping_address_id: finalShippingAddressId,
-                notes: notes || undefined,
-                upload_artwork: artworkBase64 || undefined,
-                date_order_needed: dateOrderNeeded || undefined,
-                payment_status: paymentResult ? 'paid' : undefined,
-                transaction_id: paymentResult?.transactionId || undefined,
-            });
             
             addToast({
                 type: 'success',
