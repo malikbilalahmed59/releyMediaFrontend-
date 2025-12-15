@@ -683,10 +683,10 @@ export async function getOrder(orderNumber: string): Promise<Order> {
   return authFetch<Order>(url, { method: 'GET' });
 }
 
-export async function updateOrder(orderId: string | number, data: Partial<Order>): Promise<Order> {
+export async function updateOrder(orderNumber: string, data: Partial<Order>): Promise<Order> {
   const url = USE_PROXY 
-    ? `/api/accounts/orders/${orderId}`
-    : `${API_BASE_URL}/accounts/orders/${orderId}/`;
+    ? `/api/accounts/orders/${orderNumber}`
+    : `${API_BASE_URL}/accounts/orders/${orderNumber}/`;
   
   return authFetch<Order>(url, {
     method: 'PATCH',

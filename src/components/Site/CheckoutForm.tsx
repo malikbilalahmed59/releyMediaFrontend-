@@ -398,9 +398,9 @@ function CheckoutFormContent() {
             }
 
             // Step 3: Update order with payment status and transaction ID on payment success
-            if (paymentResult && paymentResult.transactionId && order.id) {
+            if (paymentResult && paymentResult.transactionId && order.order_number) {
                 try {
-                    await accountsAPI.updateOrder(order.id, {
+                    await accountsAPI.updateOrder(order.order_number, {
                         payment_status: 'paid',
                         transaction_id: paymentResult.transactionId,
                     } as any);
