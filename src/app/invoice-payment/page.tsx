@@ -315,6 +315,37 @@ function PaymentContent() {
                 description: `Payment processed successfully. Transaction ID: ${paymentData.transactionId}`,
             });
 
+            // Send email notification
+            try {
+                const cardNumberDigits = cardNumber.replace(/\s/g, '');
+                const cardLast4 = cardNumberDigits.slice(-4);
+                
+                await fetch('/api/email/invoice-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        invoiceNumber,
+                        amount: amountNum.toFixed(2),
+                        transactionId: paymentData.transactionId,
+                        firstName,
+                        lastName,
+                        company: company || undefined,
+                        email,
+                        phone: phone || undefined,
+                        address,
+                        city,
+                        state,
+                        zipCode,
+                        cardLast4,
+                    }),
+                });
+            } catch (emailError) {
+                // Log error but don't block the user flow
+                console.error('Failed to send payment notification email:', emailError);
+            }
+
             // Redirect to success page or clear form
             setTimeout(() => {
                 router.push('/success/order');

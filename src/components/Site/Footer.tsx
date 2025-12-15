@@ -12,8 +12,26 @@ import {
     MapPin,
     PhoneCall,
     Timer,
-    Twitter,
+    ShoppingCart,
+    CreditCard,
+    UserCircle,
+    LogIn,
+    LogOut,
+    UserPlus,
 } from "lucide-react";
+
+// Custom X (Twitter) logo component
+const XLogo = ({ size = 16 }: { size?: number }) => (
+    <svg
+        width={size}
+        height={size}
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+);
 
 const footerData = {
     tagline: "Innovative Solutions. Exceptional Service",
@@ -21,7 +39,7 @@ const footerData = {
         { icon: Facebook, url: "https://www.facebook.com/profile.php?id=100076356070878", label: "Facebook" },
         { icon: Instagram, url: "https://www.instagram.com/rely.media/", label: "Instagram" },
         { icon: Linkedin, url: "https://www.linkedin.com/company/relymedia/", label: "LinkedIn" },
-        { icon: Twitter, url: "https://x.com/relymedia", label: "X (Twitter)" },
+        { icon: XLogo, url: "https://x.com/relymedia", label: "X" },
     ],
     sections: [
         {
@@ -63,7 +81,11 @@ const footerData = {
                                     icon: Timer,
                                     label: (
                                         <>
-                                            8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>
+                                            {/*8:00 am to 5:00 pm CST — <strong>Monday through Friday</strong>*/}
+                                            <div className="flex flex-col">
+                                                <span>8am - 5pm CST</span>
+                                                <strong>Mon - Fri</strong>
+                                            </div>
                                         </>
                                     ),
                                     url: null,
@@ -127,7 +149,11 @@ function Footer() {
                                         className="w-[34px] h-[34px] flex items-center justify-center bg-[#FFFFFF33] rounded-full text-white hover:bg-[#FFFFFF66] transition-colors"
                                         aria-label={social.label}
                                     >
-                                        <social.icon size={16} />
+                                        {social.label === "X" ? (
+                                            <XLogo size={16} />
+                                        ) : (
+                                            <social.icon size={16} />
+                                        )}
                                     </a>
                                 </li>
                             ))}
