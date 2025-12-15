@@ -102,7 +102,7 @@ const footerData = {
                                     label: (
                                         <>
                                             RELYmedia <br />
-                                            1170 Eagan Industrial Rd <br />
+                                            <span className="whitespace-nowrap">1170 Eagan Industrial Rd</span> <br />
                                             Suite 1 <br />
                                             Eagan, MN 55121
                                         </>
@@ -299,9 +299,9 @@ function Footer() {
                                                                 </Link>
                                                             )
                                                         ) : (
-                                                            <span className="flex gap-[10px] sm:w-auto w-[165px]">
-                                                                {Icon && <Icon size={20} />}
-                                                                {link.label}
+                                                            <span className="flex items-start gap-[10px] sm:w-auto min-w-[180px]">
+                                                                {Icon && <Icon size={20} className="mt-0.5 flex-shrink-0" />}
+                                                                <span className="block">{link.label}</span>
                                                             </span>
                                                         )}
                                                     </li>
