@@ -102,7 +102,7 @@ const footerData = {
                                     label: (
                                         <>
                                             RELYmedia <br />
-                                            <span className="whitespace-nowrap">1170 Eagan Industrial Rd</span> <br />
+                                            1170 Eagan Industrial Rd <br />
                                             Suite 1 <br />
                                             Eagan, MN 55121
                                         </>
@@ -299,7 +299,7 @@ function Footer() {
                                                                 </Link>
                                                             )
                                                         ) : (
-                                                            <span className="flex gap-[10px] sm:w-auto min-w-[180px]">
+                                                            <span className="flex gap-[10px] sm:w-auto w-[165px]">
                                                                 {Icon && <Icon size={20} />}
                                                                 {link.label}
                                                             </span>
