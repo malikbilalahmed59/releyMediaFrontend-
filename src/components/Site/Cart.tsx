@@ -162,6 +162,9 @@ function CartContent() {
         ? parseFloat(cart.total_price) 
         : (cart.total_price || 0);
     
+    // Calculate 20% discount
+    const DISCOUNT_PERCENTAGE = 20;
+    
     // Calculate subtotal from items if total_price is not available
     const calculatedSubtotal = cart.items && cart.items.length > 0
         ? cart.items.reduce((sum, item) => {
@@ -169,15 +172,16 @@ function CartContent() {
                 ? item.total_price 
                 : (typeof item.total_price === 'string' 
                     ? parseFloat(item.total_price) 
-                    : 0);
+                    : (typeof item.price_per_unit === 'number'
+                        ? item.price_per_unit * item.quantity
+                        : (typeof item.price_per_unit === 'string'
+                            ? parseFloat(item.price_per_unit) * item.quantity
+                            : 0)));
             return sum + itemTotal;
           }, 0)
         : 0;
     
     const originalSubtotal = subtotal > 0 ? subtotal : calculatedSubtotal;
-    
-    // Calculate 20% discount
-    const DISCOUNT_PERCENTAGE = 20;
     const discountAmount = originalSubtotal * (DISCOUNT_PERCENTAGE / 100);
     const finalSubtotal = originalSubtotal - discountAmount;
     
@@ -383,7 +387,7 @@ function CartContent() {
                                                             {/* Total */}
                                                             <td className="py-[20px] px-[12px] text-center">
                                                                 <div className="text-[15px] md:text-[16px] font-semibold text-foreground">
-                                                                    ${totalPrice.toFixed(2)}
+                                                                    ${(totalPrice * 0.8).toFixed(2)}
                                                                 </div>
                                                             </td>
 
