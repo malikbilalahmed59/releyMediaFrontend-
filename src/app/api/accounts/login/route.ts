@@ -34,9 +34,28 @@ export async function POST(request: NextRequest) {
       if (!retryResponse.ok) {
         const errorText = await retryResponse.text();
         console.error('Login failed (retry):', retryResponse.status, errorText);
+        
+        // Parse error to provide user-friendly message
+        let userMessage = 'Invalid email or password. Please try again.';
+        
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+            userMessage = 'Invalid email or password. Please try again.';
+          } else if (errorData.error) {
+            userMessage = errorData.error;
+          } else if (errorData.detail) {
+            userMessage = errorData.detail;
+          }
+        } catch {
+          if (retryResponse.status === 400 || retryResponse.status === 401) {
+            userMessage = 'Invalid email or password. Please try again.';
+          }
+        }
+        
         return NextResponse.json(
           { 
-            error: `Login failed: ${retryResponse.statusText}`, 
+            error: userMessage,
             details: errorText,
             attempted_url: url
           },
@@ -51,9 +70,30 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Login failed:', response.status, errorText);
+      
+      // Parse error to provide user-friendly message
+      let userMessage = 'Invalid email or password. Please try again.';
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+          // Django REST framework error format
+          userMessage = 'Invalid email or password. Please try again.';
+        } else if (errorData.error) {
+          userMessage = errorData.error;
+        } else if (errorData.detail) {
+          userMessage = errorData.detail;
+        }
+      } catch {
+        // If parsing fails, use default message for 400/401 errors
+        if (response.status === 400 || response.status === 401) {
+          userMessage = 'Invalid email or password. Please try again.';
+        }
+      }
+      
       return NextResponse.json(
         { 
-          error: `Login failed: ${response.statusText}`, 
+          error: userMessage,
           details: errorText,
           attempted_url: url
         },

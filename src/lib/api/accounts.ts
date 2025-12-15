@@ -379,8 +379,36 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   });
 
   if (!response.ok) {
-    const errorText = await response.text().catch(() => response.statusText);
-    throw new Error(`Login failed: ${errorText}`);
+    let errorMessage = 'Invalid email or password. Please try again.';
+    
+    try {
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.details) {
+        // Try to parse details if it's a JSON string
+        try {
+          const parsedDetails = JSON.parse(errorData.details);
+          if (parsedDetails.non_field_errors && Array.isArray(parsedDetails.non_field_errors)) {
+            errorMessage = 'Invalid email or password. Please try again.';
+          }
+        } catch {
+          // If details is not JSON, use the error message from API
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        }
+      }
+    } catch {
+      // If response is not JSON, use default message for auth errors
+      if (response.status === 400 || response.status === 401) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else {
+        errorMessage = 'Login failed. Please try again.';
+      }
+    }
+    
+    throw new Error(errorMessage);
   }
 
   const result = await response.json();

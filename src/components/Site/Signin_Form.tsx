@@ -40,35 +40,22 @@ function Signin_Form() {
             const returnUrl = searchParams.get('returnUrl') || '/'
             router.push(returnUrl)
         } catch (err: any) {
-            let errorMessage = 'Login failed. Please check your credentials.';
+            let errorMessage = 'Invalid email or password. Please try again.';
             
-            // Parse error message to provide better feedback
+            // Use the error message from the API if available
             if (err.message) {
-                if (err.message.includes('404') || err.message.includes('Not Found')) {
-                    errorMessage = 'Login endpoint not found. Please contact support or check your API configuration.';
-                } else if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-                    errorMessage = 'Invalid email or password. Please try again.';
-                } else if (err.message.includes('403') || err.message.includes('Forbidden')) {
-                    errorMessage = 'Access denied. Please contact support.';
+                // Check for network errors
+                if (err.message.includes('Network') || err.message.includes('Failed to fetch')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                } else if (err.message.includes('404') || err.message.includes('Not Found')) {
+                    errorMessage = 'Login service unavailable. Please contact support.';
                 } else if (err.message.includes('500') || err.message.includes('Internal Server Error')) {
                     errorMessage = 'Server error. Please try again later.';
-                } else if (err.message.includes('Network') || err.message.includes('Failed to fetch')) {
-                    errorMessage = 'Network error. Please check your connection and try again.';
-                } else {
-                    // Try to extract a cleaner error message
-                    try {
-                        const errorData = JSON.parse(err.message);
-                        if (errorData.error) {
-                            errorMessage = errorData.error;
-                        } else if (errorData.details && !errorData.details.includes('<!doctype')) {
-                            errorMessage = errorData.details;
-                        }
-                    } catch {
-                        // If parsing fails, use the original message if it's not HTML
-                        if (!err.message.includes('<!doctype') && !err.message.includes('<html>')) {
-                            errorMessage = err.message;
-                        }
-                    }
+                } else if (err.message.includes('403') || err.message.includes('Forbidden')) {
+                    errorMessage = 'Access denied. Please contact support.';
+                } else if (!err.message.includes('<!doctype') && !err.message.includes('<html>') && !err.message.includes('Login failed:')) {
+                    // Use the error message if it's user-friendly and not technical
+                    errorMessage = err.message;
                 }
             }
             
