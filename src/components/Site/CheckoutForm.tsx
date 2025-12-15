@@ -738,19 +738,21 @@ function CheckoutFormContent() {
                                 <CardContent className="px-[20px] space-y-4">
                                     {cart.items.map((item) => (
                                         <div key={item.id} className="flex items-center gap-4 pb-4 border-b">
-                                            <Link href={`/single-products/${item.product}`}>
-                                                <Image
-                                                    src={getProductImage(item)}
-                                                    alt={item.product_name}
-                                                    width={64}
-                                                    height={64}
-                                                    className="w-16 h-16 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
-                                                    style={isExternalImage(getProductImage(item)) ? { width: "auto", height: "auto" } : undefined}
-                                                    unoptimized={isExternalImage(getProductImage(item))}
-                                                    onError={(e) => {
-                                                        (e.target as HTMLImageElement).src = pen.src;
-                                                    }}
-                                                />
+                                            <Link href={`/single-products/${item.product}`} className="flex-shrink-0">
+                                                <figure className="relative w-[80px] h-[80px] bg-gradient rounded-[10px] p-[6px] flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                    <Image
+                                                        src={getProductImage(item)}
+                                                        alt={item.product_name}
+                                                        width={80}
+                                                        height={80}
+                                                        className="w-full h-full object-contain"
+                                                        style={isExternalImage(getProductImage(item)) ? { width: "auto", height: "auto" } : undefined}
+                                                        unoptimized={isExternalImage(getProductImage(item))}
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).src = pen.src;
+                                                        }}
+                                                    />
+                                                </figure>
                                             </Link>
                                             <div className="flex-1">
                                                 <Link href={`/single-products/${item.product}`}>
