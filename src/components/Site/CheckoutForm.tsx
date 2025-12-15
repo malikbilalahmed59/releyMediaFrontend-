@@ -347,6 +347,8 @@ function CheckoutFormContent() {
             const total = subtotal + shippingFee;
 
             // Step 1: Process payment via PayJunction first
+            // IMPORTANT: Send subtotal as amountBase (NOT total), because PayJunction will add amountShipping on top
+            // If we send total (which includes shipping), PayJunction will add shipping again, causing double charge
             try {
                 const paymentResponse = await fetch('/api/payments/process', {
                     method: 'POST',
@@ -361,7 +363,7 @@ function CheckoutFormContent() {
                             cardExpYear,
                             cvv: cardCvv,
                         },
-                        amount: total.toFixed(2),
+                        amount: subtotal.toFixed(2), // Send subtotal only, PayJunction will add shipping separately
                         amountShipping: shippingFee.toFixed(2),
                         amountTax: '0.00',
                         billingAddress: {
