@@ -1,5 +1,6 @@
 'use client'
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -665,7 +666,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                             className="w-full h-full object-contain"
                                             style={{ width: "auto", height: "auto" }}
                                             unoptimized
-                                            onError={(e) => {
+                                            onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                                                 (e.target as HTMLImageElement).src = pen.src;
                                             }}
                                         />
@@ -697,7 +698,7 @@ export default function ProductSection({ product }: ProductSectionProps = {}) {
                                                 className="cursor-pointer w-[80px] h-full object-contain"
                                                 style={{ width: "auto", height: "auto" }}
                                                 unoptimized
-                                                onError={(e) => {
+                                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
                                                     (e.target as HTMLImageElement).src = pen.src;
                                                 }}
                                             />
