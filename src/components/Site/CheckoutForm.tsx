@@ -298,36 +298,7 @@ function CheckoutFormContent() {
             const shippingFee = calculateShippingFee();
             const total = subtotal + shippingFee;
 
-            // Convert file to base64 if present (before creating order)
-            let artworkBase64: string | undefined = undefined;
-            if (uploadArtwork) {
-                try {
-                    artworkBase64 = await new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            const base64String = reader.result as string;
-                            resolve(base64String);
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(uploadArtwork);
-                    });
-                } catch (error) {
-                    console.error('Error converting artwork to base64:', error);
-                }
-            }
-
-            // Step 1: Create order in Django first with payment_status='pending'
-            const order = await accountsAPI.checkout({
-                billing_address_id: billingAddressId,
-                shipping_address_id: finalShippingAddressId,
-                notes: notes || undefined,
-                upload_artwork: artworkBase64 || undefined,
-                date_order_needed: dateOrderNeeded || undefined,
-                payment_status: 'pending',
-                transaction_id: undefined,
-            });
-
-            // Step 2: Process payment via PayJunction
+            // Step 1: Process payment via PayJunction first
             try {
                 const paymentResponse = await fetch('/api/payments/process', {
                     method: 'POST',
@@ -394,21 +365,37 @@ function CheckoutFormContent() {
                     description: paymentError.message || 'Failed to process payment. Please check your card details and try again.',
                 });
                 setProcessing(false);
-                return; // Stop here - order already created but payment failed
+                return; // Stop here - don't create order if payment fails
             }
 
-            // Step 3: Update order with payment status and transaction ID on payment success
-            if (paymentResult && paymentResult.transactionId && order.order_number) {
+            // Step 2: Create order in Django ONLY after successful payment with payment_status='paid'
+            // Convert file to base64 if present
+            let artworkBase64: string | undefined = undefined;
+            if (uploadArtwork) {
                 try {
-                    await accountsAPI.updateOrder(order.order_number, {
-                        payment_status: 'paid',
-                        transaction_id: paymentResult.transactionId,
-                    } as any);
-                } catch (updateError: any) {
-                    console.error('Failed to update order payment status:', updateError);
-                    // Don't fail the checkout if update fails - order is already created
+                    artworkBase64 = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                            const base64String = reader.result as string;
+                            resolve(base64String);
+                        };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(uploadArtwork);
+                    });
+                } catch (error) {
+                    console.error('Error converting artwork to base64:', error);
                 }
             }
+
+            const order = await accountsAPI.checkout({
+                billing_address_id: billingAddressId,
+                shipping_address_id: finalShippingAddressId,
+                notes: notes || undefined,
+                upload_artwork: artworkBase64 || undefined,
+                date_order_needed: dateOrderNeeded || undefined,
+                payment_status: 'paid',
+                transaction_id: paymentResult?.transactionId || undefined,
+            });
             
             addToast({
                 type: 'success',
