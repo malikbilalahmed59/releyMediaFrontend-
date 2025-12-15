@@ -156,17 +156,21 @@ function BuyCart({ products = [], totalCount = 0, category }: BuyCartProps) {
                     <Link href={`/single-products/${item.id}`} className="flex-shrink-0">
                         <figure className="w-full h-[208px] flex items-center justify-center rounded-[6px] bg-white mb-[24px] overflow-hidden cursor-pointer">
                             {item.isExternalImage ? (
-                                <img 
+                                <Image 
                                     src={item.image as string} 
                                     alt={item.title} 
+                                    width={208}
+                                    height={208}
                                     className="w-full h-full object-contain"
+                                    style={{ width: "auto", height: "auto" }}
+                                    unoptimized
                                     onError={(e) => {
                                         // Fallback to placeholder if image fails to load
                                         (e.target as HTMLImageElement).src = pen.src;
                                     }}
                                 />
                             ) : (
-                                <Image src={item.image} alt={item.title} className="w-full h-full object-contain" />
+                                <Image src={item.image} alt={item.title} width={208} height={208} className="w-full h-full object-contain" />
                             )}
                         </figure>
                     </Link>

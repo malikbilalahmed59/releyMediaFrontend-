@@ -394,6 +394,10 @@ function CheckoutFormContent() {
         return item.primary_image || pen.src;
     };
 
+    const isExternalImage = (image: string): boolean => {
+        return image.startsWith('http://') || image.startsWith('https://') || image.startsWith('//');
+    };
+
     if (loading) {
         return (
             <div className="py-[50px]">
@@ -684,10 +688,14 @@ function CheckoutFormContent() {
                                     {cart.items.map((item) => (
                                         <div key={item.id} className="flex items-center gap-4 pb-4 border-b">
                                             <Link href={`/single-products/${item.product}`}>
-                                                <img
+                                                <Image
                                                     src={getProductImage(item)}
                                                     alt={item.product_name}
+                                                    width={64}
+                                                    height={64}
                                                     className="w-16 h-16 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                                                    style={isExternalImage(getProductImage(item)) ? { width: "auto", height: "auto" } : undefined}
+                                                    unoptimized={isExternalImage(getProductImage(item))}
                                                     onError={(e) => {
                                                         (e.target as HTMLImageElement).src = pen.src;
                                                     }}

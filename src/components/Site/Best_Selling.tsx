@@ -173,16 +173,20 @@ function BestSelling() {
                 <Link href={`/single-products/${product.id}`} className="flex-shrink-0">
                     <figure className="w-full h-[208px] flex items-center justify-center rounded-[6px] bg-white mb-[24px] overflow-hidden cursor-pointer">
                         {isExternalImage(productImage) ? (
-                            <img 
+                            <Image 
                                 src={productImage as string} 
                                 alt={product.product_name} 
+                                width={208}
+                                height={208}
                                 className="w-full h-full object-contain"
+                                style={{ width: "auto", height: "auto" }}
+                                unoptimized
                                 onError={(e) => {
                                     (e.target as HTMLImageElement).src = pen.src;
                                 }}
                             />
                         ) : (
-                            <Image src={productImage} alt={product.product_name} className="w-full h-full object-contain" />
+                            <Image src={productImage} alt={product.product_name} width={208} height={208} className="w-full h-full object-contain" />
                         )}
                     </figure>
                 </Link>
