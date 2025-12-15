@@ -739,7 +739,7 @@ function CheckoutFormContent() {
                                                 <Input
                                                     id="uploadArtwork"
                                                     type="file"
-                                                    accept="image/*"
+                                                    accept="*/*"
                                                     onChange={(e) => {
                                                         const file = e.target.files?.[0] || null;
                                                         setUploadArtwork(file);
