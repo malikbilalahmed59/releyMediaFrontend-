@@ -690,18 +690,28 @@ function CheckoutFormContent() {
                                     </div>
                                     <div>
                                         <Label htmlFor="uploadArtwork" className="form-label">Upload Artwork (Optional)</Label>
-                                        <Input
-                                            id="uploadArtwork"
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0] || null;
-                                                setUploadArtwork(file);
-                                            }}
-                                            className="form-input"
-                                        />
+                                        <div className="relative">
+                                            <Input
+                                                id="uploadArtwork"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0] || null;
+                                                    setUploadArtwork(file);
+                                                }}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                className="w-full border-2 border-blue-500 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-4 rounded-lg cursor-pointer"
+                                                onClick={() => document.getElementById('uploadArtwork')?.click()}
+                                            >
+                                                Browse
+                                            </Button>
+                                        </div>
                                         {uploadArtwork && (
-                                            <p className="text-[12px] text-muted-foreground mt-1">
+                                            <p className="text-[12px] text-muted-foreground mt-2">
                                                 Selected: {uploadArtwork.name}
                                             </p>
                                         )}
