@@ -346,9 +346,11 @@ function CheckoutFormContent() {
             const shippingFee = calculateShippingFee();
             const total = subtotal + shippingFee;
 
+            // TEMPORARY: Skip PayJunction payment for testing artwork upload
             // Step 1: Process payment via PayJunction first
             // IMPORTANT: Send subtotal as amountBase (NOT total), because PayJunction will add amountShipping on top
             // If we send total (which includes shipping), PayJunction will add shipping again, causing double charge
+            /*
             try {
                 const paymentResponse = await fetch('/api/payments/process', {
                     method: 'POST',
@@ -417,6 +419,14 @@ function CheckoutFormContent() {
                 setProcessing(false);
                 return; // Stop here - don't create order if payment fails
             }
+            */
+            
+            // TESTING: Mock payment result to skip PayJunction
+            paymentResult = {
+                success: true,
+                transactionId: 'TEST-TXN-' + Date.now(),
+                status: 'CAPTURE'
+            };
 
             // Step 2: Create order in Django ONLY after successful payment with payment_status='paid'
             // Use FormData ONLY when file is included, otherwise use JSON
@@ -446,7 +456,7 @@ function CheckoutFormContent() {
                     shipping_address_id: finalShippingAddressId,
                     notes: notes || undefined,
                     date_order_needed: dateOrderNeeded || undefined,
-                    payment_status: 'paid', // Explicitly set to 'paid' since payment succeeded
+                    payment_status: 'pending', // Set to 'pending' for testing (skip payment)
                     transaction_id: paymentResult?.transactionId || undefined,
                 };
             }
