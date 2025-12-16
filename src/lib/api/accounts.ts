@@ -662,14 +662,21 @@ export async function clearCart(): Promise<Cart> {
  * Order Endpoints
  */
 
-export async function checkout(data: CheckoutRequest): Promise<Order> {
+// Allow FormData for checkout (when file is included)
+export async function checkout(data: CheckoutRequest | FormData): Promise<Order> {
   const url = USE_PROXY 
     ? '/api/accounts/checkout'
     : `${API_BASE_URL}/accounts/checkout/`;
   
+  // If FormData, send as-is (browser will set Content-Type with boundary)
+  // If regular object, send as JSON
+  const isFormData = data instanceof FormData;
+  
   return authFetch<Order>(url, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: isFormData ? data : JSON.stringify(data),
+    // Don't set Content-Type header for FormData - browser will set it automatically with boundary
+    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
   });
 }
 
