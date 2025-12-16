@@ -419,35 +419,27 @@ function CheckoutFormContent() {
             }
 
             // Step 2: Create order in Django ONLY after successful payment with payment_status='paid'
-            // Convert file to base64 if present
-            let artworkBase64: string | undefined = undefined;
+            // Use FormData to send file directly (not base64)
+            const formData = new FormData();
+            formData.append('billing_address_id', billingAddressId.toString());
+            formData.append('shipping_address_id', finalShippingAddressId.toString());
+            if (notes) {
+                formData.append('notes', notes);
+            }
             if (uploadArtwork) {
-                try {
-                    artworkBase64 = await new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                            const base64String = reader.result as string;
-                            resolve(base64String);
-                        };
-                        reader.onerror = reject;
-                        reader.readAsDataURL(uploadArtwork);
-                    });
-                } catch (error) {
-                    console.error('Error converting artwork to base64:', error);
-                }
+                formData.append('upload_artwork', uploadArtwork);
+            }
+            if (dateOrderNeeded) {
+                formData.append('date_order_needed', dateOrderNeeded);
+            }
+            formData.append('payment_status', 'paid'); // Explicitly set to 'paid' since payment succeeded
+            if (paymentResult?.transactionId) {
+                formData.append('transaction_id', paymentResult.transactionId);
             }
 
             // Create order with payment_status='paid' since payment was successful
             // Backend defaults to 'pending' if not provided, so we explicitly set it to 'paid'
-            const order = await accountsAPI.checkout({
-                billing_address_id: billingAddressId,
-                shipping_address_id: finalShippingAddressId,
-                notes: notes || undefined,
-                upload_artwork: artworkBase64 || undefined,
-                date_order_needed: dateOrderNeeded || undefined,
-                payment_status: 'paid', // Explicitly set to 'paid' since payment succeeded
-                transaction_id: paymentResult?.transactionId || undefined,
-            });
+            const order = await accountsAPI.checkout(formData);
             
             addToast({
                 type: 'success',
@@ -739,7 +731,7 @@ function CheckoutFormContent() {
                                                 <Input
                                                     id="uploadArtwork"
                                                     type="file"
-                                                    accept="*/*"
+                                                    accept=".zip,.pdf,.eps,.ai,.jpg,.jpeg,.png,.txt,.psd,image/*,application/pdf,application/zip,application/postscript,application/illustrator,text/plain"
                                                     onChange={(e) => {
                                                         const file = e.target.files?.[0] || null;
                                                         setUploadArtwork(file);

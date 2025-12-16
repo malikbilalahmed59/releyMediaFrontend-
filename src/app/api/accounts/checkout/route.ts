@@ -13,15 +13,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // Check if request is multipart/form-data (FormData)
+    const contentType = request.headers.get('content-type') || '';
+    const isFormData = contentType.includes('multipart/form-data');
+    
     const url = `${API_BASE_URL}/accounts/checkout/`;
+    
+    let body: BodyInit;
+    let headers: HeadersInit = {
+      'Authorization': authHeader,
+    };
+    
+    if (isFormData) {
+      // For FormData, forward the FormData directly
+      // Don't set Content-Type - fetch will set it with boundary
+      body = await request.formData();
+    } else {
+      // For JSON, parse and stringify
+      const jsonBody = await request.json();
+      body = JSON.stringify(jsonBody);
+      headers['Content-Type'] = 'application/json';
+    }
+    
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader,
-      },
-      body: JSON.stringify(body),
+      headers,
+      body,
     });
     
     if (!response.ok) {

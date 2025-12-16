@@ -245,12 +245,18 @@ async function authFetch<T>(
 ): Promise<T> {
   const maxRetries = 1; // Only retry once after token refresh
   
+  // For FormData, don't merge headers (browser will set Content-Type with boundary)
+  // For other requests, merge auth headers with provided headers
+  const headers = options.body instanceof FormData
+    ? { ...getAuthHeaders() } // Only auth headers, no Content-Type
+    : {
+        ...getAuthHeaders(),
+        ...options.headers,
+      };
+  
   const response = await fetch(url, {
     ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
