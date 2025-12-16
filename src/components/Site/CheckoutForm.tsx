@@ -419,27 +419,41 @@ function CheckoutFormContent() {
             }
 
             // Step 2: Create order in Django ONLY after successful payment with payment_status='paid'
-            // Use FormData to send file directly (not base64)
-            const formData = new FormData();
-            formData.append('billing_address_id', billingAddressId.toString());
-            formData.append('shipping_address_id', finalShippingAddressId.toString());
-            if (notes) {
-                formData.append('notes', notes);
-            }
+            // Use FormData ONLY when file is included, otherwise use JSON
+            let checkoutData: FormData | accountsAPI.CheckoutRequest;
+            
             if (uploadArtwork) {
-                formData.append('upload_artwork', uploadArtwork);
-            }
-            if (dateOrderNeeded) {
-                formData.append('date_order_needed', dateOrderNeeded);
-            }
-            formData.append('payment_status', 'paid'); // Explicitly set to 'paid' since payment succeeded
-            if (paymentResult?.transactionId) {
-                formData.append('transaction_id', paymentResult.transactionId);
+                // When file is included: Use FormData and let browser set Content-Type: multipart/form-data
+                const formData = new FormData();
+                formData.append('billing_address_id', billingAddressId.toString());
+                formData.append('shipping_address_id', finalShippingAddressId.toString());
+                if (notes) {
+                    formData.append('notes', notes);
+                }
+                formData.append('upload_artwork', uploadArtwork); // File object
+                if (dateOrderNeeded) {
+                    formData.append('date_order_needed', dateOrderNeeded);
+                }
+                formData.append('payment_status', 'paid'); // Explicitly set to 'paid' since payment succeeded
+                if (paymentResult?.transactionId) {
+                    formData.append('transaction_id', paymentResult.transactionId);
+                }
+                checkoutData = formData;
+            } else {
+                // When no file: Use JSON with Content-Type: application/json
+                checkoutData = {
+                    billing_address_id: billingAddressId,
+                    shipping_address_id: finalShippingAddressId,
+                    notes: notes || undefined,
+                    date_order_needed: dateOrderNeeded || undefined,
+                    payment_status: 'paid', // Explicitly set to 'paid' since payment succeeded
+                    transaction_id: paymentResult?.transactionId || undefined,
+                };
             }
 
             // Create order with payment_status='paid' since payment was successful
             // Backend defaults to 'pending' if not provided, so we explicitly set it to 'paid'
-            const order = await accountsAPI.checkout(formData);
+            const order = await accountsAPI.checkout(checkoutData);
             
             addToast({
                 type: 'success',
