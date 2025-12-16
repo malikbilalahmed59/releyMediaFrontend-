@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if request is multipart/form-data (FormData)
+    // Note: When FormData is sent, browser sets Content-Type: multipart/form-data; boundary=...
     const contentType = request.headers.get('content-type') || '';
     const isFormData = contentType.includes('multipart/form-data');
     
@@ -26,10 +27,13 @@ export async function POST(request: NextRequest) {
     
     if (isFormData) {
       // For FormData, forward the FormData directly
-      // Don't set Content-Type - fetch will set it with boundary
+      // Don't set Content-Type - fetch will set it with boundary automatically
       body = await request.formData();
+      // Don't set Content-Type header - let fetch set it automatically with boundary
     } else {
       // For JSON, parse and stringify
+      // IMPORTANT: Only call request.json() if we're sure it's JSON
+      // The request body can only be read once, so we must be certain
       const jsonBody = await request.json();
       body = JSON.stringify(jsonBody);
       headers['Content-Type'] = 'application/json';
